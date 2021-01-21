@@ -1,0 +1,160 @@
+.new-appointment-form {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+
+    .summary {
+
+        max-width: fit-content;
+        margin: 1em auto 2em auto;
+
+
+        p {
+            margin-bottom: 0.5em;
+            padding-left: 2rem;
+        }
+            
+        strong {
+            display: inline-block;
+            padding-right: 0.5rem;
+            width: 80px;
+        }
+    }
+}
+
+.week-selector {
+    button {
+        width: 75px;
+    }
+    // background-color: red;
+    .ant-space-item:nth-of-type(2) {
+        flex-grow: 1;
+    }
+}
+
+.day-selector {
+    height: 50px;
+    width: 100%;
+    display: flex;
+
+    label {
+        text-align: center;
+        flex-grow: 1;
+        height: 100%;
+        padding: 0;
+
+        p {
+            padding: 0;
+            margin: 0;
+        }
+
+        p:nth-of-type(2) {
+            margin-top: -10px;
+        }
+    }
+}
+
+.time-selector-container {
+    // width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+
+    // >div:not(:nth-child(2)) {
+    //     width: 50%;
+    // }
+}
+
+.time-selector-item {
+    // margin: 0 auto;
+}
+
+.time-selector-radio-group {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    
+    .time-button {
+        text-align: center;
+        flex-grow: 1;
+        height: 100%;
+        padding: 0;
+        width: 100%;
+        margin-bottom: 5px;
+    }
+
+    // .ant-radio-button-wrapper {
+    //     border-left-width: 1.02px;
+    //     border-top-width: 0px;
+    // }
+
+    
+    // .ant-radio-button-wrapper:first-child {
+    //     border-top: 1px solid #d9d9d9;
+    //     border-radius: 2px 2px 0 0;
+    // }
+
+    // .ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled):hover {
+    //     border-top-color: #40a9ff;
+    // }
+
+    // .ant-radio-button-wrapper-checked:not(.ant-radio-button-wrapper-disabled):first-child {
+    //     border-top-color: #40a9ff;
+    // }
+
+    // .ant-radio-button-wrapper:last-child {
+    //     // border-top: 1px ;//solid #d9d9d9;
+    //     border-radius: 0 0 2px 2px;
+    // }
+
+    // .ant-radio-button-wrapper:not(:first-child)::before {
+    //     top: -1px;
+    //     left: -1px;
+    //     right: 1px;
+    //     height: 1px;
+    //     width: 100%;
+    //     padding: 0 1px;
+    // }
+}
+
+.minutes-selector {
+    display: flex;
+    // align-items: center;
+    // justify-content: center;
+    // width: 100%;
+    max-width: 100%;
+    
+    label {
+        text-align: center;
+        flex-grow: 2;
+        flex-basis: 60px;
+        flex-shrink: 1;
+        width: 60px;
+        height: 100%;
+        padding: 0;
+        margin-bottom: 5px;
+    }
+
+}
+
+.time-selector-space-row {
+    // margin: 0 auto;
+    max-width: 100%;
+    flex-grow: 1;
+    display: flex;
+
+    >div:nth-child(1) {
+        // width: 100%;
+        flex-grow: 1;
+        width: 100px;
+    }
+
+    >div:nth-child(2) {
+        // width: 100%;
+        flex-grow: 1;
+        max-width: calc(100% - 100px);
+    }
+}

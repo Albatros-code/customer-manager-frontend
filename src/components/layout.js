@@ -19,6 +19,7 @@ const LayoutComp = (props) => {
     const handleMenuClick = (e) => {
         // console.log('click ', e)
         setCurrentPage(e.key)
+        setIsDrawerOpen(false)
     }
 
     const handleLogout = () => {
@@ -126,8 +127,8 @@ const SideMenu = (props) => {
                         
                     </Menu.ItemGroup>
                     <Menu.ItemGroup key="sub2" icon={<MenuOutlined />} title="Appointments">
-                        <Menu.Item key="/new-appointment"><Link to="/new-appointment">New appointment</Link></Menu.Item>
-                        <Menu.Item key="6">Option 6</Menu.Item>
+                        <Menu.Item key="/new-appointment"><Link to="/new-appointment">New</Link></Menu.Item>
+                        <Menu.Item key="/scheduled-appointments"><Link to="/scheduled-appointments">Scheduled</Link></Menu.Item>
                     </Menu.ItemGroup>
                 </Menu>
             }

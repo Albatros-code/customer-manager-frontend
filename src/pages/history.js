@@ -1,6 +1,6 @@
 import React from 'react';
 import dayjs from 'dayjs';
-import { Table, Tag, Space } from 'antd';
+import { Table } from 'antd';
 
 import { useAppData } from '../util/context';
 import { api } from '../util/util'
@@ -72,7 +72,7 @@ const History = () => {
         <h1>History of {user}</h1>
         {/* <p>current time ISO: {now.toISOString()}</p>
         <p>current time local: {now.format('DD-MM-YYYY HH:mm')}</p> */}
-        {historyData ? <Table columns={columns} dataSource={data}/> : null}
+        {historyData ? <Table  pagination={{hideOnSinglePage: true}} columns={columns} dataSource={data}/> : null}
         </>
     )
 }

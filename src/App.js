@@ -17,6 +17,7 @@ import Contact from './pages/contact'
 import Profile from './pages/profile'
 import NotFound from './pages/notfound'
 import NewAppointment from './pages/newApointment'
+import ScheduledAppointments from './pages/scheduledAppointments'
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
             <ProtectedRoute exact path="/history" component={History}/>
             <ProtectedRoute exact path="/profile" component={Profile}/>
             <ProtectedRoute exact path="/new-appointment" component={NewAppointment}/>
+            <ProtectedRoute exact path="/scheduled-appointments" component={ScheduledAppointments}/>
             
 
             <Route component={NotFound} />

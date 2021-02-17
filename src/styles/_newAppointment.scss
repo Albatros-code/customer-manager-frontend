@@ -162,3 +162,23 @@
 .divider {
     margin-top: 0px!important;
 }
+
+.submit-modal-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    >div {
+        display: flex;
+        flex-direction: column;
+        font-size: 1rem;
+    }
+
+    >div:first-of-type{
+        text-align: end;
+    }
+
+    >div:nth-of-type(2){
+        padding-left: 1rem;
+    }
+}

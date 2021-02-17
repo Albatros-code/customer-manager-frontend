@@ -26,7 +26,6 @@ export const AppDataWraper = ({ children }) => {
             setTimeout(() => {
                 refreshToken()
                 }, ((exp - iat) * 1000) - 500)
-            // console.log((exp - iat)/60 + ' min')
 
         }, err => {
             // console.error("token/refresh - useEffect", err.response.data)            
@@ -38,23 +37,6 @@ export const AppDataWraper = ({ children }) => {
             setWorking(false)
         })
     }
-
-    //   client
-    //     .request(refresh_token)
-    //     .then(({ refresh_token: { customer, token, expires_in } }) => {
-    //       client.setHeader("authorization", `Bearer ${token}`);
-  
-    //       setTimeout(() => {
-    //         refreshToken()
-    //       }, (expires_in * 1000) - 500)
-  
-    //       setCustomer(customer);
-    //     })
-    //     .catch(console.log)
-    //     .finally(() => {
-    //       setWorking(false);
-    //     });
-    // };
   
     React.useEffect(() => {
         refreshToken();

@@ -16,3 +16,27 @@
     max-width: 500px;
     margin: 0 auto;
 }
+
+.reset-password-form {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.reset-password-modal {
+
+    .ant-modal-body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        
+        min-height: 165px;
+        @media screen and (min-width: $breakpoint-sm) {
+            min-height: 140px;
+        }
+
+    }
+
+    .ant-btn-primary{
+        width: 115px;
+    }
+}

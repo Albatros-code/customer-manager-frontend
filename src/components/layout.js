@@ -4,8 +4,12 @@ import { Button, Drawer, Menu } from 'antd';
 import { MenuOutlined } from '@ant-design/icons';
 import { useHistory } from 'react-router-dom';
 
-import { useAppData } from '../util/context';
+// import { useAppData } from '../util/context';
 import { api } from '../util/util';
+
+// redux
+import { connect } from 'react-redux';
+import { logoutUser } from '../redux/actions/userActions'
 
 const rootSubmenuKeys = ['sub1', 'sub2', 'sub4'];
 
@@ -13,7 +17,9 @@ const LayoutComp = (props) => {
     const [ isDrawerOpen, setIsDrawerOpen ] = React.useState(false)
     const [ currentPage, setCurrentPage ] = React.useState(useLocation().pathname)
 
-    const { user, setUser } = useAppData()
+    // const { user, setUser } = useAppData()
+    const { authenticated, username, userRole } = props
+
     const history = useHistory()
 
     const handleMenuClick = (e) => {
@@ -27,25 +33,29 @@ const LayoutComp = (props) => {
         api.post('/logout/refresh', {}, {withCredentials: true})
             .then(res => {
                 console.log(res)
-                setUser(null)
+                // setUser(null)
                 history.push("/login")
+                props.logoutUser()
 
             }, err => {
                 console.log(err.response.data)
             })
     }
 
-    const sideMenu = <SideMenu currentPage={currentPage} handleMenuClick={handleMenuClick}/>
+    const sideMenu = <SideMenu userRole={userRole} username={username} authenticated={authenticated} currentPage={currentPage} handleMenuClick={handleMenuClick}/>
 
     return (
         <>
-        <div className="layout">
+        <div className={`layout ${!authenticated ? 'layout-hide-sider' : ''}`}>
             <div className="header">
                     <div className="header-container">
                         <Button 
                             onClick={() => setIsDrawerOpen(true)}
                             shape="circle"
                             className="drawer-button"
+                            style={{
+                                display: !authenticated ? 'none' : null
+                            }}
                         >
                             <MenuOutlined/>
                         </Button>
@@ -54,8 +64,8 @@ const LayoutComp = (props) => {
                     </div>
                 <Menu className="navbar" theme="light" mode="horizontal"  onClick={handleMenuClick} selectedKeys={[currentPage]}>
                     {/* defaultSelectedKeys={[useLocation().pathname]}> */}
-                    { user ?
-                        <Menu.Item key="/login" onClick={handleLogout}><p className="logout-button">{user}</p>Logout</Menu.Item>
+                    { authenticated ?
+                        <Menu.Item key="/login" onClick={handleLogout}><p className="logout-button">{username}</p>Logout</Menu.Item>
                         :
                         <Menu.Item key="/login"><Link to="/login">Login</Link></Menu.Item>
                     }
@@ -67,17 +77,20 @@ const LayoutComp = (props) => {
                 <Link to="/contact"><Button type='primary'>Contact</Button></Link> */}
             </div>
             <div className="header-grid"></div>
-            <div className="sider">
-                <div className="sider-fixed">
-                {/* /<Menu mode="inline" openKeys={openKeys} onOpenChange={onOpenChange} style={{ width: 256 }}> */}
-                    {sideMenu}
-                    {/* <div className="sider-content">
-                    </div>
-                    <div className="sider-scroll">
+            { authenticated ?
+                <div className="sider">
+                    <div className="sider-fixed">
+                    {/* /<Menu mode="inline" openKeys={openKeys} onOpenChange={onOpenChange} style={{ width: 256 }}> */}
+                        {sideMenu}
+                        {/* <div className="sider-content">
+                        </div>
+                        <div className="sider-scroll">
 
-                    </div> */}
+                        </div> */}
+                    </div>
                 </div>
-            </div>
+                : null
+            }
             <div className="layout-inner">
                 <div className="content">{props.children}</div>
                 <div className="footer">Customer manager 2021</div>
@@ -102,7 +115,7 @@ const LayoutComp = (props) => {
 const SideMenu = (props) => {
     const [openKeys, setOpenKeys] = React.useState(['sub1']);
     
-    const { user } = useAppData()
+    // const { user } = useAppData()
     
     const onOpenChange = keys => {
         const latestOpenKey = keys.find(key => openKeys.indexOf(key) === -1);
@@ -115,25 +128,51 @@ const SideMenu = (props) => {
 
     return (
         <>
-            { !user ?
+            { !props.authenticated ?
                 <div className="sidemenu-loading">
                     <p>Please Log in</p>
                 </div>
                 :
-                <Menu mode="inline" onOpenChange={onOpenChange} onClick={props.handleMenuClick} selectedKeys={[props.currentPage]} className="sidemenu-container">
-                    <Menu.ItemGroup key="sub1" icon={<MenuOutlined />} title="User Data">
-                        <Menu.Item key="/profile"><Link to="/profile">Profile</Link></Menu.Item>
-                        <Menu.Item key="/history"><Link to="/history">History</Link></Menu.Item>
-                        
-                    </Menu.ItemGroup>
-                    <Menu.ItemGroup key="sub2" icon={<MenuOutlined />} title="Appointments">
-                        <Menu.Item key="/new-appointment"><Link to="/new-appointment">New</Link></Menu.Item>
-                        <Menu.Item key="/scheduled-appointments"><Link to="/scheduled-appointments">Scheduled</Link></Menu.Item>
-                    </Menu.ItemGroup>
-                </Menu>
+                <>
+                    {/* <div className="sidemenu-user-card-container ant-menu-inline">
+                        <div className="sidemenu-user-card-circle">
+                            <span>Logged as</span>
+                            <h3>{props.username}</h3>
+                        </div>
+                    </div> */}
+                    <Menu mode="inline" onOpenChange={onOpenChange} onClick={props.handleMenuClick} selectedKeys={[props.currentPage]} className="sidemenu-container">
+                        <Menu.ItemGroup key="sub1" icon={<MenuOutlined />} title="User Data">
+                            <Menu.Item key="/profile"><Link to="/profile">Profile</Link></Menu.Item>
+                            <Menu.Item key="/history"><Link to="/history">History</Link></Menu.Item>
+                            
+                        </Menu.ItemGroup>
+                        <Menu.ItemGroup key="sub2" icon={<MenuOutlined />} title="Appointments">
+                            <Menu.Item key="/new-appointment"><Link to="/new-appointment">New</Link></Menu.Item>
+                            <Menu.Item key="/scheduled-appointments"><Link to="/scheduled-appointments">Scheduled</Link></Menu.Item>
+                        </Menu.ItemGroup>
+                        {
+                            props.userRole === 'admin' ?
+                            <Menu.ItemGroup key="sub3" icon={<MenuOutlined />} title="Admin">
+                                <Menu.Item key="/admin/appointments"><Link to="/admin/appointments">All appointments</Link></Menu.Item>
+                            </Menu.ItemGroup>
+                            :
+                            null
+                        }
+                    </Menu>
+                </>
             }
         </>
     )
 }
 
-export default LayoutComp
+const mapStateToProps = (state) => ({
+    authenticated: state.user.authenticated,
+    userRole: state.user.role,
+    username: state.user.username,
+})
+
+const mapDispatchToProps = {
+    logoutUser,
+}
+
+export default  connect(mapStateToProps, mapDispatchToProps)(LayoutComp)

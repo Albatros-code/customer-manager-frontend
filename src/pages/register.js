@@ -72,7 +72,8 @@ const Register = () => {
             username: `User${random}`,
             password: "12345678",
             confirmpassword: "12345678",
-            email: `user${random}@email.com`,
+            // email: `user${random}@email.com`,
+            email: `customerappemail+${random}@gmail.com`,
             phone: `${Math.floor(100000000 + Math.random() * 900000000)}`,
             fname: 'UserName',
             lname: 'UserLastname'

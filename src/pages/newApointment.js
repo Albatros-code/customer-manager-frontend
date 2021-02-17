@@ -1,10 +1,15 @@
 import React from 'react';
-import moment from 'moment';
-import { Form, Input, Button, Radio, Select, Space, Typography, Divider } from 'antd';
+import {useHistory} from 'react-router-dom';
+import moment from 'moment-timezone';
+import { Form, Input, Button, Radio, Select, Space, Typography, Divider, Modal, Spin } from 'antd';
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 
-// import { useAppData } from '../util/context';
-import { api } from '../util/util'
+// redux
+import { connect } from 'react-redux';
+import { getServices, getAvaiableDates } from '../redux/actions/dataActions';
+import { api } from '../util/util';
+
+
 
 const { Text } = Typography;
 
@@ -28,84 +33,39 @@ const { Text } = Typography;
 //     },
 // }
 
-const NewAppointment = () => {
+const NewAppointment = (props) => {
 
+    const startHour = 12
+    const endHour = 20
     const timeInterval = 15
 
-    // const [ loading, setLoading ] = React.useState(true)
+    const { getServices, getAvaiableDates } = props
+    const { services, availableDatesFetched } = props
 
-    const [ selectedDate, setSelectedDate ] = React.useState(moment())
-    const [ availableDatesFetched, setAvailableDatesFetched ] = React.useState(null)
+    const history = useHistory()
+
+    const [ selectedDate, setSelectedDate ] = React.useState(moment.tz(new Date(),'Europe/Warsaw').set({'second': 0, 'millisecond': 0}))
     const [ availableDates, setAvailableDates ] = React.useState(null)
-    const [ services, setServices ] = React.useState(null)
     const [ service, setService ] = React.useState(null)
+
     const [form] = Form.useForm();
 
-    const timeTableBase = generateTimeTableBase(selectedDate, 12, 20, timeInterval)
+    const timeTableBase = generateTimeTableBase(selectedDate, startHour, endHour, timeInterval)
 
     React.useEffect(() => {
-        api.get('/services')
-        .then(res => {
-            console.log(res)
-            setServices(res.data)  
-            // setAvailableDatesFetched(JSON.parse(JSON.stringify(availableDatesMock)))
-        }, err => {
-            console.log("err:")
-            console.log(err)
-        })
-        .catch(err => {
-            console.log("catch err:")
-            console.log(err.response.data)
-        })
-
-        api.get('/avaiable-dates')
-        .then(res => { 
-            setAvailableDatesFetched(res.data)
-        }, err => {
-            console.log("err:")
-            console.log(err)
-        })
-        .catch(err => {
-            console.log("catch err:")
-            console.log(err.response.data)
-        })
-
+        getServices()
+        getAvaiableDates(startHour, endHour, timeInterval)
+    // eslint-disable-next-line react-hooks/exhaustive-deps  
     }, [])   
 
+
     const onFinish = (values) => {
-        if (values.timeMinutes){
-            const formTime = values.timeMinutes.split(':')
-            setSelectedDate(prev => moment(prev).set({'hour': formTime[0], 'minute': formTime[1]}))
-        }
-        // console.log(values.date.format('YYYY-MM-DD'))
         console.log('Submit:', values);
         console.log(
-            selectedDate.format('YYYY-MM-DD HH:mm')
+            selectedDate.toISOString()
         )
-
-        // api.post('/appointment', {
-        //     service: values.service,
-        //     date: selectedDate.toISOString(),
-        //     duration: services.find(item => item.name === values.service).time,
-        // }, {withCredentials: true})
-        // .then(res => {
-        //     // registered successfully go to login page
-        //     console.log(res.data.message)
-        // }, err => {
-        //     console.log(err.response)
-        //     // set errors, validate form and clear errror
-        //     // setErrors({...err.response.data.errors})
-        //     // form.validateFields()
-        //     //     .catch(() => {
-        //     //         // clear errors and stop loading
-        //     //         setErrors({})
-        //     //         setFormLoading(false)
-        //     //     })
-        // })
-        // .catch(err => {
-        //     console.log('catchError: ' + err)
-        //     console.log(err.response)
-        // })
+        
+        showSubmitModal()
 
     };
 
@@ -127,8 +87,8 @@ const NewAppointment = () => {
 
     
     function filterAvaiableDates(interval, duration){
-
-        let availableDatesUpdate = JSON.parse(JSON.stringify(availableDatesFetched))
+        // console.log(availableDatesFetched)
+        let availableDatesUpdate = JSON.parse(JSON.stringify(availableDatesFetched ? availableDatesFetched : {}))
 
         const requiredSpace = Math.ceil(duration/interval)
 
@@ -273,10 +233,11 @@ const NewAppointment = () => {
     function generateTimeTableBase(dateObj, startHour, endHour, intervalMinutes){
 
         const start = moment(dateObj).set({'hour': startHour, 'minute': 0, 'second': 0, 'milisecond': 0})
-        const end = moment(dateObj).set({'hour': endHour, 'minute': 59, 'second': 59, 'milisecond': 0})    
+        const end = moment(dateObj).set({'hour': endHour, 'minute': 59, 'second': 59, 'milisecond': 0})
 
         let array = []
         let current = moment(start)
+
         do {
 
             let minutesArray = []
@@ -299,6 +260,89 @@ const NewAppointment = () => {
         return array
     }
 
+    // modal
+
+    const submitModalTextInit = (loading) => (
+        <Spin spinning={loading}>
+            <div className="submit-modal-container">
+                <div>
+                    <Text strong>Service:</Text>
+                    <Text strong>Date:</Text>
+                    <Text strong>Time:</Text>
+                </div>
+                <div>
+                    <span>{service} and some other long description</span>
+                    <span>{form.getFieldValue('day') ? selectedDate.format('YYYY-MM-DD') : null}</span>
+                    <span>{form.getFieldValue('timeMinutes') ? selectedDate.format('HH:mm') : null}</span>
+                </div>
+            </div>
+        </Spin>
+    )
+
+    const [submitModalVisible, setSubmitModalVisible] = React.useState(false);
+    // const [submitModalConfirmLoading, setSubmitModalConfirmLoading] = React.useState(false);
+    const [submitModalButtonProps, setSubmitModalButtonProps] = React.useState({disabled:false})
+    const [submitModalText, setSubmitModalText] = React.useState(submitModalTextInit(false));
+  
+    const showSubmitModal = () => {
+        setSubmitModalText(submitModalTextInit(false))
+        setSubmitModalVisible(true);
+    };
+  
+    const submitModalHandleOk = () => {
+        setSubmitModalText(submitModalTextInit(true));
+        setSubmitModalButtonProps({disabled:true})
+
+        api.post('/appointment', {
+            service: form.getFieldValue('service'),
+            date: selectedDate.toISOString(),
+            duration: services.find(item => item.name === form.getFieldValue('service')).time,
+        }, {withCredentials: true})
+        .then(res => {
+            // registered successfully go to login page
+            console.log(res.data.message)
+            history.push('/scheduled-appointments')
+        }, err => {
+            console.log(err.response)
+            // set errors, validate form and clear errror
+            // setErrors({...err.response.data.errors})
+            // form.validateFields()
+            //     .catch(() => {
+            //         // clear errors and stop loading
+            //         setErrors({})
+            //         setFormLoading(false)
+            //     })
+        })
+        .catch(err => {
+            console.log('catchError: ' + err)
+            console.log(err.response)
+        })
+
+        setTimeout(() => {
+            setSubmitModalVisible(false);
+            setSubmitModalButtonProps({disabled:false})
+        }, 2000);
+    };
+  
+    const submitModalHandleCancel = () => {
+        console.log('Clicked cancel button');
+        setSubmitModalVisible(false);
+    };
+
+    const submitModal = 
+        <Modal
+            title="Scheduling new appointment"
+            visible={submitModalVisible}
+            onOk={submitModalHandleOk}
+            // confirmLoading={submitModalConfirmLoading}
+            onCancel={submitModalHandleCancel}
+            okText={'Confirm'}
+            okButtonProps={submitModalButtonProps}
+            cancelButtonProps={submitModalButtonProps}
+        >
+            {submitModalText}
+        </Modal>
+
     return (
         <>
             <h1>New appointment</h1>
@@ -310,23 +354,24 @@ const NewAppointment = () => {
                     className="new-appointment-form"
                     initialValues={{
                         week: getWeekString(selectedDate), }}
-                    validateTrigger="onSubmit"
+                    // validateTrigger="onSubmit"
+                    validateTrigger="onChange"
                     onFinish={onFinish}
                     onFinishFailed={onFinishFailed}
                 >
+                    <Divider className="divider" orientation="left">Service</Divider>
+                    
                     <Form.Item 
                         name="service"
                         rules={[
                             { required: true, message: 'Please select service!' },
                         ]}
                     >
-
-                        <Divider className="divider" orientation="left">Service</Divider>
-
                         <Select
                             showSearch
                             placeholder="Select a service"
                             optionFilterProp="children"
+                            disabled={!services}
                             onChange={handleServiceChange}
                             filterOption={(input, option) =>
                                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -408,8 +453,19 @@ const NewAppointment = () => {
                         </Button>
                     </Form.Item>
                 </Form>
+                {submitModal}
         </>
     )
 }
 
-export default NewAppointment
+const mapStateToProps = (state) => ({
+    services: state.data.services,
+    availableDatesFetched: state.data.avaiableDates,
+})
+
+const mapDispatchToProps = {
+    getServices,
+    getAvaiableDates,
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(NewAppointment)

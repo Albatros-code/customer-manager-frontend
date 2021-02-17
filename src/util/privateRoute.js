@@ -1,13 +1,15 @@
 import { Redirect, Route, useLocation } from 'react-router-dom';
-import { useAppData } from './context'
 
-const ProtectedRoute =({ component: Component, ...rest }) => {
-    const { user } = useAppData()
+// redux
+import { connect } from 'react-redux';
+
+const ProtectedRoute =({ component: Component, authenticated, ...rest }) => {
+    // const { user } = useAppData()
     const location = useLocation()
 
     return (
         <Route {...rest} render={(props) => (
-            user 
+            authenticated 
             ? <Component {...props} />
             : 
             <Redirect to={{
@@ -16,6 +18,10 @@ const ProtectedRoute =({ component: Component, ...rest }) => {
             }} />
         )} />
     )
-  }
+}
 
-export default ProtectedRoute
+const mapStateToProps = (state) => ({
+    authenticated: state.user.authenticated
+})
+  
+export default connect(mapStateToProps)(ProtectedRoute)

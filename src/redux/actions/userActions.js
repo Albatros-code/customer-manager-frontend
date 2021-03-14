@@ -18,6 +18,19 @@ import {
 
 import { api } from '../../util/util'
 
+export const afterLoginAction = (res) => (dispatch) => {
+    // set common authorization header for api calls
+    const token = `Bearer ${res.data.access_token}`
+    api.defaults.headers.common['Authorization'] = token
+    // set user
+    const { sub: { username, role } } = jwt_decode(token)
+    
+    dispatch(setUser(username, role, res.data.user_data));
+    dispatch({
+        type: SET_AUTHENTICATED
+    });
+}
+
 export const loginUser = (username, password, history) => (dispatch) => {
     // Input validation
 
@@ -29,16 +42,17 @@ export const loginUser = (username, password, history) => (dispatch) => {
         password: password
     }, {withCredentials: true})
     .then(res => {
-        // set common authorization header for api calls
-        const token = `Bearer ${res.data.access_token}`
-        api.defaults.headers.common['Authorization'] = token
-        // set user
-        const { sub: { username, role, data } } = jwt_decode(token)
+        dispatch(afterLoginAction(res))
+        // // set common authorization header for api calls
+        // const token = `Bearer ${res.data.access_token}`
+        // api.defaults.headers.common['Authorization'] = token
+        // // set user
+        // const { sub: { username, role } } = jwt_decode(token)
         
-        dispatch(setUser(username, role, data));
-        dispatch({
-            type: SET_AUTHENTICATED
-        });
+        // dispatch(setUser(username, role, res.data.user_data));
+        // dispatch({
+        //     type: SET_AUTHENTICATED
+        // });
         myResolve("resolved successfully")
         // redirect to history page
         // const push = location.state ? location.state.from : "/history"

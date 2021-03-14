@@ -15,7 +15,13 @@ const rootSubmenuKeys = ['sub1', 'sub2', 'sub4'];
 
 const LayoutComp = (props) => {
     const [ isDrawerOpen, setIsDrawerOpen ] = React.useState(false)
-    const [ currentPage, setCurrentPage ] = React.useState(useLocation().pathname)
+    const [ currentPage, setCurrentPage ] = React.useState(null)
+
+    const getCurrentPage = useLocation().pathname
+
+    React.useEffect(() => {
+        setCurrentPage(getCurrentPage)
+    }, [getCurrentPage])
 
     // const { user, setUser } = useAppData()
     const { authenticated, username, userRole } = props

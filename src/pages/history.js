@@ -2,19 +2,20 @@ import React from 'react';
 import dayjs from 'dayjs';
 import { Table } from 'antd';
 
-import { useAppData } from '../util/context';
+import { connect } from 'react-redux'
+
 import { api } from '../util/util'
 
-const History = () => {
+const History = (props) => {
 
-    const { user } = useAppData()
+    const { fname, lname } = props
     const [ historyData, setHistoryData ] = React.useState(null)
 
     React.useEffect(() => {
         // fetch user history data
         api.get('/history', '', {withCredentials: true})
         .then(res => {
-            console.log(res)
+            // console.log(res)
             setHistoryData(res.data)
         }, err => {
             console.log(err.response)
@@ -69,7 +70,7 @@ const History = () => {
 
     return (
         <>
-        <h1>History of {user}</h1>
+        <h1>History of {fname} {lname}</h1>
         {/* <p>current time ISO: {now.toISOString()}</p>
         <p>current time local: {now.format('DD-MM-YYYY HH:mm')}</p> */}
         {historyData ? <Table  pagination={{hideOnSinglePage: true}} columns={columns} dataSource={data}/> : null}
@@ -77,4 +78,10 @@ const History = () => {
     )
 }
 
-export default History
+const mapStateToProps = (state) => ({
+    username: state.user.username,
+    fname: state.user.data.fname,
+    lname: state.user.data.lname,
+})
+
+export default connect(mapStateToProps)(History)

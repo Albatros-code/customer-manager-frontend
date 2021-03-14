@@ -304,24 +304,17 @@ const NewAppointment = (props) => {
             history.push('/scheduled-appointments')
         }, err => {
             console.log(err.response)
-            // set errors, validate form and clear errror
-            // setErrors({...err.response.data.errors})
-            // form.validateFields()
-            //     .catch(() => {
-            //         // clear errors and stop loading
-            //         setErrors({})
-            //         setFormLoading(false)
-            //     })
         })
         .catch(err => {
             console.log('catchError: ' + err)
             console.log(err.response)
         })
+        
+        // setTimeout(() => {
+        //     setSubmitModalVisible(false);
+        //     setSubmitModalButtonProps({disabled:false})
+        // }, 2000);
 
-        setTimeout(() => {
-            setSubmitModalVisible(false);
-            setSubmitModalButtonProps({disabled:false})
-        }, 2000);
     };
   
     const submitModalHandleCancel = () => {

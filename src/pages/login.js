@@ -36,7 +36,7 @@ const Login = (props) => {
             .then(res => {
                 // redirect to history page
                 const push = location.state ? location.state.from : '/history'
-                console.log('login - redirecting to' + push)
+                console.log('login - redirecting to ' + push)
                 history.push(push)
             }, err => {
                     // set error state in order to validate form fields 

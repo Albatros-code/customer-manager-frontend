@@ -6,7 +6,7 @@ import { Spin } from 'antd'
 import { api } from './util'
 
 // redux
-import { setAuthenticated, setUser } from '../redux/actions/userActions'
+import { afterLoginAction } from '../redux/actions/userActions'
 import { stopLoadingUi } from '../redux/actions/uiActions'
 
 
@@ -17,15 +17,14 @@ const RefreshToken = ( props ) => {
 
         api.post('/token/refresh', '', {withCredentials: true})
         .then(res => {
-            console.log('token/refresh succesfull')
-            console.log(res)
-            const token = `Bearer ${res.data.access_token}`
-            // console.log(token)
-            const { sub: {username, role, data}, iat, exp } = jwt_decode(token)
-            api.defaults.headers.common['Authorization'] = token
-            props.setUser(username, role, data)
-            props.setAuthenticated()
+            props.afterLoginAction(res)
+            // api.defaults.headers.common['Authorization'] = token
+            // props.setUser(username, role, res.data.user_data)
+            // props.setAuthenticated()
 
+            const token = `Bearer ${res.data.access_token}`
+            const { iat, exp } = jwt_decode(token)
+            
             setTimeout(() => {
                 refreshToken()
                 }, ((exp - iat) * 1000) - 500)
@@ -65,6 +64,6 @@ const mapStateToProps = (state) => ({
     loadingUi: state.ui.loading
 })
 
-const mapDispatchToProps = { setAuthenticated, setUser, stopLoadingUi}
+const mapDispatchToProps = { afterLoginAction, stopLoadingUi}
 
 export default connect(mapStateToProps, mapDispatchToProps)(RefreshToken)

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation, useHistory } from 'react-router-dom';
-import { Form, Input, Spin, Button } from 'antd';
+import { Form, Input, Button } from 'antd';
 import { api } from '../util/util';
 
 function useQuery() {

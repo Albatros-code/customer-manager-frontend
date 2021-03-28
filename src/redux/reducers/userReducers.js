@@ -10,9 +10,11 @@ import {
 
 const initialState = {
     authenticated: false,
+    id: null,
     username: null,
     role: null,
-    data: {}
+    data: {},
+    settings: {},
 }
 
 export default function userReducers (state = initialState, action){
@@ -32,7 +34,8 @@ export default function userReducers (state = initialState, action){
                 authenticated: false,
                 username: null,
                 role: null,
-                data: {}
+                data: {},
+                settings: {},
             }
         case CLEAR_USER_CREDENTIALS:
             return {

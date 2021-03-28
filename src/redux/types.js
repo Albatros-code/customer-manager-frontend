@@ -1,4 +1,5 @@
 // Data reducers types
+export const GET_INITIALDATA = "GET_INITIALDATA"
 export const GET_SERVICES = "GET_SERVICES"
 export const GET_AVAIABLE_DATES = "GET_AVAIABLE_DATES"
 

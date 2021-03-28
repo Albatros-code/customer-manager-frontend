@@ -1,7 +1,7 @@
 import React from 'react';
 import {useHistory} from 'react-router-dom';
 import moment from 'moment-timezone';
-import { Form, Input, Button, Radio, Select, Space, Typography, Divider, Modal, Spin } from 'antd';
+import { Form, Input, Button, Radio, Select, Space, Typography, Divider} from 'antd';
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 
 // redux
@@ -9,46 +9,24 @@ import { connect } from 'react-redux';
 import { getServices, getAvaiableDates } from '../redux/actions/dataActions';
 import { api } from '../util/util';
 
-
+// components
+import ModalConfirmation from '../components/ModalConfirmation'
 
 const { Text } = Typography;
 
-// const availableDatesMock = {
-//     [moment().format('YYYY-MM-DD')]: {
-//         '12': {'45': true,},
-//         '13': {'00': true,},
-//         '15': {'00': true, '15': true, '30': true,},
-//         '16': {'30': true,},
-//         '17': {'45': true,},
-//         '18': {'00': true, '30': true, '45': true,},
-//     },
-//     [moment().add(1, 'days').format('YYYY-MM-DD')]: {
-//         '12': {'00': false, '15': true, '30': true, '45': true,},
-//         '13': {'00': false, '15': false, '30': false, '45': false,},
-//         '14': {'00': true, '15': true, '30': false, '45': false,},
-//         '15': {'00': false, '15': false, '30': true, '45': true,},
-//         '16': {'00': true, '15': false, '30': false, '45': false,},
-//         '17': {'00': false, '15': false, '30': true, '45': false,},
-//         '18': {'00': false, '15': true, '30': false, '45': false,},
-//     },
-// }
-
 const NewAppointment = (props) => {
+    
+    const history = useHistory()
+    const [form] = Form.useForm();
 
-    const startHour = 12
-    const endHour = 20
-    const timeInterval = 15
+    const {settings: {startHour, endHour, timeInterval}} = props
 
     const { getServices, getAvaiableDates } = props
     const { services, availableDatesFetched } = props
 
-    const history = useHistory()
-
     const [ selectedDate, setSelectedDate ] = React.useState(moment.tz(new Date(),'Europe/Warsaw').set({'second': 0, 'millisecond': 0}))
     const [ availableDates, setAvailableDates ] = React.useState(null)
     const [ service, setService ] = React.useState(null)
-
-    const [form] = Form.useForm();
 
     const timeTableBase = generateTimeTableBase(selectedDate, startHour, endHour, timeInterval)
 
@@ -56,7 +34,7 @@ const NewAppointment = (props) => {
         getServices()
         getAvaiableDates(startHour, endHour, timeInterval)
     // eslint-disable-next-line react-hooks/exhaustive-deps  
-    }, [])   
+    },[])   
 
 
     const onFinish = (values) => {
@@ -64,9 +42,8 @@ const NewAppointment = (props) => {
         console.log(
             selectedDate.toISOString()
         )
-        
-        showSubmitModal()
 
+        setSubmitModalVisible(true)
     };
 
     const onFinishFailed = (errorInfo) => {
@@ -87,7 +64,6 @@ const NewAppointment = (props) => {
 
     
     function filterAvaiableDates(interval, duration){
-        // console.log(availableDatesFetched)
         let availableDatesUpdate = JSON.parse(JSON.stringify(availableDatesFetched ? availableDatesFetched : {}))
 
         const requiredSpace = Math.ceil(duration/interval)
@@ -130,8 +106,7 @@ const NewAppointment = (props) => {
             let minutes = freeSpace.format('mm')
             availableDatesUpdate[day][hour][minutes] = false
         })
-
-
+        
         return availableDatesUpdate
     }
 
@@ -262,85 +237,57 @@ const NewAppointment = (props) => {
 
     // modal
 
-    const submitModalTextInit = (loading) => (
-        <Spin spinning={loading}>
-            <div className="submit-modal-container">
-                <div>
-                    <Text strong>Service:</Text>
-                    <Text strong>Date:</Text>
-                    <Text strong>Time:</Text>
-                </div>
-                <div>
-                    <span>{service} and some other long description</span>
-                    <span>{form.getFieldValue('day') ? selectedDate.format('YYYY-MM-DD') : null}</span>
-                    <span>{form.getFieldValue('timeMinutes') ? selectedDate.format('HH:mm') : null}</span>
-                </div>
-            </div>
-        </Spin>
-    )
-
     const [submitModalVisible, setSubmitModalVisible] = React.useState(false);
-    // const [submitModalConfirmLoading, setSubmitModalConfirmLoading] = React.useState(false);
-    const [submitModalButtonProps, setSubmitModalButtonProps] = React.useState({disabled:false})
-    const [submitModalText, setSubmitModalText] = React.useState(submitModalTextInit(false));
-  
-    const showSubmitModal = () => {
-        setSubmitModalText(submitModalTextInit(false))
-        setSubmitModalVisible(true);
-    };
-  
-    const submitModalHandleOk = () => {
-        setSubmitModalText(submitModalTextInit(true));
-        setSubmitModalButtonProps({disabled:true})
-
-        api.post('/appointment', {
-            service: form.getFieldValue('service'),
-            date: selectedDate.toISOString(),
-            duration: services.find(item => item.name === form.getFieldValue('service')).time,
-        }, {withCredentials: true})
-        .then(res => {
-            // registered successfully go to login page
-            console.log(res.data.message)
-            history.push('/scheduled-appointments')
-        }, err => {
-            console.log(err.response)
-        })
-        .catch(err => {
-            console.log('catchError: ' + err)
-            console.log(err.response)
-        })
-        
-        // setTimeout(() => {
-        //     setSubmitModalVisible(false);
-        //     setSubmitModalButtonProps({disabled:false})
-        // }, 2000);
-
-    };
-  
-    const submitModalHandleCancel = () => {
-        console.log('Clicked cancel button');
-        setSubmitModalVisible(false);
-    };
 
     const submitModal = 
-        <Modal
-            title="Scheduling new appointment"
-            visible={submitModalVisible}
-            onOk={submitModalHandleOk}
-            // confirmLoading={submitModalConfirmLoading}
-            onCancel={submitModalHandleCancel}
-            okText={'Confirm'}
-            okButtonProps={submitModalButtonProps}
-            cancelButtonProps={submitModalButtonProps}
-        >
-            {submitModalText}
-        </Modal>
+        <ModalConfirmation 
+            visibilityState={[submitModalVisible, setSubmitModalVisible]}
+            title={"Scheduling new appointment"}
+            contentInit={
+                <>
+                    <div>
+                        <Text strong>Service:</Text>
+                        <Text strong>Date:</Text>
+                        <Text strong>Time:</Text>
+                    </div>
+                    <div>
+                        <span>{service} and some other long description</span>
+                        <span>{form.getFieldValue('day') ? selectedDate.format('YYYY-MM-DD') : null}</span>
+                        <span>{form.getFieldValue('timeMinutes') ? selectedDate.format('HH:mm') : null}</span>
+                    </div>
+                </>
+            }
+            contentResolved={"Appointment added successfully."}
+            contentRejected={<p>Something went wrong<br/>Appointment not scheduled.</p>}
+            onConfirm={() => {
+                return new Promise((resolve, reject) => {
+                    api.post('/appointments', {
+                        service: form.getFieldValue('service'),
+                        date: selectedDate.toISOString(),
+                        duration: services.find(item => item.name === form.getFieldValue('service')).time,
+                    // }, {withCredentials: true})
+                    })
+                        .then(res => {
+                            return resolve(res)
+                        }, err => {
+                            return reject(err)
+                        })
+                        .catch(err => {
+                            return reject(err)
+                        })
+                    })
+                }}
+            onResolve={
+                () => {history.push('/appointments')}
+            }
+            onReject={
+                () => {console.log('onReject')}
+            }
+        />
 
     return (
         <>
             <h1>New appointment</h1>
-            {/* <h3 style={{display: "inline-block"}}>Day:</h3>
-            <span> {selectedDate ? selectedDate.format('YYYY-MM-DD HH:mm') : null}</span> */}
             <Form
                     form={form}
                     name="new_appointment"
@@ -385,6 +332,7 @@ const NewAppointment = (props) => {
                         </Form.Item>
                         <Button disabled={form.getFieldValue('service') ? false : true} icon={<RightOutlined />} onClick={() => handleWeekChange('+')} />
                     </Space>
+
                     <Form.Item 
                         name="day"
                         rules={[
@@ -454,6 +402,7 @@ const NewAppointment = (props) => {
 const mapStateToProps = (state) => ({
     services: state.data.services,
     availableDatesFetched: state.data.avaiableDates,
+    settings: state.data.settings
 })
 
 const mapDispatchToProps = {

@@ -2,14 +2,14 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button, Drawer, Menu } from 'antd';
 import { MenuOutlined } from '@ant-design/icons';
-import { useHistory } from 'react-router-dom';
+// import { useHistory } from 'react-router-dom';
 
 // import { useAppData } from '../util/context';
 import { api } from '../util/util';
 
 // redux
 import { connect } from 'react-redux';
-import { logoutUser } from '../redux/actions/userActions'
+import { logoutUser } from '../redux/actions/userActions';
 
 const rootSubmenuKeys = ['sub1', 'sub2', 'sub4'];
 
@@ -26,7 +26,7 @@ const LayoutComp = (props) => {
     // const { user, setUser } = useAppData()
     const { authenticated, username, userRole } = props
 
-    const history = useHistory()
+    // const history = useHistory()
 
     const handleMenuClick = (e) => {
         // console.log('click ', e)
@@ -38,11 +38,8 @@ const LayoutComp = (props) => {
         delete api.defaults.headers.common["Authorization"]
         api.post('/logout/refresh', {}, {withCredentials: true})
             .then(res => {
-                console.log(res)
-                // setUser(null)
-                history.push("/login")
                 props.logoutUser()
-
+                // history.push("/login")
             }, err => {
                 console.log(err.response.data)
             })
@@ -149,13 +146,10 @@ const SideMenu = (props) => {
                     <Menu mode="inline" onOpenChange={onOpenChange} onClick={props.handleMenuClick} selectedKeys={[props.currentPage]} className="sidemenu-container">
                         <Menu.ItemGroup key="sub1" icon={<MenuOutlined />} title="User Data">
                             <Menu.Item key="/profile"><Link to="/profile">Profile</Link></Menu.Item>
-                            <Menu.Item key="/history"><Link to="/history">History</Link></Menu.Item>
-                            
+                            <Menu.Item key="/appointments"><Link to="/appointments">Appointments</Link></Menu.Item>
+                            <Menu.Item key="/new-appointment"><Link to="/new-appointment">New Appointment</Link></Menu.Item>
                         </Menu.ItemGroup>
-                        <Menu.ItemGroup key="sub2" icon={<MenuOutlined />} title="Appointments">
-                            <Menu.Item key="/new-appointment"><Link to="/new-appointment">New</Link></Menu.Item>
-                            <Menu.Item key="/scheduled-appointments"><Link to="/scheduled-appointments">Scheduled</Link></Menu.Item>
-                        </Menu.ItemGroup>
+
                         {
                             props.userRole === 'admin' ?
                             <Menu.ItemGroup key="sub3" icon={<MenuOutlined />} title="Admin">
@@ -175,6 +169,7 @@ const mapStateToProps = (state) => ({
     authenticated: state.user.authenticated,
     userRole: state.user.role,
     username: state.user.username,
+    id: state.user.id,
 })
 
 const mapDispatchToProps = {

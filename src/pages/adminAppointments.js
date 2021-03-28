@@ -31,7 +31,7 @@ const AdminAppointments = (props) => {
 
         if(!appointmentsData.hasOwnProperty(weekString)){
             console.log('fetching appointments from ' + weekString)
-            api.get('/admin/appointments', 
+            api.get('/appointments', 
                 { params: {
                     start_date: getWeekStartDate(selectedDate).toISOString(),
                     end_date: getWeekEndDate(selectedDate).toISOString(),

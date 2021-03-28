@@ -18,14 +18,14 @@ import {
 
 import { api } from '../../util/util'
 
-export const afterLoginAction = (res) => (dispatch) => {
+export const afterLoginAction = (res) => async (dispatch) => {
     // set common authorization header for api calls
     const token = `Bearer ${res.data.access_token}`
     api.defaults.headers.common['Authorization'] = token
     // set user
-    const { sub: { username, role } } = jwt_decode(token)
+    const { sub: { id, role } } = jwt_decode(token)
     
-    dispatch(setUser(username, role, res.data.user_data));
+    await dispatch(setUser(id, role));
     dispatch({
         type: SET_AUTHENTICATED
     });
@@ -42,7 +42,9 @@ export const loginUser = (username, password, history) => (dispatch) => {
         password: password
     }, {withCredentials: true})
     .then(res => {
-        dispatch(afterLoginAction(res))
+        dispatch(afterLoginAction(res)).then(() => {
+            myResolve("resolved successfully")
+        })
         // // set common authorization header for api calls
         // const token = `Bearer ${res.data.access_token}`
         // api.defaults.headers.common['Authorization'] = token
@@ -53,7 +55,7 @@ export const loginUser = (username, password, history) => (dispatch) => {
         // dispatch({
         //     type: SET_AUTHENTICATED
         // });
-        myResolve("resolved successfully")
+        // myResolve("resolved successfully")
         // redirect to history page
         // const push = location.state ? location.state.from : "/history"
         // history.push(push)
@@ -86,11 +88,33 @@ export const setAuthenticated = () => ({
     type: SET_AUTHENTICATED
 })
 
-export const setUser = (username, role, data) => ({
-    type: SET_USER,
-    payload: {
-        username: username,
-        role: role,
-        data: data
-    }
-})
+export const setUser = (id, role) => async (dispatch) => {
+
+    const promise = new Promise((resolve, reject) => {
+        
+        api.get(`/users/${id}`)
+            .then(res => {
+                dispatch({
+                    type: SET_USER,
+                    payload: {
+                        id: id,
+                        role: role,
+                        data: res.data.user.data,
+                        settings: res.data.user.settings,
+                    }
+                })
+                resolve("resolved")
+            }, err => {
+                console.log(err) 
+                reject('rejected')
+            })
+            .catch(err => {
+                reject('rejected')
+               console.log(err) 
+            })
+
+    })
+
+    return promise
+
+}

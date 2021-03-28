@@ -2,14 +2,14 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { List, Divider, Input, Form, Button, Checkbox, Spin } from 'antd';
 
-import { user, resolveRules } from '../util/data'
+import { user, resolveRules, mergeErrors } from '../util/data'
 import { api } from '../util/util';
 import { setUser } from '../redux/actions/userActions'
 
 
 const Profile = (props) => {
 
-    const { username, role, userData } = props
+    const { id, role, userData } = props
 
     // React.useEffect(() => {
         
@@ -35,15 +35,20 @@ const Profile = (props) => {
     const personalDataOnSave = (values, callbackRes, callbackErr) => {
         const formatedData = {...values}
         formatedData.fname = formatedData.fname.charAt(0).toUpperCase() + formatedData.fname.slice(1).toLowerCase()
-        console.log(formatedData)
+        // console.log(formatedData)
 
-        api.post('/user/update', {
-            username: username,
-            user_data: JSON.stringify(formatedData)
+        api.put(`/users/${id}`, {
+            user: {
+                id: id,
+                // user_data: JSON.stringify(formatedData)
+                data: formatedData
+            }
+        // })
         }, {withCredentials: true})
         .then(() => {
-            props.setUser(username, role, formatedData)
-            if (callbackRes) callbackRes()
+            props.setUser(id, role).finally(() => {
+                if (callbackRes) callbackRes()
+            })
         })
         .catch(err => {
             // console.log(err.response.data)
@@ -86,9 +91,9 @@ const DataList = (props) => {
     const [errors, setErrors] = React.useState({})
     const [formLoading, setFormLoading] = React.useState(false)
     const [editedFields, setEditedFields] = React.useState({})
-    
     const data = resolveRules(props.data, {errors: errors})
-
+    // console.log('state errors:')
+    // console.log(errors)
     const initialValues = Object.fromEntries(data.map(item => [item.field, item.value]))
 
     const handleChange = (e) => {
@@ -116,15 +121,7 @@ const DataList = (props) => {
                     setFormLoading(false)
                 }
                 const callbackErr = (err) => {
-                    const errors = (() => {
-                        let errorObj = {}
-                        Object.entries(err).map(([key, val]) => {
-                            errorObj[key] = {[values[key]]: val}
-                            return key
-                        })
-                        return errorObj
-                    })()
-                    setErrors(prev => prev !== {} ? {...prev, ...errors} : errors)
+                    setErrors(prev => mergeErrors(prev, err))
                     form.validateFields()
                     setFormLoading(false)
                 }
@@ -241,7 +238,7 @@ const ListItem = (props) => {
 }
 
 const mapStateToProps = (state) => ({
-    username: state.user.username,
+    id: state.user.id,
     role: state.user.role,
     userData: state.user.data,
 })

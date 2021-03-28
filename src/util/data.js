@@ -9,15 +9,12 @@ error response
 }
 */
 
-const apiErrorValidator_old = (errors) => {
-    const validator = async (rule, value) => {
-        if (errors.hasOwnProperty(rule.field)) {
-            return Promise.reject(new Error(errors[rule.field]))
-        } else {
-            return Promise.resolve()
-        }
+export const mergeErrors = (prevs, errs) => {
+    const prevsCopy = JSON.parse(JSON.stringify(prevs))
+    for (const [key, val] of Object.entries(errs)) {
+        prevsCopy[key] = {...prevsCopy[key], ...val}
     }
-    return {validator: validator}
+    return prevsCopy
 }
 
 const apiErrorValidator = (errors) => {
@@ -100,7 +97,7 @@ export const user = {
             type: 'input',
             rules: [
                 {required: true, message: "Can't be blank!" },
-                {pattern: new RegExp("^\\d{2}$"), message: "Not valid age."},
+                // {pattern: new RegExp("^\\d{2}$"), message: "Not valid age."},
                 (errors) => {return apiErrorValidator(errors)},
             ]
         },        

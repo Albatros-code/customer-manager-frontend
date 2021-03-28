@@ -15,36 +15,24 @@ const ResetPassword = (props) => {
     const query = useQuery()
     const token = query.get("token")
 
-    // React.useEffect(() => {
-    //     api.get(`/reset-password?token=${token}&check=True`)
-    //         .then(res => {
-    //             setIsTokenValid(true)
-    //         })
-    //         .catch(err => {
-    //             console.log('invalid token -> redirecting')
-    //         })
-
-    // },[token])
-
     const [form] = Form.useForm();
 
     const onFinish = (data) => {
-        api.post('/reset-password', 
+        api.post('/password-reset/change-password', 
             {
                 token: token,
-                action: 'change_password',
                 password: data.password,
             }, {withCredentials: true})
             .then(res => {
-                console.log('password changed successfully')
-                console.log(res)
+                // console.log('password changed successfully')
+                // console.log(res)
             }, err => {
-                console.log('password not changed')
-                console.log(err)
+                // console.log('password not changed')
+                // console.log(err)
             })
             .catch(err => {
-                console.log('server error')
-                console.log(err)
+                // console.log('server error')
+                // console.log(err)
             })
             .finally(() => {
                 history.push('/login')

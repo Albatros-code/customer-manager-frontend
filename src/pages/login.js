@@ -17,7 +17,7 @@ const Login = (props) => {
 
     React.useEffect(() => {
         if (props.authenticated){
-            history.push('/history')
+            history.push('/appointments')
         }
     },[props.authenticated, history])
 
@@ -35,7 +35,7 @@ const Login = (props) => {
         props.loginUser(values.username, values.password, history)
             .then(res => {
                 // redirect to history page
-                const push = location.state ? location.state.from : '/history'
+                const push = location.state ? location.state.from : '/appointments'
                 console.log('login - redirecting to ' + push)
                 history.push(push)
             }, err => {
@@ -53,36 +53,6 @@ const Login = (props) => {
             .finally(
                 setFormLoading(false)
             )
-            
-
-        // make api call to log in (get tokens)
-        // api.post('/login', {
-        //     username: values.username,
-        //     password: values.password
-        // }, {withCredentials: true})
-        // .then(res => {
-        //     // set common authorization header for api calls
-        //     const token = `Bearer ${res.data.access_token}`
-        //     api.defaults.headers.common['Authorization'] = token
-        //     // set user
-        //     const { identity } = jwt_decode(token)
-        //     setUser(identity)
-        //     // redirect to history page
-        //     const push = location.state ? location.state.from : "/history"
-        //     history.push(push)
-        // }, err => {
-        //     // set error state in order to validate form fields 
-        //     setErrors({...err.response.data.errors})
-        //     form.validateFields()
-        //         .catch(() => {
-        //             // clear errors and stop loading
-        //             setErrors({})
-        //             setFormLoading(false)
-        //         })
-        // })
-        // .catch(err => {
-        //     console.log('catchError: ' + err)
-        // })
     };
 
   const onFinishFailed = (errorInfo) => {
@@ -142,10 +112,9 @@ const Login = (props) => {
                     }, 1500)
                 }
 
-                api.post('/reset-password',
+                api.post('/password-reset/send-email',
                     {
                         email: data.email,
-                        action: 'send_email',
                     },
                     {withCredentials: true})
                 .then(res => {

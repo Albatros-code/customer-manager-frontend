@@ -1,6 +1,8 @@
 import React from 'react';
 import {useHistory} from 'react-router-dom';
-import moment from 'moment-timezone';
+
+import {dayjsExtended as dayjs} from '../util/util'
+
 import { Form, Input, Button, Radio, Select, Space, Typography, Divider} from 'antd';
 import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 
@@ -15,19 +17,21 @@ import ModalConfirmation from '../components/ModalConfirmation'
 const { Text } = Typography;
 
 const NewAppointment = (props) => {
-    
     const history = useHistory()
     const [form] = Form.useForm();
-
+    
     const {settings: {startHour, endHour, timeInterval}} = props
-
+    
     const { getServices, getAvaiableDates } = props
     const { services, availableDatesFetched } = props
-
-    const [ selectedDate, setSelectedDate ] = React.useState(moment.tz(new Date(),'Europe/Warsaw').set({'second': 0, 'millisecond': 0}))
+    
+    
+    // const [ selectedDate, setSelectedDate ] = React.useState(dayjs().tz("Europe/Warsaw").set({second: 0, millisecond: 0}))
+    const [ selectedDate, setSelectedDate ] = React.useState(dayjs.tz().set({second: 0, millisecond: 0}))
     const [ availableDates, setAvailableDates ] = React.useState(null)
-    const [ service, setService ] = React.useState(null)
-
+    const [ service, setService ] = React.useState(null)  
+    
+    // const timeTableBase = generateTimeTableBase(dayjs(selectedDate).tz("Europe/Warsaw"), startHour, endHour, timeInterval)
     const timeTableBase = generateTimeTableBase(selectedDate, startHour, endHour, timeInterval)
 
     React.useEffect(() => {
@@ -76,9 +80,9 @@ const NewAppointment = (props) => {
             for (const [hour, minutes] of Object.entries(hours).sort()){
                 for (const [minute, value] of Object.entries(minutes).sort()){
                     if (value) {
-                        let timeObj = moment(day).set({'hour': hour, 'minute': minute})
-                        if (freeSpace.length === 0 || freeSpace[freeSpace.length-1].isSame(moment(timeObj).subtract(interval, 'minute')) ){
-                            freeSpace.push(moment(timeObj))
+                        let timeObj = dayjs(day).tz().set({hour: hour, minute: minute})
+                        if (freeSpace.length === 0 || freeSpace[freeSpace.length-1].isSame(timeObj.subtract(interval, 'minute')) ){
+                            freeSpace.push(timeObj)
                         } else {
                             if (freeSpace.length >= requiredSpace){
                                 freeSpaceToRemove.push(...freeSpace.slice(freeSpace.length-requiredSpace+1))
@@ -86,7 +90,7 @@ const NewAppointment = (props) => {
                                 freeSpaceToRemove.push(...freeSpace)
                             }
                             freeSpace = []
-                            freeSpace.push(moment(timeObj))
+                            freeSpace.push(timeObj)
                         }
                     }                
                 }
@@ -106,37 +110,29 @@ const NewAppointment = (props) => {
             let minutes = freeSpace.format('mm')
             availableDatesUpdate[day][hour][minutes] = false
         })
-        
+
         return availableDatesUpdate
     }
 
-    const getWeekString = (momentDateObj) => {
+    const getWeekString = (dayjsDateObj) => {
 
-        const now = moment(momentDateObj)
-        let dayOfWeek = parseInt(now.format('d'))
-        dayOfWeek = dayOfWeek === 0 ? 7 : dayOfWeek
+        const now = dayjs(dayjsDateObj).tz()
+        let dayOfWeek = parseInt(now.weekday())
         
-        const monday = moment(now).subtract(dayOfWeek - 1, 'days');
-        const sunday = moment(now).add(7 - dayOfWeek, 'days');
+        const monday = now.subtract(dayOfWeek, 'days');
+        const sunday = now.add(6 - dayOfWeek, 'days');
         
         return `${monday.format('MM.DD')}-${sunday.format('MM.DD')}`
     }
 
     const handleWeekChange = (dir) => {
-        const newDate = dir === '+' ? moment(selectedDate).add(7, 'days') : moment(selectedDate).subtract(7, 'days')        
+        const newDate = dir === '+' ? selectedDate.add(7, 'days') : selectedDate.subtract(7, 'days')        
         setSelectedDate(newDate)
         form.setFieldsValue({'week': getWeekString(newDate),'day': null, 'timeHour': null, 'timeMinutes': null})
     }
 
     const handleDayChange = (newWeekDay) => {
-        const currentWeekDay = selectedDate.format('d')
-
-        if (currentWeekDay === "0"){
-            setSelectedDate(prev => moment(prev).day(newWeekDay - 7))
-        } else {
-            setSelectedDate(prev => moment(prev).day(newWeekDay))
-        }
-
+        setSelectedDate(prev => prev.weekday(newWeekDay))
         form.setFieldsValue({timeHour: null, timeMinutes: null})
     }
 
@@ -162,7 +158,7 @@ const NewAppointment = (props) => {
         form.setFieldsValue({
             timeMinutes: `${hour}:${minutes}`
         })
-        setSelectedDate(prev => moment(prev).set({'hour': hour, 'minute': minutes}))
+        setSelectedDate(prev => prev.set({hour: hour, minute: minutes}))
     }
 
     const handleMinutesChange = (val) => {
@@ -172,7 +168,7 @@ const NewAppointment = (props) => {
         form.setFieldsValue({
             timeHour: hour
         })
-        setSelectedDate(prev => moment(prev).set({'hour': hour, 'minute': minutes}))
+        setSelectedDate(prev => prev.set({hour: hour, minute: minutes}))
     }
 
     const isAvaiableDay = (timeObj) => {
@@ -207,18 +203,19 @@ const NewAppointment = (props) => {
 
     function generateTimeTableBase(dateObj, startHour, endHour, intervalMinutes){
 
-        const start = moment(dateObj).set({'hour': startHour, 'minute': 0, 'second': 0, 'milisecond': 0})
-        const end = moment(dateObj).set({'hour': endHour, 'minute': 59, 'second': 59, 'milisecond': 0})
+        const start = dateObj.set({hour: startHour, minute: 0, second: 0, millisecond: 0})
+        const end = dateObj.set({hour: endHour-1, minute: 59, second: 59, millisecond: 999})
+        // console.log(start)
+        // console.log(end)
 
         let array = []
-        let current = moment(start)
-
+        let current = dayjs(start)
         do {
 
             let minutesArray = []
             let minutes = 0
             do {
-                minutesArray.push(moment(current).set({'minute': minutes}))
+                minutesArray.push(current.set({minute: minutes}))
                 minutes = minutes + intervalMinutes
             } while (minutes < 60)
 
@@ -228,10 +225,9 @@ const NewAppointment = (props) => {
             }
 
             array.push(item)
-            current = moment(current).add(1, 'hour')
+            current = current.add(1, 'hour')
             
-            } while (current.isBefore(end));
-
+            } while (current < end);
         return array
     }
 
@@ -252,7 +248,7 @@ const NewAppointment = (props) => {
                     </div>
                     <div>
                         <span>{service} and some other long description</span>
-                        <span>{form.getFieldValue('day') ? selectedDate.format('YYYY-MM-DD') : null}</span>
+                        <span>{form.getFieldValue('day') !== null ? selectedDate.format('YYYY-MM-DD') : null}</span>
                         <span>{form.getFieldValue('timeMinutes') ? selectedDate.format('HH:mm') : null}</span>
                     </div>
                 </>
@@ -341,11 +337,10 @@ const NewAppointment = (props) => {
                     >
                         <Radio.Group onChange={(e) => handleDayChange(e.target.value)} className="day-selector">
                             {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => {
-                                const d = selectedDate.day() === 0 ? index - 6 : index +1
-                                const dayObj = moment(selectedDate).day(d)
+                                const dayObj = selectedDate.weekday(index)
                                 const disabled = !isAvaiableDay(dayObj)
                                 return (
-                                    <Radio.Button disabled={disabled} key={"radio-day" + index} value={index+1}><p>{day}</p><p>{dayObj.format('DD')}</p></Radio.Button> 
+                                    <Radio.Button disabled={disabled} key={"radio-day" + index} value={index}><p>{day}</p><p>{dayObj.format('DD')}</p></Radio.Button> 
                                 )
                             })}
                         </Radio.Group>
@@ -357,22 +352,24 @@ const NewAppointment = (props) => {
                         className="time-selector-form-item"
                         name="timeHour"
                         rules={[
-                            form.getFieldValue('day') ? { required: true, message: 'Please select hour!' } : null,
+                            form.getFieldValue('day') !== null ? { required: true, message: 'Please select hour!' } : null,
                         ]}
                     >
                         <Radio.Group  className="time-selector-radio-group" onChange={(e) => handleHourChange(e.target.value)}>
-                            {timeTableBase.map(({hour, minutes }, index) => (
-                                <Space  className="time-selector-space-row" direction="horizontal" key={"space"+index}>
-                                    <Radio.Button disabled={form.getFieldValue('day') ? !isAvaiableHour(hour) : true} className="time-button" key={"hour"+index} value={hour.format('HH')}>{hour.format('HH')}</Radio.Button>
-                                    <Form.Item  name="timeMinutes" style={{marginBottom: 0}}>
-                                        <Radio.Group className="minutes-selector" onChange={(e) => {handleMinutesChange(e.target.value)}}>
-                                            {minutes.map((itemMinute, indexMinute) => (
-                                                <Radio.Button disabled={form.getFieldValue('day') ? !isAvaiableMinute(itemMinute) : true} key={"minute"+index+"_"+indexMinute} value={itemMinute.format('HH:mm')}>{itemMinute.format('mm')}</Radio.Button>
-                                            ))}
-                                        </Radio.Group>
-                                    </Form.Item>
-                                </Space>
-                            ))}
+                            {timeTableBase.map(({hour, minutes }, index) => {
+                                return(
+                                    <Space  className="time-selector-space-row" direction="horizontal" key={"space"+index}>
+                                        <Radio.Button disabled={form.getFieldValue('day') !== null ? !isAvaiableHour(hour) : true} className="time-button" key={"hour"+index} value={hour.format('HH')}>{hour.format('HH')}</Radio.Button>
+                                        <Form.Item  name="timeMinutes" style={{marginBottom: 0}}>
+                                            <Radio.Group className="minutes-selector" onChange={(e) => {handleMinutesChange(e.target.value)}}>
+                                                {minutes.map((itemMinute, indexMinute) => (
+                                                    <Radio.Button disabled={form.getFieldValue('day') !== null ? !isAvaiableMinute(itemMinute) : true} key={"minute"+index+"_"+indexMinute} value={itemMinute.format('HH:mm')}>{itemMinute.format('mm')}</Radio.Button>
+                                                ))}
+                                            </Radio.Group>
+                                        </Form.Item>
+                                    </Space>
+                                )
+                            })}
                         </Radio.Group>
                     </Form.Item>
 
@@ -385,7 +382,7 @@ const NewAppointment = (props) => {
                         ]}
                     >
                         <p><Text strong>Service:</Text><span>{service}</span></p>
-                        <p><Text strong>Date:</Text><span>{form.getFieldValue('day') ? selectedDate.format('YYYY-MM-DD') : null}</span></p>
+                        <p><Text strong>Date:</Text><span>{form.getFieldValue('day') !== null ? selectedDate.format('YYYY-MM-DD') : null}</span></p>
                         <p><Text strong>Time:</Text><span>{form.getFieldValue('timeMinutes') ? selectedDate.format('HH:mm') : null}</span></p>
                     </Form.Item>
                     <Form.Item>

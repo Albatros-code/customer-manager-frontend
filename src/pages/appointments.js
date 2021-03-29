@@ -1,5 +1,5 @@
 import React from 'react';
-import moment from 'moment';
+import {dayjsExtended as dayjs} from '../util/util'
 import {connect} from 'react-redux';
 import {useHistory} from 'react-router-dom'
 
@@ -28,7 +28,7 @@ const Appointments = (props) => {
     },[id])
 
     const data = appointments ? appointments.map((item, index) => {
-        let date = moment(item.date)
+        let date = dayjs(item.date).tz()
 
         return ({
             key: index,
@@ -42,9 +42,9 @@ const Appointments = (props) => {
     const lastRow = () => {
         let lastRow = null
         data.forEach(item => {
-            if (item.day.isAfter(moment())){
+            if (item.day.isAfter(dayjs.tz())){
                 if (lastRow === null || item.day.isBefore(lastRow)){
-                    lastRow = moment(item.day)
+                    lastRow = dayjs(item.day)
                 }
             }
         })
@@ -66,7 +66,7 @@ const Appointments = (props) => {
                 // columns={columns}
                 rowClassName={(record, index) => {
                     let className = ''
-                    if (moment(record.day).isAfter(moment())){
+                    if (record.day.isAfter(dayjs.tz())){
                         className += 'table-row'
                     }                    
                     if (lastRow() && lastRow().isSame(record.day)){
@@ -92,8 +92,9 @@ const Appointments = (props) => {
                                 <>
                                     {day.format('DD-MM-YYYY')}
                                     {
-                                        moment(day).isAfter(moment()) ?
-                                        <div className='additional-div'>upcoming {moment(day).fromNow()}</div>
+                                        day.isAfter(dayjs.tz()) ?
+                                        // <div className='additional-div'>upcoming {dayjs(day).fromNow()}</div>
+                                        <div className='additional-div'>upcoming soon</div>
                                         : null
                                     }
                                 </>

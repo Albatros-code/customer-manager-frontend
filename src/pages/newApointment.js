@@ -13,6 +13,7 @@ import { api } from '../util/util';
 
 // components
 import ModalConfirmation from '../components/ModalConfirmation'
+// import axios from 'axios';
 
 const { Text } = Typography;
 
@@ -30,16 +31,83 @@ const NewAppointment = (props) => {
     const [ selectedDate, setSelectedDate ] = React.useState(dayjs.tz().set({second: 0, millisecond: 0}))
     const [ availableDates, setAvailableDates ] = React.useState(null)
     const [ service, setService ] = React.useState(null)  
+    const [ appointments, setAppointments ] = React.useState({})
     
     // const timeTableBase = generateTimeTableBase(dayjs(selectedDate).tz("Europe/Warsaw"), startHour, endHour, timeInterval)
     const timeTableBase = generateTimeTableBase(selectedDate, startHour, endHour, timeInterval)
-
+    
     React.useEffect(() => {
         getServices()
         getAvaiableDates(startHour, endHour, timeInterval)
     // eslint-disable-next-line react-hooks/exhaustive-deps  
-    },[])   
+    },[])
 
+    React.useEffect(() =>{
+        function getAppointments(startDate, endDate){
+            api.get('/appointments', {
+                params: {
+                    start_date: startDate,
+                    end_date: endDate,
+            }})
+                .then(res => {
+                    setAppointments((prev) => ({...prev, [startDate]: res.data}))
+                })
+        }
+        const startDate = selectedDate.startOf('week').toISOString()
+        const endDate = selectedDate.endOf('week').toISOString()
+        if (!appointments.hasOwnProperty(startDate)){
+            getAppointments(startDate, endDate)
+        }
+        
+    },[selectedDate, appointments])
+
+    function getAvailableSlots(dayObj, appointments, startHour, endHour, timeInterval){
+        const startDate = dayObj.set({hour: startHour}).startOf('hour')
+        const endDate = dayObj.set({hour: endHour}).startOf('hour')
+
+        appointments = appointments[dayObj.startOf('week').toISOString()].filter((item) => ( 
+            startDate.toISOString() < item.date &&  endDate.toISOString() > item.date
+        ))
+
+        function minutes(){
+            const minutes = {}
+            let currentMinutes = 0
+            while (currentMinutes < 60){
+                minutes[("0" + currentMinutes).slice(-2)] = true
+                currentMinutes += timeInterval
+            }
+            return minutes
+        }
+
+        function hours(){
+            const hours = {}
+            let currentHour = startHour
+            while (currentHour <= endHour){
+                hours[("0" + currentHour).slice(-2)] = minutes()
+                currentHour += 1
+            }
+            return hours
+        }
+
+        const availableHours = hours()
+
+        appointments.forEach(appointment => {
+            let timeObj = dayjs(appointment.date)
+            let space = Math.ceil(parseInt(appointment.duration)) / timeInterval
+            for (let i = 0; i < space; i++){
+                console.log(timeObj.format("HH:mm"))
+                delete availableHours[timeObj.format('HH')][timeObj.format('mm')]
+                timeObj = timeObj.add(timeInterval, 'minute')
+            }
+        })
+
+        console.log(availableHours)
+        
+    }
+
+    if (Object.keys(appointments).length !== 0){
+        getAvailableSlots(selectedDate, appointments, startHour, endHour, timeInterval)
+    }
 
     const onFinish = (values) => {
         console.log('Submit:', values);

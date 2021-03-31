@@ -4,7 +4,7 @@ import {useHistory} from 'react-router-dom';
 import {dayjsExtended as dayjs} from '../util/util'
 
 import { Form, Input, Button, Radio, Select, Space, Typography, Divider} from 'antd';
-import { LeftOutlined, RightOutlined } from '@ant-design/icons';
+import { ConsoleSqlOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
 
 // redux
 import { connect } from 'react-redux';
@@ -61,6 +61,30 @@ const NewAppointment = (props) => {
         
     },[selectedDate, appointments])
 
+    function getReservedSlots(dayObj, appointments, startHour, endHour, timeInterval){
+        // set objects for start and end hour
+        const startDate = dayObj.set({hour: startHour}).startOf('hour')
+        const endDate = dayObj.set({hour: endHour}).startOf('hour')
+
+        // filter appointments for single day
+        appointments = appointments[dayObj.startOf('week').toISOString()].filter((item) => ( 
+            startDate.toISOString() < item.date &&  endDate.toISOString() > item.date
+        ))
+
+        // generate object with reserved slots
+        const reservedSlots = {}
+        
+        if (appointments.length === 0){
+            return reservedSlots
+        }
+
+        appointments.forEach(appointment => {
+
+        })
+
+    }
+
+
     function getAvailableSlots(dayObj, appointments, startHour, endHour, timeInterval){
         const startDate = dayObj.set({hour: startHour}).startOf('hour')
         const endDate = dayObj.set({hour: endHour}).startOf('hour')
@@ -91,18 +115,18 @@ const NewAppointment = (props) => {
 
         const availableHours = hours()
 
+        // remove ocupied slots
         appointments.forEach(appointment => {
             let timeObj = dayjs(appointment.date)
             let space = Math.ceil(parseInt(appointment.duration)) / timeInterval
             for (let i = 0; i < space; i++){
-                console.log(timeObj.format("HH:mm"))
+                // console.log(timeObj.format("HH:mm"))
                 delete availableHours[timeObj.format('HH')][timeObj.format('mm')]
                 timeObj = timeObj.add(timeInterval, 'minute')
             }
         })
-
-        console.log(availableHours)
         
+        console.log(availableHours)
     }
 
     if (Object.keys(appointments).length !== 0){

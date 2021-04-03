@@ -4,7 +4,7 @@ import {useHistory} from 'react-router-dom';
 import {dayjsExtended as dayjs} from '../util/util'
 
 import { Form, Input, Button, Radio, Select, Space, Typography, Divider} from 'antd';
-import { ConsoleSqlOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
+import { LeftOutlined, RightOutlined } from '@ant-design/icons';
 
 // redux
 import { connect } from 'react-redux';
@@ -31,14 +31,19 @@ const NewAppointment = (props) => {
     const [ selectedDate, setSelectedDate ] = React.useState(dayjs.tz().set({second: 0, millisecond: 0}))
     const [ availableDates, setAvailableDates ] = React.useState(null)
     const [ service, setService ] = React.useState(null)  
+
     const [ appointments, setAppointments ] = React.useState({})
+    // const [ reservedSlots, setReservedSlots ] = React.useState({})
     
     // const timeTableBase = generateTimeTableBase(dayjs(selectedDate).tz("Europe/Warsaw"), startHour, endHour, timeInterval)
     const timeTableBase = generateTimeTableBase(selectedDate, startHour, endHour, timeInterval)
     
+    const reservedSlots = calculateReservedSlots()
+    console.log(reservedSlots)
+
     React.useEffect(() => {
         getServices()
-        getAvaiableDates(startHour, endHour, timeInterval)
+        // getAvaiableDates(startHour, endHour, timeInterval)
     // eslint-disable-next-line react-hooks/exhaustive-deps  
     },[])
 
@@ -61,6 +66,23 @@ const NewAppointment = (props) => {
         
     },[selectedDate, appointments])
 
+    function calculateReservedSlots(){
+        
+        let reservedSlots = {}
+
+        if (Object.keys(appointments).length !== 0){
+            reservedSlots = getReservedSlots(selectedDate, appointments, startHour, endHour, timeInterval)
+        }
+
+        if (Object.keys(reservedSlots).length !== 0 && form.getFieldValue('service')){
+            const duration = services.find(item => item.name === form.getFieldValue('service')).time
+
+            reservedSlots = addServiceDurationRestrictions(reservedSlots, timeInterval, duration, endHour)
+        }
+
+        return reservedSlots
+    }
+
     function getReservedSlots(dayObj, appointments, startHour, endHour, timeInterval){
         // set objects for start and end hour
         const startDate = dayObj.set({hour: startHour}).startOf('hour')
@@ -77,12 +99,68 @@ const NewAppointment = (props) => {
         if (appointments.length === 0){
             return reservedSlots
         }
-
+        
+        // calculate reserved slots from start date and duration of appointment
         appointments.forEach(appointment => {
-
+            const duration = parseInt(appointment.duration)
+            const slotsCount = Math.ceil(duration) / timeInterval
+            
+            let dateObj = dayjs(appointment.date)
+            for (let i = 0; i < slotsCount; i++){
+                addReservedSlot(reservedSlots, dateObj.format("HH"), dateObj.format("mm"))
+                dateObj = dateObj.add(timeInterval, 'minute')
+            }
         })
-
+        
+        // helper function for adding reserved slots
+        
+        return reservedSlots
     }
+
+    function addReservedSlot(reservedSlots, hour, minute){
+        if (!reservedSlots.hasOwnProperty(hour)){
+            reservedSlots[hour] = {
+                [minute]: true,
+            }
+        } else {
+            reservedSlots[hour][minute]= true
+        }
+    }
+
+    function addServiceDurationRestrictions(reservedSlots, timeInterval, serviceDuration, endHour){
+        let reservedSlotsUpdated = JSON.parse(JSON.stringify(reservedSlots))
+        let reservedSlotsExtended = JSON.parse(JSON.stringify(reservedSlots))
+        const slotsCount = (Math.ceil(serviceDuration) / timeInterval) - 1
+
+        // add end hour
+        addReservedSlot(reservedSlotsExtended, endHour, '00')
+
+        //add reserved slots before other appointments and on the end
+        for (const [hour, minutes] of Object.entries(reservedSlotsExtended).sort()){
+            for (const [minute] of Object.entries(minutes).sort()){
+                const dayObj = dayjs.tz().set({hour: hour, minute: minute})
+                let prevSlotObj = dayObj.subtract(timeInterval, 'minute')
+                // check if previous slot is free
+                if (!(reservedSlots.hasOwnProperty(prevSlotObj.format("HH")) && reservedSlots.hasOwnProperty(prevSlotObj.format("mm")))){
+                    // set previous slots reserved
+                    for (let i = 0; i < slotsCount; i++){
+                        addReservedSlot(reservedSlotsUpdated, prevSlotObj.format("HH"), prevSlotObj.format("mm"))
+                        prevSlotObj = prevSlotObj.subtract(timeInterval, 'minute')
+                    }
+                    
+                }
+            }
+        }
+
+        return reservedSlotsUpdated
+    }
+
+    // if (Object.keys(appointments).length !== 0){
+    //     const reservedSlots = getReservedSlots(selectedDate, appointments, startHour, endHour, timeInterval)
+    //     const reservedSlotsFiltered = addServiceDurationRestrictions(reservedSlots, timeInterval, 30, endHour)
+    //     console.log(reservedSlots)
+    //     console.log(reservedSlotsFiltered)
+    // }
 
 
     function getAvailableSlots(dayObj, appointments, startHour, endHour, timeInterval){
@@ -126,7 +204,7 @@ const NewAppointment = (props) => {
             }
         })
         
-        console.log(availableHours)
+        // console.log(availableHours)
     }
 
     if (Object.keys(appointments).length !== 0){

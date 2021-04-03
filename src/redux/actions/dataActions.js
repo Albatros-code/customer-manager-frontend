@@ -47,14 +47,20 @@ export const getServices = () => (dispatch, getState) => {
 export const getAvaiableDates = (startHour, endHour, interval) => (dispatch, getState) => { 
     console.log("fetching /available-dates")
     api({
-        method: 'post',
-        url: '/available-dates',
-        data: {
+        // method: 'post',
+        // url: '/available-dates',
+        // data: {
+        //     start_hour: startHour,
+        //     end_hour: endHour,
+        //     interval: interval
+        // },
+        method: 'get',
+        url: '/available-hours',
+        param: {
             start_hour: startHour,
             end_hour: endHour,
             interval: interval
         },
-        // withCredentials: true
     })
         .then(res => { 
             dispatch({

@@ -3,302 +3,106 @@ import {useHistory} from 'react-router-dom';
 
 import {dayjsExtended as dayjs} from '../util/util'
 
-import { Form, Input, Button, Radio, Select, Space, Typography, Divider} from 'antd';
-import { LeftOutlined, RightOutlined } from '@ant-design/icons';
+import { Form, Button, Typography, Divider, Spin} from 'antd';
 
 // redux
 import { connect } from 'react-redux';
-import { getServices, getAvaiableDates } from '../redux/actions/dataActions';
+import {getServices} from '../redux/actions/dataActions';
 import { api } from '../util/util';
 
 // components
-import ModalConfirmation from '../components/ModalConfirmation'
-// import axios from 'axios';
+import ModalConfirmation from '../components/ModalConfirmation';
+import FormWrapper from '../components/FormWrapper';
+import DaySelector from '../components/DaySelector';
+import ServiceSelector from '../components/ServiceSelector';
+import WeekSelector from '../components/WeekSelector';
+import HourSelector from '../components/HourSelector';
 
 const { Text } = Typography;
 
 const NewAppointment = (props) => {
+    
+    React.useEffect(() => {
+        getServices()
+        // eslint-disable-next-line react-hooks/exhaustive-deps  
+    },[])
+    
     const history = useHistory()
     const [form] = Form.useForm();
     
+    // from redux
     const {settings: {startHour, endHour, timeInterval}} = props
+    const {getServices} = props
+    const {services} = props    
     
-    const { getServices, getAvaiableDates } = props
-    const { services, availableDatesFetched } = props
-    
-    
-    // const [ selectedDate, setSelectedDate ] = React.useState(dayjs().tz("Europe/Warsaw").set({second: 0, millisecond: 0}))
+    // React.useState
     const [ selectedDate, setSelectedDate ] = React.useState(dayjs.tz().set({second: 0, millisecond: 0}))
-    const [ availableDates, setAvailableDates ] = React.useState(null)
-    const [ service, setService ] = React.useState(null)  
-
-    const [ appointments, setAppointments ] = React.useState({})
-    // const [ reservedSlots, setReservedSlots ] = React.useState({})
+    const [ service, setService ] = React.useState(null)
+    const [availableSlots, setAvailableSlots] = React.useState({})
     
-    // const timeTableBase = generateTimeTableBase(dayjs(selectedDate).tz("Europe/Warsaw"), startHour, endHour, timeInterval)
-    const timeTableBase = generateTimeTableBase(selectedDate, startHour, endHour, timeInterval)
-    
-    const reservedSlots = calculateReservedSlots()
-    console.log(reservedSlots)
 
+    const currentAvailableSlots = (() => {
+        if (availableSlots.hasOwnProperty(currentWeekString(selectedDate))){
+            return availableSlots[currentWeekString(selectedDate)]
+        } else {
+            return {}
+        }
+    })()
+    
+    // useEffect for fetching missing slots availability info
     React.useEffect(() => {
-        getServices()
-        // getAvaiableDates(startHour, endHour, timeInterval)
-    // eslint-disable-next-line react-hooks/exhaustive-deps  
-    },[])
-
-    React.useEffect(() =>{
-        function getAppointments(startDate, endDate){
-            api.get('/appointments', {
+        function getAvailableSlots(startDate, endDate, startHour, endHour, interval, service, setAvailableSlots){
+            console.log('get available slots')
+            api.get('/available-slots', {
                 params: {
                     start_date: startDate,
                     end_date: endDate,
+                    start_hour: startHour,
+                    end_hour: endHour,
+                    interval: interval,
+                    service: service
             }})
                 .then(res => {
-                    setAppointments((prev) => ({...prev, [startDate]: res.data}))
+                    setAvailableSlots((prev) => ({...prev, [res.data.date_range]: res.data.slots}))
                 })
         }
-        const startDate = selectedDate.startOf('week').toISOString()
-        const endDate = selectedDate.endOf('week').toISOString()
-        if (!appointments.hasOwnProperty(startDate)){
-            getAppointments(startDate, endDate)
+
+        const startDate = selectedDate.startOf('week')
+        const endDate = selectedDate.endOf('week')
+        if (service && !availableSlots.hasOwnProperty(`${startDate.format('YYYY-MM-DD')}:${endDate.format('YYYY-MM-DD')}`)){ 
+            getAvailableSlots(startDate.toISOString(), endDate.toISOString(), startHour, endHour, timeInterval, service, setAvailableSlots)
         }
+    },[availableSlots, endHour, selectedDate, service, startHour, timeInterval])
+
+    
+    function currentWeekString(dayObj, accuracy){
+        const startDate = dayObj.startOf('week')
+        const endDate = dayObj.endOf('week')
+
+        switch(accuracy) {
+            case 'month':
+                return `${startDate.format('MM-DD')}:${endDate.format('MM-DD')}`;
+            case 'display':
+                return `${startDate.format('DD.MM')}-${endDate.format('DD.MM')}`;
+            default:
+                return `${startDate.format('YYYY-MM-DD')}:${endDate.format('YYYY-MM-DD')}`
+          }
         
-    },[selectedDate, appointments])
-
-    function calculateReservedSlots(){
-        
-        let reservedSlots = {}
-
-        if (Object.keys(appointments).length !== 0){
-            reservedSlots = getReservedSlots(selectedDate, appointments, startHour, endHour, timeInterval)
-        }
-
-        if (Object.keys(reservedSlots).length !== 0 && form.getFieldValue('service')){
-            const duration = services.find(item => item.name === form.getFieldValue('service')).time
-
-            reservedSlots = addServiceDurationRestrictions(reservedSlots, timeInterval, duration, endHour)
-        }
-
-        return reservedSlots
     }
-
-    function getReservedSlots(dayObj, appointments, startHour, endHour, timeInterval){
-        // set objects for start and end hour
-        const startDate = dayObj.set({hour: startHour}).startOf('hour')
-        const endDate = dayObj.set({hour: endHour}).startOf('hour')
-
-        // filter appointments for single day
-        appointments = appointments[dayObj.startOf('week').toISOString()].filter((item) => ( 
-            startDate.toISOString() < item.date &&  endDate.toISOString() > item.date
-        ))
-
-        // generate object with reserved slots
-        const reservedSlots = {}
-        
-        if (appointments.length === 0){
-            return reservedSlots
-        }
-        
-        // calculate reserved slots from start date and duration of appointment
-        appointments.forEach(appointment => {
-            const duration = parseInt(appointment.duration)
-            const slotsCount = Math.ceil(duration) / timeInterval
-            
-            let dateObj = dayjs(appointment.date)
-            for (let i = 0; i < slotsCount; i++){
-                addReservedSlot(reservedSlots, dateObj.format("HH"), dateObj.format("mm"))
-                dateObj = dateObj.add(timeInterval, 'minute')
-            }
-        })
-        
-        // helper function for adding reserved slots
-        
-        return reservedSlots
-    }
-
-    function addReservedSlot(reservedSlots, hour, minute){
-        if (!reservedSlots.hasOwnProperty(hour)){
-            reservedSlots[hour] = {
-                [minute]: true,
-            }
-        } else {
-            reservedSlots[hour][minute]= true
-        }
-    }
-
-    function addServiceDurationRestrictions(reservedSlots, timeInterval, serviceDuration, endHour){
-        let reservedSlotsUpdated = JSON.parse(JSON.stringify(reservedSlots))
-        let reservedSlotsExtended = JSON.parse(JSON.stringify(reservedSlots))
-        const slotsCount = (Math.ceil(serviceDuration) / timeInterval) - 1
-
-        // add end hour
-        addReservedSlot(reservedSlotsExtended, endHour, '00')
-
-        //add reserved slots before other appointments and on the end
-        for (const [hour, minutes] of Object.entries(reservedSlotsExtended).sort()){
-            for (const [minute] of Object.entries(minutes).sort()){
-                const dayObj = dayjs.tz().set({hour: hour, minute: minute})
-                let prevSlotObj = dayObj.subtract(timeInterval, 'minute')
-                // check if previous slot is free
-                if (!(reservedSlots.hasOwnProperty(prevSlotObj.format("HH")) && reservedSlots.hasOwnProperty(prevSlotObj.format("mm")))){
-                    // set previous slots reserved
-                    for (let i = 0; i < slotsCount; i++){
-                        addReservedSlot(reservedSlotsUpdated, prevSlotObj.format("HH"), prevSlotObj.format("mm"))
-                        prevSlotObj = prevSlotObj.subtract(timeInterval, 'minute')
-                    }
-                    
-                }
-            }
-        }
-
-        return reservedSlotsUpdated
-    }
-
-    // if (Object.keys(appointments).length !== 0){
-    //     const reservedSlots = getReservedSlots(selectedDate, appointments, startHour, endHour, timeInterval)
-    //     const reservedSlotsFiltered = addServiceDurationRestrictions(reservedSlots, timeInterval, 30, endHour)
-    //     console.log(reservedSlots)
-    //     console.log(reservedSlotsFiltered)
-    // }
-
-
-    function getAvailableSlots(dayObj, appointments, startHour, endHour, timeInterval){
-        const startDate = dayObj.set({hour: startHour}).startOf('hour')
-        const endDate = dayObj.set({hour: endHour}).startOf('hour')
-
-        appointments = appointments[dayObj.startOf('week').toISOString()].filter((item) => ( 
-            startDate.toISOString() < item.date &&  endDate.toISOString() > item.date
-        ))
-
-        function minutes(){
-            const minutes = {}
-            let currentMinutes = 0
-            while (currentMinutes < 60){
-                minutes[("0" + currentMinutes).slice(-2)] = true
-                currentMinutes += timeInterval
-            }
-            return minutes
-        }
-
-        function hours(){
-            const hours = {}
-            let currentHour = startHour
-            while (currentHour <= endHour){
-                hours[("0" + currentHour).slice(-2)] = minutes()
-                currentHour += 1
-            }
-            return hours
-        }
-
-        const availableHours = hours()
-
-        // remove ocupied slots
-        appointments.forEach(appointment => {
-            let timeObj = dayjs(appointment.date)
-            let space = Math.ceil(parseInt(appointment.duration)) / timeInterval
-            for (let i = 0; i < space; i++){
-                // console.log(timeObj.format("HH:mm"))
-                delete availableHours[timeObj.format('HH')][timeObj.format('mm')]
-                timeObj = timeObj.add(timeInterval, 'minute')
-            }
-        })
-        
-        // console.log(availableHours)
-    }
-
-    if (Object.keys(appointments).length !== 0){
-        getAvailableSlots(selectedDate, appointments, startHour, endHour, timeInterval)
-    }
-
-    const onFinish = (values) => {
-        console.log('Submit:', values);
-        console.log(
-            selectedDate.toISOString()
-        )
-
-        setSubmitModalVisible(true)
-    };
-
-    const onFinishFailed = (errorInfo) => {
-        console.log('Failed:', errorInfo);
-    };
 
     const handleServiceChange = (value) => {
+        setAvailableSlots({})
         setService(value)
-        console.log(`selected ${value}`);
         form.setFieldsValue({
             'day': null,
             'timeHour': null,
             'timeMinutes': null
         })
-        const duration = services.find(item => item.name === value).time
-        setAvailableDates(filterAvaiableDates(timeInterval, duration))
     }
 
-    
-    function filterAvaiableDates(interval, duration){
-        let availableDatesUpdate = JSON.parse(JSON.stringify(availableDatesFetched ? availableDatesFetched : {}))
-
-        const requiredSpace = Math.ceil(duration/interval)
-
-        let freeSpaceToRemove = []
-        let freeSpace = []
-
-        // find free spaces in aviable hours
-        for (const [day, hours] of Object.entries(availableDatesUpdate).sort()){
-            for (const [hour, minutes] of Object.entries(hours).sort()){
-                for (const [minute, value] of Object.entries(minutes).sort()){
-                    if (value) {
-                        let timeObj = dayjs(day).tz().set({hour: hour, minute: minute})
-                        if (freeSpace.length === 0 || freeSpace[freeSpace.length-1].isSame(timeObj.subtract(interval, 'minute')) ){
-                            freeSpace.push(timeObj)
-                        } else {
-                            if (freeSpace.length >= requiredSpace){
-                                freeSpaceToRemove.push(...freeSpace.slice(freeSpace.length-requiredSpace+1))
-                            } else {
-                                freeSpaceToRemove.push(...freeSpace)
-                            }
-                            freeSpace = []
-                            freeSpace.push(timeObj)
-                        }
-                    }                
-                }
-            }
-        }
-
-        if (freeSpace.length >= requiredSpace){
-            freeSpaceToRemove.push(...freeSpace.slice(freeSpace.length-requiredSpace+1))
-        } else {
-            freeSpaceToRemove.push(...freeSpace)
-        }
-        freeSpace = []    
-        
-        freeSpaceToRemove.forEach(freeSpace => {
-            let day = freeSpace.format('YYYY-MM-DD')
-            let hour = freeSpace.format('HH')
-            let minutes = freeSpace.format('mm')
-            availableDatesUpdate[day][hour][minutes] = false
-        })
-
-        return availableDatesUpdate
-    }
-
-    const getWeekString = (dayjsDateObj) => {
-
-        const now = dayjs(dayjsDateObj).tz()
-        let dayOfWeek = parseInt(now.weekday())
-        
-        const monday = now.subtract(dayOfWeek, 'days');
-        const sunday = now.add(6 - dayOfWeek, 'days');
-        
-        return `${monday.format('MM.DD')}-${sunday.format('MM.DD')}`
-    }
-
-    const handleWeekChange = (dir) => {
-        const newDate = dir === '+' ? selectedDate.add(7, 'days') : selectedDate.subtract(7, 'days')        
-        setSelectedDate(newDate)
-        form.setFieldsValue({'week': getWeekString(newDate),'day': null, 'timeHour': null, 'timeMinutes': null})
+    const handleWeekChange = (dayObj) => {
+        setSelectedDate(dayObj)
+        form.setFieldsValue({'day': null, 'timeHour': null, 'timeMinutes': null})
     }
 
     const handleDayChange = (newWeekDay) => {
@@ -307,23 +111,8 @@ const NewAppointment = (props) => {
     }
 
     const handleHourChange = (hour) => {
-        console.log(hour)
-        let minutes = '00'
-
-        const timeSpaceItem = timeTableBase.find((item) => {
-            return item.hour.format('HH') === hour
-        })
-
-        if (timeSpaceItem) {
-            for (let i = 0; i < timeSpaceItem.minutes.length; i++){
-                let value = timeSpaceItem.minutes[i].format('mm')
-
-                if (availableDates[selectedDate.format('YYYY-MM-DD')][hour][value] === true){
-                    minutes = value
-                    break
-                }
-            } 
-        }
+        const minutes = Object.entries(currentAvailableSlots[selectedDate.format('YYYY-MM-DD')][hour])
+            .filter(([key, val]) => val).map(([key]) => key).sort()[0]
 
         form.setFieldsValue({
             timeMinutes: `${hour}:${minutes}`
@@ -344,8 +133,14 @@ const NewAppointment = (props) => {
     const isAvaiableDay = (timeObj) => {
         const day = timeObj.format('YYYY-MM-DD')
 
-        if (availableDates && availableDates.hasOwnProperty(day) && form.getFieldValue('service')){
-            return Object.keys(availableDates[day]).length > 0
+        try {
+            for (const minutes of Object.values(currentAvailableSlots[day])){
+                if (Object.values(minutes).includes(true)){
+                    return true
+                }
+            }
+        } catch {
+            return false
         }
         return false
     }
@@ -354,51 +149,27 @@ const NewAppointment = (props) => {
         const day = timeObj.format('YYYY-MM-DD')
         const hour = timeObj.format('HH')
 
-        if (isAvaiableDay(timeObj) && availableDates[day].hasOwnProperty(hour)){
-            return Object.values(availableDates[day][hour]).includes(true)
+        try {
+            if (Object.values(currentAvailableSlots[day][hour]).includes(true)){
+                return true
+            } else {
+                return false
+            }
+        } catch {
+            return false
         }
-        return false
-        }
+    }
     
-    const isAvaiableMinute = (timeObj) => {
+    function isAvaiableMinute(timeObj){
         const day = timeObj.format('YYYY-MM-DD')
         const hour = timeObj.format('HH')
         const minutes = timeObj.format('mm')
 
-        if (isAvaiableHour(timeObj) && availableDates[day][hour].hasOwnProperty(minutes) ){
-            return availableDates[day][hour][minutes]
+        try {
+            return currentAvailableSlots[day][hour][minutes]
+        } catch {
+            return false
         }
-        return false
-    }
-
-    function generateTimeTableBase(dateObj, startHour, endHour, intervalMinutes){
-
-        const start = dateObj.set({hour: startHour, minute: 0, second: 0, millisecond: 0})
-        const end = dateObj.set({hour: endHour-1, minute: 59, second: 59, millisecond: 999})
-        // console.log(start)
-        // console.log(end)
-
-        let array = []
-        let current = dayjs(start)
-        do {
-
-            let minutesArray = []
-            let minutes = 0
-            do {
-                minutesArray.push(current.set({minute: minutes}))
-                minutes = minutes + intervalMinutes
-            } while (minutes < 60)
-
-            let item = {
-                hour: current,
-                minutes: minutesArray,
-            }
-
-            array.push(item)
-            current = current.add(1, 'hour')
-            
-            } while (current < end);
-        return array
     }
 
     // modal
@@ -450,117 +221,97 @@ const NewAppointment = (props) => {
                 () => {console.log('onReject')}
             }
         />
+      
+    const serviceSelector =
+        <ServiceSelector
+            handleServiceChange={handleServiceChange}
+            services={services}
+        />
+
+    const weekSelector =
+        <WeekSelector
+            handleWeekChange={handleWeekChange}
+            selectedDate={selectedDate}
+            disabledButtonLeft={form.getFieldValue('service') ? false : true}
+            disabledButtonRight={form.getFieldValue('service') ? false : true}
+        />
+
+    const daySelector = 
+        <DaySelector
+            handleDayChange={handleDayChange}
+            selectedDate={selectedDate}
+            disabledButton={(dayObj) => !isAvaiableDay(dayObj)}
+        />
+
+    const hourSelector =
+        <HourSelector
+            selectedDate={selectedDate}
+            handleHourChange={handleHourChange}
+            handleMinutesChange={handleMinutesChange}
+            startHour={startHour}
+            endHour={endHour}
+            timeInterval={timeInterval}
+            disabledMinutes={
+                (itemMinute) => (
+                    form.getFieldValue('day') !== null ? !isAvaiableMinute(itemMinute) : true
+                )
+            }
+            disabledHour={
+                (hour) => (
+                    form.getFieldValue('day') !== null ? !isAvaiableHour(hour) : true
+                )
+            }
+        />
+
+    const appointmentSummary =
+        <Form.Item
+            className="summary"
+            rules={[
+                form.getFieldValue('service') ? { required: true, message: 'Please select day!' } : null,
+            ]}
+        >
+            <p><Text strong>Service:</Text><span>{service}</span></p>
+            <p><Text strong>Date:</Text><span>{form.getFieldValue('day')? selectedDate.format('YYYY-MM-DD') : null}</span></p>
+            <p><Text strong>Time:</Text><span>{form.getFieldValue('timeMinutes') ? selectedDate.format('HH:mm') : null}</span></p>
+        </Form.Item>
 
     return (
         <>
             <h1>New appointment</h1>
-            <Form
+            <FormWrapper
                     form={form}
                     name="new_appointment"
                     className="new-appointment-form"
-                    initialValues={{
-                        week: getWeekString(selectedDate), }}
-                    // validateTrigger="onSubmit"
                     validateTrigger="onChange"
-                    onFinish={onFinish}
-                    onFinishFailed={onFinishFailed}
+                    onFinish={() => {setSubmitModalVisible(true)}}
                 >
                     <Divider className="divider" orientation="left">Service</Divider>
                     
-                    <Form.Item 
-                        name="service"
-                        rules={[
-                            { required: true, message: 'Please select service!' },
-                        ]}
-                    >
-                        <Select
-                            showSearch
-                            placeholder="Select a service"
-                            optionFilterProp="children"
-                            disabled={!services}
-                            onChange={handleServiceChange}
-                            filterOption={(input, option) =>
-                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                            }
-                        >
-                            {services ? services.map((item, index) => (
-                                <Select.Option value={item.name} key={"service" + index}>{item.name} - {item.time} min</Select.Option>    
-                            )) : <Select.Option>no option loaded</Select.Option>}
-                        </Select>
-                    </Form.Item>
+                    <Spin spinning={!services}>
+                        {serviceSelector}
+                    </Spin>
                     
                     <Divider className="divider" orientation="left">Select date</Divider>
 
-                    <Space  align="start" style={{width: "100%"}} className="week-selector">
-                        <Button disabled={form.getFieldValue('service') ? false : true} icon={<LeftOutlined />} onClick={() => handleWeekChange('-')} />
-                        <Form.Item  name="week" style={{width: "100%"}}>
-                            <Input placeholder="Basic usage" style={{pointerEvents: "none", textAlign: "center"}}/>
-                        </Form.Item>
-                        <Button disabled={form.getFieldValue('service') ? false : true} icon={<RightOutlined />} onClick={() => handleWeekChange('+')} />
-                    </Space>
+                    <Spin spinning={service && Object.keys(currentAvailableSlots).length === 0}>
+                        {weekSelector}
 
-                    <Form.Item 
-                        name="day"
-                        rules={[
-                            form.getFieldValue('service') ? { required: true, message: 'Please select day!' } : null,
-                        ]}
-                    >
-                        <Radio.Group onChange={(e) => handleDayChange(e.target.value)} className="day-selector">
-                            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => {
-                                const dayObj = selectedDate.weekday(index)
-                                const disabled = !isAvaiableDay(dayObj)
-                                return (
-                                    <Radio.Button disabled={disabled} key={"radio-day" + index} value={index}><p>{day}</p><p>{dayObj.format('DD')}</p></Radio.Button> 
-                                )
-                            })}
-                        </Radio.Group>
-                    </Form.Item>
+                        {daySelector}
 
-                    <Divider className="divider" orientation="left">Avaiable hours</Divider>
-                    
-                    <Form.Item
-                        className="time-selector-form-item"
-                        name="timeHour"
-                        rules={[
-                            form.getFieldValue('day') !== null ? { required: true, message: 'Please select hour!' } : null,
-                        ]}
-                    >
-                        <Radio.Group  className="time-selector-radio-group" onChange={(e) => handleHourChange(e.target.value)}>
-                            {timeTableBase.map(({hour, minutes }, index) => {
-                                return(
-                                    <Space  className="time-selector-space-row" direction="horizontal" key={"space"+index}>
-                                        <Radio.Button disabled={form.getFieldValue('day') !== null ? !isAvaiableHour(hour) : true} className="time-button" key={"hour"+index} value={hour.format('HH')}>{hour.format('HH')}</Radio.Button>
-                                        <Form.Item  name="timeMinutes" style={{marginBottom: 0}}>
-                                            <Radio.Group className="minutes-selector" onChange={(e) => {handleMinutesChange(e.target.value)}}>
-                                                {minutes.map((itemMinute, indexMinute) => (
-                                                    <Radio.Button disabled={form.getFieldValue('day') !== null ? !isAvaiableMinute(itemMinute) : true} key={"minute"+index+"_"+indexMinute} value={itemMinute.format('HH:mm')}>{itemMinute.format('mm')}</Radio.Button>
-                                                ))}
-                                            </Radio.Group>
-                                        </Form.Item>
-                                    </Space>
-                                )
-                            })}
-                        </Radio.Group>
-                    </Form.Item>
+                        <Divider className="divider" orientation="left">Avaiable hours</Divider>
+                        
+                        {hourSelector}
+                    </Spin>
 
                     <Divider className="divider" orientation="left">Summary</Divider>
 
-                    <Form.Item
-                        className="summary"
-                        rules={[
-                            form.getFieldValue('service') ? { required: true, message: 'Please select day!' } : null,
-                        ]}
-                    >
-                        <p><Text strong>Service:</Text><span>{service}</span></p>
-                        <p><Text strong>Date:</Text><span>{form.getFieldValue('day') !== null ? selectedDate.format('YYYY-MM-DD') : null}</span></p>
-                        <p><Text strong>Time:</Text><span>{form.getFieldValue('timeMinutes') ? selectedDate.format('HH:mm') : null}</span></p>
-                    </Form.Item>
+                    {appointmentSummary}
                     <Form.Item>
                         <Button type="primary" htmlType="submit" className="login-form-button">
                             Set new appointment
                         </Button>
                     </Form.Item>
-                </Form>
+                </FormWrapper>
                 {submitModal}
         </>
     )
@@ -568,13 +319,11 @@ const NewAppointment = (props) => {
 
 const mapStateToProps = (state) => ({
     services: state.data.services,
-    availableDatesFetched: state.data.avaiableDates,
     settings: state.data.settings
 })
 
 const mapDispatchToProps = {
     getServices,
-    getAvaiableDates,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(NewAppointment)

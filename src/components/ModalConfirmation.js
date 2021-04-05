@@ -53,17 +53,23 @@ const ModalConfirmation = (props) => {
                     setModalLoading(false)
                 })
         } else if (modalResolved === contentResolved) {
-            submitModalHandleCancel()
+            setModalVisible(false)
+            setModalResolved(false)
             onResolve()
         } else {
-            submitModalHandleCancel()
+            setModalVisible(false)
+            setModalResolved(false)
             onReject()
         }
     };
 
     const submitModalHandleCancel = () => {
-        setModalVisible(false);
-        setModalResolved(false)
+        if(modalResolved === contentResolved){
+            submitModalHandleOk()
+        } else {
+            setModalVisible(false)
+            setModalResolved(false)
+        }
     };
 
     return(

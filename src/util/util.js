@@ -8,7 +8,7 @@ import weekday from 'dayjs/plugin/weekday';
 import 'dayjs/locale/pl';
 
 export const api = axios.create({
-    baseURL: `http://localhost:5000`
+    baseURL: process.env.REACT_APP_API_HOST
   });
 
 dayjs.extend(objectSupport);

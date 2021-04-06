@@ -26,7 +26,6 @@ export const getInitialData = () => (dispatch) => {
 
 export const getServices = () => (dispatch, getState) => { 
     if(!getState().data.services){
-        console.log("fetching /services")
         api.get('/services')
             .then(res => {
                 dispatch({
@@ -34,26 +33,17 @@ export const getServices = () => (dispatch, getState) => {
                     payload: res.data
                 })
             }, err => {
-                console.log("err:")
-                console.log(err)
+                
             })
             .catch(err => {
-                console.log("catch err:")
-                console.log(err.response.data)
+                
             })
     }
 }
 
 export const getAvaiableDates = (startHour, endHour, interval) => (dispatch, getState) => { 
-    console.log("fetching /available-dates")
+    
     api({
-        // method: 'post',
-        // url: '/available-dates',
-        // data: {
-        //     start_hour: startHour,
-        //     end_hour: endHour,
-        //     interval: interval
-        // },
         method: 'get',
         url: '/available-hours',
         param: {
@@ -68,12 +58,9 @@ export const getAvaiableDates = (startHour, endHour, interval) => (dispatch, get
                 payload: res.data
             })
         }, err => {
-            console.log("err:")
-            console.log(err)
-            console.log(err.response)
+            
         })
         .catch(err => {
-            console.log("catch err:")
-            console.log(err.response.data)
+            
         })
 }

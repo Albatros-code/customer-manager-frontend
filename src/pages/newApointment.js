@@ -3,7 +3,7 @@ import {useHistory} from 'react-router-dom';
 
 import {dayjsExtended as dayjs} from '../util/util'
 
-import { Form, Button, Typography, Divider, Spin} from 'antd';
+import { Form, Button, Divider, Spin, Descriptions} from 'antd';
 
 // redux
 import { connect } from 'react-redux';
@@ -13,12 +13,10 @@ import { api } from '../util/util';
 // components
 import ModalConfirmation from '../components/ModalConfirmation';
 import FormWrapper from '../components/FormWrapper';
-import DaySelector from '../components/DaySelector';
+import DaySelector from '../components/daySelector';
 import ServiceSelector from '../components/ServiceSelector';
 import WeekSelector from '../components/WeekSelector';
 import HourSelector from '../components/HourSelector';
-
-const { Text } = Typography;
 
 const NewAppointment = (props) => {
     
@@ -52,7 +50,7 @@ const NewAppointment = (props) => {
     // useEffect for fetching missing slots availability info
     React.useEffect(() => {
         function getAvailableSlots(startDate, endDate, startHour, endHour, interval, service, setAvailableSlots){
-            console.log('get available slots')
+            
             api.get('/available-slots', {
                 params: {
                     start_date: startDate,
@@ -121,7 +119,7 @@ const NewAppointment = (props) => {
     }
 
     const handleMinutesChange = (val) => {
-        console.log(val)
+        
         let [ hour, minutes ] = String(val).split(":")
 
         form.setFieldsValue({
@@ -172,6 +170,18 @@ const NewAppointment = (props) => {
         }
     }
 
+    const appointmentSummary =(forModal) =>
+             <Descriptions 
+                bordered
+                size="small"
+                column={1}
+                className={`new-appointment-summary-table ${forModal ? null : 'form-item-padding-bottom'}`}
+            >
+                <Descriptions.Item label="Service">{service}</Descriptions.Item>
+                <Descriptions.Item label="Date">{form.getFieldValue('day') && form.getFieldValue('day') !== null ? selectedDate.format('YYYY-MM-DD') : null}</Descriptions.Item>
+                <Descriptions.Item label="Time">{form.getFieldValue('timeMinutes') ? selectedDate.format('HH:mm') : null}</Descriptions.Item>
+            </Descriptions>
+
     // modal
 
     const [submitModalVisible, setSubmitModalVisible] = React.useState(false);
@@ -180,20 +190,7 @@ const NewAppointment = (props) => {
         <ModalConfirmation 
             visibilityState={[submitModalVisible, setSubmitModalVisible]}
             title={"Scheduling new appointment"}
-            contentInit={
-                <>
-                    <div>
-                        <Text strong>Service:</Text>
-                        <Text strong>Date:</Text>
-                        <Text strong>Time:</Text>
-                    </div>
-                    <div>
-                        <span>{service} and some other long description</span>
-                        <span>{form.getFieldValue('day') !== null ? selectedDate.format('YYYY-MM-DD') : null}</span>
-                        <span>{form.getFieldValue('timeMinutes') ? selectedDate.format('HH:mm') : null}</span>
-                    </div>
-                </>
-            }
+            contentInit={appointmentSummary(true)}
             contentResolved={"Appointment added successfully."}
             contentRejected={<p>Something went wrong<br/>Appointment not scheduled.</p>}
             onConfirm={() => {
@@ -218,7 +215,7 @@ const NewAppointment = (props) => {
                 () => {history.push('/appointments')}
             }
             onReject={
-                () => {console.log('onReject')}
+                () => {}
             }
         />
       
@@ -232,8 +229,8 @@ const NewAppointment = (props) => {
         <WeekSelector
             handleWeekChange={handleWeekChange}
             selectedDate={selectedDate}
-            disabledButtonLeft={form.getFieldValue('service') ? false : true}
-            disabledButtonRight={form.getFieldValue('service') ? false : true}
+            disabledButtonLeft={form.getFieldValue('service') && (selectedDate.startOf('week') > dayjs.tz().startOf('week')) ? false : true}
+            disabledButtonRight={form.getFieldValue('service') && (selectedDate.startOf('week') <= dayjs.tz().add(3, 'month').startOf('week'))  ? false : true}
         />
 
     const daySelector = 
@@ -263,21 +260,10 @@ const NewAppointment = (props) => {
             }
         />
 
-    const appointmentSummary =
-        <Form.Item
-            className="summary"
-            rules={[
-                form.getFieldValue('service') ? { required: true, message: 'Please select day!' } : null,
-            ]}
-        >
-            <p><Text strong>Service:</Text><span>{service}</span></p>
-            <p><Text strong>Date:</Text><span>{form.getFieldValue('day')? selectedDate.format('YYYY-MM-DD') : null}</span></p>
-            <p><Text strong>Time:</Text><span>{form.getFieldValue('timeMinutes') ? selectedDate.format('HH:mm') : null}</span></p>
-        </Form.Item>
-
     return (
         <>
             <h1>New appointment</h1>
+            {dayjs.tz().format('YYYY-MM-DD HH:mm')}
             <FormWrapper
                     form={form}
                     name="new_appointment"
@@ -293,9 +279,9 @@ const NewAppointment = (props) => {
                     
                     <Divider className="divider" orientation="left">Select date</Divider>
 
-                    <Spin spinning={service && Object.keys(currentAvailableSlots).length === 0}>
                         {weekSelector}
 
+                    <Spin spinning={service && Object.keys(currentAvailableSlots).length === 0}>
                         {daySelector}
 
                         <Divider className="divider" orientation="left">Avaiable hours</Divider>
@@ -305,7 +291,7 @@ const NewAppointment = (props) => {
 
                     <Divider className="divider" orientation="left">Summary</Divider>
 
-                    {appointmentSummary}
+                    {appointmentSummary(false)}
                     <Form.Item>
                         <Button type="primary" htmlType="submit" className="login-form-button">
                             Set new appointment

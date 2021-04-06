@@ -182,3 +182,16 @@
         padding-left: 1rem;
     }
 }
+
+.new-appointment-summary-table {
+    width: 100%;
+    margin: 0 auto;
+    
+    .ant-descriptions-item-label{
+        width: 150px;
+    }
+}
+
+.form-item-padding-bottom {
+    padding-bottom: 24px;
+}

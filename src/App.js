@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  // HashRouter as Router,
   BrowserRouter as Router,
   Switch,
   Route,
@@ -32,12 +33,15 @@ import ResetPassword from './pages/resetPassword'
 
 import AdminAppointments from './pages/adminAppointments'
 
+
+
 function App() {
 
   return (
     <Provider store={store}>
       <RefreshToken>
         <Router>
+        {/* <Router basename={process.env.REACT_APP_GH_PREFIX}> */}
           <Layout>
             <Switch>
               <Route exact path="/" component={Home}/>
@@ -61,6 +65,7 @@ function App() {
               <ProtectedRoute exact path="/new-appointment" component={NewAppointment}/>
               
               <ProtectedRoute exact path="/admin/appointments" component={AdminAppointments}/>
+              <ProtectedRoute path="/users/:userId" component={Profile}/>
 
               <Route component={NotFound} />
             </Switch>

@@ -22,12 +22,10 @@ const EmailVerification = (props) => {
         }, err => {
             setMessage(err.response.data.error)
             setRequestResolved(true)
-            console.log(err.response)
         })
         .catch(err => {
             setMessage(err.response.data.error)
             setRequestResolved(true)
-            console.log(err.response)
         })
 
     }, [history, props.match.params])

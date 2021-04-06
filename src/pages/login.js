@@ -36,12 +36,9 @@ const Login = (props) => {
             .then(res => {
                 // redirect to history page
                 const push = location.state ? location.state.from : '/appointments'
-                console.log('login - redirecting to ' + push)
                 history.push(push)
             }, err => {
                     // set error state in order to validate form fields 
-                    console.log('LoginUser - error:')
-                    console.log(err.response.data.errors)
                     setErrors({...err.response.data.errors})
                     form.validateFields()
                         .catch(() => {
@@ -56,7 +53,6 @@ const Login = (props) => {
     };
 
   const onFinishFailed = (errorInfo) => {
-        console.log('Failed:', errorInfo);
         setErrors({});
   };
 

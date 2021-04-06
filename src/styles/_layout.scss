@@ -1,11 +1,11 @@
-$sider-width: clamp(160px, 25%, 200px);
+$sider-width: clamp(160px, 25vw, 200px);
 
 * {
     box-sizing: border-box;
 }
 
 body {
-    overflow-y: scroll;
+    // overflow-y: scroll;
 }
 
 .layout {
@@ -127,9 +127,12 @@ body {
             position: fixed;
             overflow-y: hidden;
             margin-right: -10px;
+            // border-right: 1px solid #f0f0f0;
             &:hover {
                 overflow-y: auto;
             }
+
+
         }
 
         &-content {
@@ -199,7 +202,8 @@ $sidemenu-user-card-height: 100px;
 
 .sidemenu-container {
     width: 100%;
-    height: calc(100% - #{$sidemenu-user-card-height});
+    height: 100%;
+    // height: calc(100% - #{$sidemenu-user-card-height});
     // height: calc(100% - 100px);
 
 }

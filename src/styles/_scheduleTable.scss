@@ -1,0 +1,136 @@
+.schedule-table {
+
+    &-wrapper {
+        position: relative;
+        overflow: hidden;
+    }
+
+    &-board {
+        margin-bottom: 1rem;
+    }
+
+    &-hour {
+        background: white;
+        color: $color-gray;
+        border-bottom: 1px solid $color-gray;
+        // height: rowHeight + 'px';
+        display: flex;
+        align-items: center;
+    }
+    &-hour:first-of-type {
+        border-top: 1px solid $color-gray;
+    }
+
+    &-minutes {
+        background: white;
+        height: 100%;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: flex-start;
+
+        &-item {
+            background: white;
+            border-bottom: 1px solid $color-gray;
+            // height: `${100/(item.minutes.length + 1)}%`;
+            width: calc(100% - 10px);
+            display: flex;
+            align-items: center;
+        }
+    }
+}
+
+.schedule-item {
+
+    &-wrapper {
+        position: absolute;
+        right: 0;
+        width: calc(100% - 40px);
+        text-align: center;
+        padding: 3px;
+        transition: top 0.2s ease-in-out, height 0.2s ease-in-out;
+        // background: red;
+    }
+
+    &-frame {
+        width: 100%;
+        height: 100%;
+        background: white;
+        border: 1px solid $color-primary;
+        border-radius: 3px;
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        justify-content: stretch;
+        overflow: hidden;
+        cursor: pointer;
+        transition: box-shadow 0.2s ease-in-out;
+        // height: auto;
+
+        &:hover{
+            box-shadow: 0 0 0 0.5pt $color-primary;
+        }
+    }
+
+    &-label {
+        background: $color-primary-light;
+        width: 50px;
+        // height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    &-container {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start; //defined in component
+
+    }
+}
+
+.schedule-table-appointment-card {
+    background: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    >p {
+        margin: 0;
+    }
+    
+    >p:first-of-type {
+        font-weight: 500;
+    }
+}
+
+.schedule-table-appointment-details {
+    // height: 500px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    // justify-content: center;
+
+    &-list {
+        width: 100%;
+
+        .ant-descriptions-item-label {
+            width: 120px;
+        }
+    }
+
+    &-icons {
+        width: 100%;
+        text-align: right;
+        margin-top: 1rem;
+        button {
+            margin-left: 0.5rem
+        }
+    }
+}

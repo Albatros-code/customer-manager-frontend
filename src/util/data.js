@@ -97,7 +97,7 @@ export const user = {
             type: 'input',
             rules: [
                 {required: true, message: "Can't be blank!" },
-                // {pattern: new RegExp("^\\d{2}$"), message: "Not valid age."},
+                {pattern: new RegExp("^\\d{2}$"), message: "Not valid age."},
                 (errors) => {return apiErrorValidator(errors)},
             ]
         },        

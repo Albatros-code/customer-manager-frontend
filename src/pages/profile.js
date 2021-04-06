@@ -1,6 +1,7 @@
 import React from 'react';
+import {useParams} from 'react-router-dom';
 import { connect } from 'react-redux';
-import { List, Divider, Input, Form, Button, Checkbox, Spin } from 'antd';
+import {List, Divider, Input, Form, Button, Checkbox, Spin, Alert} from 'antd';
 
 import { user, resolveRules, mergeErrors } from '../util/data'
 import { api } from '../util/util';
@@ -8,21 +9,35 @@ import { setUser } from '../redux/actions/userActions'
 
 
 const Profile = (props) => {
+    
+    const {userId} = useParams()
+    const [userData, setUserData] = React.useState(userId ? {} : props.userData)
 
-    const { id, role, userData } = props
+    function getUserData(userId){
+        api.get(`/users/${userId}`)
+        .then(res =>{
+            setUserData(res.data.user.data)
+        }, err => {
+            setUserData({error: 'No user found.'})
+            // history.push('/users')
+        })
+        .catch(err =>{
 
-    // React.useEffect(() => {
+        })
+    }
+
+    React.useEffect(() => {
+
+        if (userId){
+            getUserData(userId)
+        } else {
+            setUserData(props.userData)
+        }
         
-    // }, [userData])
-
-    // const personalDatas = [
-    //     {...user.data.fname, value: getIfPresent(user.data.fname.field, userData)},
-    //     {...user.data.lname, value: getIfPresent('lname', userData), },
-    //     {...user.data.phone, value: getIfPresent('phone', userData), },
-    //     {...user.data.email, value: getIfPresent('email', userData), disabled: true},
-    //     {...user.data.age, value: getIfPresent('age', userData), },
-    // ]
-
+    }, [userId, setUserData, props.userData])
+    
+    const id = userId ? userId: props.id
+    const role = props.role
     
     const getData = (dataModel, values, additionalProps) => Object.entries(dataModel).map(([key, val]) => {
         return {...val, value: values.hasOwnProperty(key) ? values[key] : "", ...additionalProps[key]}
@@ -35,7 +50,6 @@ const Profile = (props) => {
     const personalDataOnSave = (values, callbackRes, callbackErr) => {
         const formatedData = {...values}
         formatedData.fname = formatedData.fname.charAt(0).toUpperCase() + formatedData.fname.slice(1).toLowerCase()
-        // console.log(formatedData)
 
         api.put(`/users/${id}`, {
             user: {
@@ -46,9 +60,15 @@ const Profile = (props) => {
         // })
         }, {withCredentials: true})
         .then(() => {
-            props.setUser(id, role).finally(() => {
+            if (!userId){
+                props.setUser(id, role).finally(() => {
+                    setUserData(formatedData)
+                    if (callbackRes) callbackRes()
+                })
+            } else {
+                setUserData(formatedData)
                 if (callbackRes) callbackRes()
-            })
+            }
         })
         .catch(err => {
             // console.log(err.response.data)
@@ -56,21 +76,21 @@ const Profile = (props) => {
         })
     }
 
-    // const settingsData = [
-    //     {type: 'checkbox', label: 'Newsletter', value: fname,},
-    //     {type: 'input', label: 'Last name', value: lname},
-    //     {type: 'input', label: 'Phone', value: phone},
-    //     {type: 'input', label: 'Email', value: email},
-    // ]
+    const noUserFoundAlert = userData.hasOwnProperty('error') ?
+        <Alert className="data-list-alert-bar" message={userData.error} type="error" showIcon />
+        : null
 
     return (
         <>
-            <h1>Profile</h1> 
-            <DataList 
-                data={personalData}
-                label='Personal data'
-                onSave={personalDataOnSave}
-            />
+            <h1>{userId ? `User profile` : 'My profile'}</h1>
+            {noUserFoundAlert}
+            <Spin spinning={Object.keys(userData).length === 0}>
+                <DataList 
+                    data={personalData}
+                    label='Personal data'
+                    onSave={personalDataOnSave}
+                />
+            </Spin>
             {/* <DataList 
                 data={settingsData}
                 label='Settings'
@@ -92,8 +112,7 @@ const DataList = (props) => {
     const [formLoading, setFormLoading] = React.useState(false)
     const [editedFields, setEditedFields] = React.useState({})
     const data = resolveRules(props.data, {errors: errors})
-    // console.log('state errors:')
-    // console.log(errors)
+
     const initialValues = Object.fromEntries(data.map(item => [item.field, item.value]))
 
     const handleChange = (e) => {
@@ -116,8 +135,8 @@ const DataList = (props) => {
         form.validateFields()
             .then(values => {
                 const callbackRes = () => {
-                    form.resetFields()
                     setEditedFields({})
+                    // form.resetFields()
                     setFormLoading(false)
                 }
                 const callbackErr = (err) => {
@@ -128,11 +147,9 @@ const DataList = (props) => {
                 props.onSave(values, callbackRes, callbackErr)
             }, err => {
                 setFormLoading(false)
-                // console.log(err)
             })
             .catch(err => {
 
-                // console.log(err)
             })
     }
 

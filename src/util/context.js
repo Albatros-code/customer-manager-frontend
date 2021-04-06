@@ -15,7 +15,7 @@ export const AppDataWraper = ({ children }) => {
 
         api.post('/token/refresh', '', {withCredentials: true})
         .then(res => {
-            console.log('token/refresh succesfull')
+            // console.log('token/refresh succesfull')
 
             const token = `Bearer ${res.data.access_token}`
             const { identity, iat, exp } = jwt_decode(token)

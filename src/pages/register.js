@@ -37,7 +37,6 @@ const Register = () => {
             // registered successfully go to login page
             history.push("/login")
         }, err => {
-            console.log(err.response)
             // set errors, validate form and clear errror
             setErrors({...err.response.data.errors})
             form.validateFields()
@@ -48,13 +47,12 @@ const Register = () => {
                 })
         })
         .catch(err => {
-            console.log('catchError: ' + err)
-            console.log(err.response)
+            
         })
     };
 
   const onFinishFailed = (errorInfo) => {
-        console.log('Failed:', errorInfo);
+      
   };
 
     const apiErrorValidator = 

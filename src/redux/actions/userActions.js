@@ -104,13 +104,11 @@ export const setUser = (id, role) => async (dispatch) => {
                     }
                 })
                 resolve("resolved")
-            }, err => {
-                console.log(err) 
+            }, err => { 
                 reject('rejected')
             })
             .catch(err => {
                 reject('rejected')
-               console.log(err) 
             })
 
     })

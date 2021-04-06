@@ -1,24 +1,28 @@
 import React from 'react';
-import { Spin, Form } from 'antd';
+import {useHistory} from 'react-router-dom'
+import { Spin, Form, Descriptions, Button } from 'antd';
+// import {UserOutlined, DeleteOutlined, EditOutlined} from '@ant-design/icons';
 
 // redux
 import { connect } from 'react-redux';
 import { getServices } from '../redux/actions/dataActions';
 
 import { api, dayjsExtended as dayjs } from '../util/util'
-import { generateTimeTableBase, currentWeekString } from '../util/appointments'
+import { currentWeekString } from '../util/appointments'
 
+// components
 import FormWrapper from '../components/FormWrapper';
-import DaySelector from '../components/DaySelector';
+import DaySelector from '../components/daySelector';
 import WeekSelector from '../components/WeekSelector';
+import {ScheduleTable, ScheduleItem} from '../components/ScheduleTable'
 
 
 const AdminAppointments = (props) => {
 
-    const rowHeight = 100
-
-    const {services} = props
+    // const {services} = props
     const {getServices} = props
+
+    const history = useHistory()
 
     const [ selectedDate, setSelectedDate ] = React.useState(dayjs.tz().set({second: 0, millisecond: 0}))
     const [ appointmentsData, setAppointmentsData ] = React.useState({})
@@ -33,7 +37,7 @@ const AdminAppointments = (props) => {
             return []
         }
     })()
-    
+
     React.useEffect(() => {
         getServices()
     // eslint-disable-next-line react-hooks/exhaustive-deps  
@@ -59,149 +63,105 @@ const AdminAppointments = (props) => {
         }
     },[appointmentsData, selectedDate])
 
-
-    const appointmentsCards = appointments.map((item, index) => {
-        const date = dayjs(item.date)
-        const service = services.find(s => s.name === item.service)
-        return (
-            <div
-                key={'appointment' + index} 
-                style={{
-                    position: 'absolute',
-                    // background: 'red',
-                    top: `${((parseInt(date.format('HH')) - 12) + parseInt(date.format('mm'))/60)  * rowHeight}px`,
-                    right: '0',
-                    width: 'calc(100% - 40px)',
-                    // width: '85%',
-                    height: `${item.duration/60 * rowHeight}px`,
-                    textAlign: 'center',
-                    padding: '3px',
-            }}>
-                <div
-                    style={{
-                        width: '100%',
-                        height: '100%',
-                        background: 'white',
-                        border: '1px solid #1890ff',
-                        borderRadius: '3px',
-                        display: 'flex',
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'stretch',
-                        overflow: 'hidden',
-                    }}
-                >
-                    <div
-                        style={{
-                            // borderRight: '1px solid #1890ff',
-                            background: '#e6f7ff',
-                            width: '50px',
-                            height: '100%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}
-                    >
-                        {date.format('HH:mm')}
-                    </div>
-                    <div
-                        style={{
-                            width: '100%',
-                        }}
-                    >
-                        {service.name}
-                    </div>
-                </div>
-            </div>
-        )
-    })
-
-    const timeTable = <div style={{marginBottom: '1rem'}}>
-        {generateTimeTableBase(selectedDate, 12, 20, 15)
-        .map((item, index) => {
-            item.minutes.pop()
-
-            return (
-                    <div
-                        style={{
-                            background: 'white',
-                            color: '#d9d9d9',
-                            borderBottom: '1px solid #d9d9d9',
-                            height: rowHeight + 'px',
-                            display: 'flex',
-                            alignItems: 'center',
-                        }}
-                        key={'timeTable' + index}
-                    >
-                        {item.hour.format('HH')}
-                        <div
-                            style={{
-                                background: 'white',
-                                // borderBottom: '1px solid #d9d9d9',
-                                height: '100%',
-                                width: '100%',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'flex-end',
-                                justifyContent: 'flex-start',
-
-                            }}>{
-                            item.minutes.map((minute) => {
-
-                                return (
-                                    <div
-                                        key={minute}
-                                        style={{
-                                            background: 'white',
-                                            borderBottom: '1px solid #d9d9d9',
-                                            height: `${100/(item.minutes.length + 1)}%`,
-                                            width: 'calc(100% - 10px)',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                        }}>
-                                            {/* {item} */}
-                                    </div>
-                                )
-                            })
-                            }
-                        </div>
-
-                    </div>
-                )
-        })}
-    </div>
-
+    
     const [form] = Form.useForm()
     
     const handleDayChange = (newWeekDay) => {
         setSelectedDate(prev => prev.weekday(newWeekDay))
     }
-
+    
     const handleWeekChange = (dayObj) => {
         setSelectedDate(dayObj)
-        form.setFieldsValue({"day": null})
+        form.setFieldsValue({"day": dayObj.weekday()})
+    }
+    
+    const weekSelector =
+    <WeekSelector
+        handleWeekChange={handleWeekChange}
+        selectedDate={selectedDate}
+        disabledButtonLeft={false}
+        disabledButtonRight={false}
+    />
+    
+    const daySelector = 
+    <DaySelector
+        handleDayChange={handleDayChange}
+        selectedDate={selectedDate}
+        disabledButton={false}
+    />
+
+    const appointmentCardContent = (appointment) => {
+        return (
+            <div className="schedule-table-appointment-card">
+                <p>{appointment.service}</p>
+                <p>{appointment.user}</p>
+                <p>{appointment.phone}</p>
+            </div>
+        )
     }
 
-    const weekSelector =
-        <WeekSelector
-            handleWeekChange={handleWeekChange}
-            selectedDate={selectedDate}
-            disabledButtonLeft={false}
-            disabledButtonRight={false}
-        />
+    const appointmentDetails = (appointment) => (setVisible) => {
+        const dateObj = dayjs(appointment.date)
+        
+        const deleteAppointment = () => {
+            api.delete(`/appointment/${appointment.id}`)
+                .then(res => {
+                    const currentWeek = currentWeekString(selectedDate)
+                    setAppointmentsData((prev) => {
+                        return delete {...prev}[currentWeek]
+                        // return prev
+                    })
+                    setVisible(prev => !prev)
+                })
+        }
 
-    const daySelector = 
-        <DaySelector
-            handleDayChange={handleDayChange}
-            selectedDate={selectedDate}
-            disabledButton={false}
-        />
 
+        return (
+            <div className="schedule-table-appointment-details">
+                <h1>{appointment.service}</h1>
+
+                <Descriptions 
+                    bordered
+                    column={1}
+                    className="schedule-table-appointment-details-list"
+                >
+                    <Descriptions.Item label="Date">{dateObj.format("YYYY-MM-DD")}</Descriptions.Item>
+                    <Descriptions.Item label="Time">{dateObj.format("HH:mm")}</Descriptions.Item>
+                    <Descriptions.Item label="User">{appointment.user}</Descriptions.Item>
+                    <Descriptions.Item label="Phone">{appointment.phone}</Descriptions.Item>
+                    <Descriptions.Item label="Created at">{dateObj.format("YYYY-MM-DD HH:mm")}</Descriptions.Item>
+                </Descriptions>
+                <p className="schedule-table-appointment-details-icons">
+                    <Button disabled={true}>Change date</Button>
+                    <Button onClick={() => {history.push(`/users/${appointment.user_id}`)}}>Show User</Button>
+                    <Button onClick={deleteAppointment}>Delete</Button>
+                </p>
+                    {/* <Button><EditOutlined /></Button><UserOutlined /><DeleteOutlined /></p> */}
+            </div>
+        )
+    }
+    
+    const appointmentCards = appointments.map((item, index) => {
+        // const service = services.find(s => s.name === item.service)
+        return (
+            <ScheduleItem
+                date={dayjs(item.date)}
+                duration={item.duration}
+                key={index}
+                // details={appointmentDetails(item)}
+                details={appointmentDetails(item)}
+            >
+                {appointmentCardContent(item)}
+            </ScheduleItem>
+        )
+    })
+    
     return (
         <>
             <h1>Appointments</h1>
-            <p>selectedDate: {selectedDate.format("YYYY-MM-DD")}</p>
+            {/* <p>selectedDate: {selectedDate.format("YYYY-MM-DD")}</p> */}
             <FormWrapper
+                className="schedule-table-form"
                 form={form}
                 initialValues={{ day: selectedDate.weekday()}}
             >
@@ -209,28 +169,18 @@ const AdminAppointments = (props) => {
                 {daySelector}
             </FormWrapper>
 
-            <Spin spinning={!appointments}>
-                <div style={{
-                    position: 'relative'
-                }}>
-                    {timeTable}
-                    {appointmentsCards}
-                </div>
+            <Spin spinning={ !appointmentsData.hasOwnProperty(currentWeekString(selectedDate)) && appointments.length === 0}>
+                <ScheduleTable
+                    selectedDate={selectedDate}
+                    items={appointmentCards}
+                >
+                    {appointmentCards}
+                </ScheduleTable>
             </Spin>
         </>
     )
 }
 
-const ScheduleTable = (props) => {
-
-    return (
-        <div style={{
-            position: 'relative'
-        }}>
-            {props.children}
-        </div>
-    )
-}
 
 const mapStateToProps = (state) => ({
     services: state.data.services,

@@ -21,6 +21,7 @@ const AdminAppointments = (props) => {
 
     // const {services} = props
     const {getServices} = props
+    const {settings: {start_hour: startHour, end_hour: endHour, time_interval: timeInterval}} = props
 
     const history = useHistory()
 
@@ -171,6 +172,9 @@ const AdminAppointments = (props) => {
 
             <Spin spinning={ !appointmentsData.hasOwnProperty(currentWeekString(selectedDate)) && appointments.length === 0}>
                 <ScheduleTable
+                    startHour={startHour}
+                    endHour={endHour}
+                    timeInterval={timeInterval}
                     selectedDate={selectedDate}
                     items={appointmentCards}
                 >
@@ -184,6 +188,7 @@ const AdminAppointments = (props) => {
 
 const mapStateToProps = (state) => ({
     services: state.data.services,
+    settings: state.data.settings,
 })
 
 const mapDispatchToProps = {

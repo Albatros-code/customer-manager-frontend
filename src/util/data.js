@@ -8,6 +8,9 @@ error response
     }
 }
 */
+export const getData = (dataModel, values, additionalProps) => Object.entries(dataModel).map(([key, val]) => {
+    return {...val, value: values.hasOwnProperty(key) ? values[key] : "", ...additionalProps[key]}
+})
 
 export const mergeErrors = (prevs, errs) => {
     const prevsCopy = JSON.parse(JSON.stringify(prevs))
@@ -59,7 +62,7 @@ export const user = {
                 (errors) => {return apiErrorValidator(errors)},
 
             ]
-    },
+        },
         lname: {
             field: 'lname',
             label: 'Last name',
@@ -105,6 +108,39 @@ export const user = {
     settings: {
         newsletter: 'boolean',
     }
+}
+
+export const settingsModel = {
+    start_hour: {
+        field: 'start_hour',
+        label: 'Start hour',
+        type: 'input',
+        rules: [
+            {required: true, message: "Can't be blank!" },
+            {pattern: new RegExp("^\\d{2}$"), message: "Not valid hour."},
+            (errors) => {return apiErrorValidator(errors)},
+        ]
+    },
+    end_hour: {
+        field: 'end_hour',
+        label: 'End hour',
+        type: 'input',
+        rules: [
+            {required: true, message: "Can't be blank!" },
+            {pattern: new RegExp("^\\d{2}$"), message: "Not valid hour."},
+            (errors) => {return apiErrorValidator(errors)},
+        ]
+    },
+    time_interval: {
+        field: 'time_interval',
+        label: 'Time interval',
+        type: 'input',
+        rules: [
+            {required: true, message: "Can't be blank!" },
+            {pattern: new RegExp("^\\d{2}$"), message: "Not valid minutes."},
+            (errors) => {return apiErrorValidator(errors)},
+        ]
+    },
 }
 
 

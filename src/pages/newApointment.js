@@ -29,7 +29,7 @@ const NewAppointment = (props) => {
     const [form] = Form.useForm();
     
     // from redux
-    const {settings: {startHour, endHour, timeInterval}} = props
+    const {settings: {start_hour: startHour, end_hour: endHour, time_interval: timeInterval}} = props
     const {getServices} = props
     const {services} = props    
     

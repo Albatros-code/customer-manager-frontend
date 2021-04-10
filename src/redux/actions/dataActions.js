@@ -24,6 +24,24 @@ export const getInitialData = () => (dispatch) => {
     })
 }
 
+export const setSettings = () => (dispatch) => {
+    return new Promise((resolve, reject) => {
+        api.get('/settings')
+            .then((res) => {
+                dispatch({
+                    type: GET_INITIALDATA,
+                    payload: res.data,
+                })
+                return resolve(res)
+            }, (err) => {
+                reject(err)
+            })
+            .catch(err => {
+                reject(err)    
+            })
+    })
+}
+
 export const getServices = () => (dispatch, getState) => { 
     if(!getState().data.services){
         api.get('/services')

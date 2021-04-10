@@ -32,6 +32,7 @@ import EmailVerification from './pages/email-verification'
 import ResetPassword from './pages/resetPassword'
 
 import AdminAppointments from './pages/adminAppointments'
+import Settings from './pages/settings'
 
 
 
@@ -65,6 +66,7 @@ function App() {
               <ProtectedRoute exact path="/new-appointment" component={NewAppointment}/>
               
               <ProtectedRoute exact path="/admin/appointments" component={AdminAppointments}/>
+              <ProtectedRoute exact path="/admin/settings" component={Settings}/>
               <ProtectedRoute path="/users/:userId" component={Profile}/>
 
               <Route component={NotFound} />

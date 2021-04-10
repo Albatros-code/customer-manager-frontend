@@ -154,6 +154,7 @@ const SideMenu = (props) => {
                             props.userRole === 'admin' ?
                             <Menu.ItemGroup key="sub3" icon={<MenuOutlined />} title="Admin">
                                 <Menu.Item key="/admin/appointments"><Link to="/admin/appointments">All appointments</Link></Menu.Item>
+                                <Menu.Item key="/admin/settings"><Link to="/admin/settings">Settings</Link></Menu.Item>
                             </Menu.ItemGroup>
                             :
                             null

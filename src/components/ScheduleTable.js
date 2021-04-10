@@ -7,9 +7,9 @@ import {generateTimeTableBase} from '../util/appointments'
 
 
 export const ScheduleTable = (props) => {
-    const startHour = 12
-    const endHour = 20
-    const timeInterval = 15
+    const startHour = props.startHour ? props.startHour : 12
+    const endHour = props.endHour ? props.endHour :20
+    const timeInterval = props.timeInterval ? props.timeInterval : 15
     
     const rowHeight = 100
     const {selectedDate} = props

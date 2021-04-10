@@ -29,7 +29,12 @@ const NewAppointment = (props) => {
     const [form] = Form.useForm();
     
     // from redux
-    const {settings: {start_hour: startHour, end_hour: endHour, time_interval: timeInterval}} = props
+    const {settings: {
+        start_hour: startHour,
+        end_hour: endHour,
+        time_interval: timeInterval,
+        working_days: workingDays
+    }} = props
     const {getServices} = props
     const {services} = props    
     
@@ -237,6 +242,7 @@ const NewAppointment = (props) => {
         <DaySelector
             handleDayChange={handleDayChange}
             selectedDate={selectedDate}
+            workingDays={workingDays}
             disabledButton={(dayObj) => !isAvaiableDay(dayObj)}
         />
 

@@ -141,6 +141,17 @@ export const settingsModel = {
             (errors) => {return apiErrorValidator(errors)},
         ]
     },
+    working_days: {
+        field: 'working_days',
+        label: 'Working days',
+        type: 'checkbox-list',
+        options: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        rules: [
+            {required: true, message: "Can't be blank!" },
+            {pattern: new RegExp("^\\d{2}$"), message: "Not valid minutes."},
+            (errors) => {return apiErrorValidator(errors)},
+        ]
+    },
 }
 
 

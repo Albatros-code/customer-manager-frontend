@@ -18,7 +18,22 @@ const DataList = (props) => {
     const [editedFields, setEditedFields] = React.useState({})
     const data = resolveRules(props.data, {errors: errors})
 
-    const initialValues = Object.fromEntries(data.map(item => [item.field, item.value]))
+    const initialValues = Object.fromEntries(data.map(item => {
+        let value = null
+        switch (item.type){
+            case 'input':
+                value = item.value
+                break
+            case 'checkbox-list':
+                value = Object.entries(item.value).map(([key, val]) => val !== false ? key : null)
+                break
+            default:
+                value = null
+        }
+        return (
+            [item.field, value]
+        )
+    }))
 
     const handleChange = (e) => {
         const label = e.target.id
@@ -35,10 +50,36 @@ const DataList = (props) => {
         }
     }
 
+    function formatResults(dataModel, values){
+        const results = Object.fromEntries(dataModel.map((item) => {
+            let value
+            switch (item.type){
+                case 'input':
+                    value = values[item.field]
+                    break
+                case 'checkbox-list':
+                    value={}
+                    for (const [key] of Object.entries(item.value)){
+                        
+                        value[key] = values[item.field].includes(key) ? true : false
+                    }
+                    break
+                default:
+                    value = null
+            }
+
+            return [item.field, value]
+        }))
+
+        return results
+    }
+
     const handleClick = () => {
         setFormLoading(true)
         form.validateFields()
             .then(values => {
+
+                const formatedValues = formatResults(data, values)
                 const callbackRes = () => {
                     setEditedFields({})
                     // form.resetFields()
@@ -49,7 +90,8 @@ const DataList = (props) => {
                     form.validateFields()
                     setFormLoading(false)
                 }
-                props.onSave(values, callbackRes, callbackErr)
+
+                props.onSave(formatedValues, callbackRes, callbackErr)
             }, err => {
                 setFormLoading(false)
             })
@@ -78,7 +120,7 @@ const DataList = (props) => {
                         renderItem={item => {
                             return (
                                 <ListItem
-                                item={item}
+                                    item={item}
                                     edited={editedFields.hasOwnProperty(item.field)}
                                     handleChange={(e) => handleChange(e)}/>
                             )
@@ -130,9 +172,27 @@ const ListItem = (props) => {
                         disabled={item.disabled}
                     />
                 )
-            case 'checkbox':
+            case 'checkbox-list':
+                const options = Object.keys(item.value).map((key, index) => {
+                    return ({
+                        label: item.options[index],
+                        value: key,
+                    })
+                })
+
                 return (
-                    <Checkbox>subscribe</Checkbox>
+                    <Checkbox.Group className="checkbox-list__wrapper">
+                        {options.map((option, index) => 
+                            // <Row key={option.label+index}>
+                                <Checkbox 
+                                    key={option.label+index}
+                                    value={option.value}
+                                >
+                                    {option.label}
+                                </Checkbox>
+                            // </Row>
+                        )}
+                    </Checkbox.Group>
                 )
             default:
                 return (

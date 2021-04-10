@@ -12,8 +12,8 @@ const Settings = (props) => {
     const settingsData = getData(settingsModel, props.settings, {})
 
     const settingsOnSave = (values, callbackRes, callbackErr) => {
-        // const formatedData = {...values}
         const formatedData = {
+            ...values,
             start_hour: parseInt(values.start_hour),
             end_hour: parseInt(values.end_hour),
             time_interval: parseInt(values.time_interval)

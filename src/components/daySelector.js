@@ -7,7 +7,7 @@ import {dayjsExtended as dayjs} from '../util/util'
 const DaySelector = (props) => {
     // const {form} = useFormContext()
 
-    const {handleDayChange, disabledButton, formItemName} = props
+    const {handleDayChange, disabledButton, formItemName, workingDays} = props
 
     const [selectedDateInternal, setSelectedDateInternal] = React.useState(dayjs.tz().set({day: 15, second: 0, millisecond: 0}))
 
@@ -29,13 +29,6 @@ const DaySelector = (props) => {
         }
     }
 
-    // React.useEffect(() => {
-    //     // console.log('weekSelector: ' + selectedDate.format('MM.DD'))
-    //     form.setFieldsValue({'day': isDaySelected ? selectedDate.weekday() : null})
-    //     console.log('selecting day useEffect')
-
-    // }, [selectedDate, isDaySelected, form])
-
     return (
         <Form.Item 
             name={formItemName ? formItemName : "day"}
@@ -45,6 +38,7 @@ const DaySelector = (props) => {
         >
             <Radio.Group onChange={handleChange} className="day-selector">
                 {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => {
+                    if (workingDays && workingDays[index] === false) return null
                     const dayObj = selectedDate.weekday(index)
                     // const disabled = !isAvaiableDay(dayObj)
                     // const disabled = disabledButton(dayObj, index)

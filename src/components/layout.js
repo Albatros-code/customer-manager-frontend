@@ -11,6 +11,10 @@ import { api } from '../util/util';
 import { connect } from 'react-redux';
 import { logoutUser } from '../redux/actions/userActions';
 
+// static
+import logo from '../images/logo_color.svg';
+import logo_full from '../images/logo_full_color.svg';
+
 const rootSubmenuKeys = ['sub1', 'sub2', 'sub4'];
 
 const LayoutComp = (props) => {
@@ -62,8 +66,8 @@ const LayoutComp = (props) => {
                         >
                             <MenuOutlined/>
                         </Button>
-                        <span className="title-big">Customer manager</span>
-                        <span className="title-small">CM</span>
+                        <span className="title-big"><img src={logo_full} alt="logo"/></span>
+                        <span className="title-small"><img src={logo} alt="logo"/></span>
                     </div>
                 <Menu className="navbar" theme="light" mode="horizontal"  onClick={handleMenuClick} selectedKeys={[currentPage]}>
                     {/* defaultSelectedKeys={[useLocation().pathname]}> */}
@@ -83,13 +87,7 @@ const LayoutComp = (props) => {
             { authenticated ?
                 <div className="sider">
                     <div className="sider-fixed">
-                    {/* /<Menu mode="inline" openKeys={openKeys} onOpenChange={onOpenChange} style={{ width: 256 }}> */}
                         {sideMenu}
-                        {/* <div className="sider-content">
-                        </div>
-                        <div className="sider-scroll">
-
-                        </div> */}
                     </div>
                 </div>
                 : null

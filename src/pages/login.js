@@ -15,13 +15,15 @@ const Login = (props) => {
     const location = useLocation()
     const history = useHistory()
 
+    const initialRender = React.useRef(true);
     React.useEffect(() => {
-        if (props.authenticated){
-            history.push('/appointments')
+        if (initialRender){
+            initialRender.current = false
+            if (props.authenticated){
+                history.push('/')
+            }
         }
-    },[props.authenticated, history])
-
-    // console.log(location.state ? location.state.from : 'no /from string')
+    },[history, props.authenticated])
     
     const [ errors, setErrors ] = React.useState({})
     const [ formLoading, setFormLoading ] = React.useState(false)
@@ -32,10 +34,10 @@ const Login = (props) => {
         if (location.state) location.state.emailVerification = ''
         setFormLoading(true)
 
-        props.loginUser(values.username, values.password, history)
+        props.loginUser(values.username, values.password, values.remember, history)
             .then(res => {
-                // redirect to history page
-                const push = location.state ? location.state.from : '/appointments'
+                // redirect to proper page
+                const push = location.state !== undefined ? location.state.from : '/appointments'
                 history.push(push)
             }, err => {
                     // set error state in order to validate form fields 
@@ -179,10 +181,10 @@ const Login = (props) => {
     return (
         <>
             <h1>Login</h1>
-            {props.authenticated ?
+            {/* {props.authenticated ?
             <p>Logged in as {props.username}</p>
-            :
-            <Spin spinning={formLoading}>
+            : */}
+            <Spin spinning={formLoading || props.authenticated}>
                 <Form
                     form={form}
                     name="normal_login"
@@ -220,7 +222,7 @@ const Login = (props) => {
                     </Form.Item>
                     <Form.Item>
                         <Form.Item name="remember" valuePropName="checked" noStyle>
-                            <Checkbox disabled={true}>Remember me</Checkbox>
+                            <Checkbox>Remember me</Checkbox>
                         </Form.Item>
 
                         <a className="login-form-forgot" href="/elo" onClick={(e) => showResetPasswordModal(e)}>
@@ -236,7 +238,7 @@ const Login = (props) => {
                 </Form>
                 {resetPasswordModal}
             </Spin>
-            }
+            {/* } */}
         </>
     )
 }

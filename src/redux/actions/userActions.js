@@ -28,10 +28,10 @@ export const afterLoginAction = (res) => async (dispatch) => {
     await dispatch(setUser(id, role));
     dispatch({
         type: SET_AUTHENTICATED
-    });
+    });   
 }
 
-export const loginUser = (username, password, history) => (dispatch) => {
+export const loginUser = (username, password, remember, history) => (dispatch) => {
     // Input validation
 
     let MyPromise = new Promise(function(myResolve, myReject) {
@@ -39,39 +39,17 @@ export const loginUser = (username, password, history) => (dispatch) => {
     // Call login api
     api.post('/login', {
         username: username,
-        password: password
+        password: password,
+        remember: remember,
     }, {withCredentials: true})
     .then(res => {
         dispatch(afterLoginAction(res)).then(() => {
             myResolve("resolved successfully")
         })
-        // // set common authorization header for api calls
-        // const token = `Bearer ${res.data.access_token}`
-        // api.defaults.headers.common['Authorization'] = token
-        // // set user
-        // const { sub: { username, role } } = jwt_decode(token)
-        
-        // dispatch(setUser(username, role, res.data.user_data));
-        // dispatch({
-        //     type: SET_AUTHENTICATED
-        // });
-        // myResolve("resolved successfully")
-        // redirect to history page
-        // const push = location.state ? location.state.from : "/history"
-        // history.push(push)
     }, err => {
         myReject(err)
-        // set error state in order to validate form fields 
-        // setErrors({...err.response.data.errors})
-        // form.validateFields()
-        //     .catch(() => {
-        //         // clear errors and stop loading
-        //         setErrors({})
-        //         setFormLoading(false)
-        //     })
     })
     .catch(err => {
-        // console.log('catchError: ' + err)
     })
 
     })

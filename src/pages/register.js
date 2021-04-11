@@ -1,11 +1,18 @@
 import React from 'react';
 import { Form, Input, Button, Spin } from 'antd';
 import { useHistory } from 'react-router-dom';
+import {connect} from 'react-redux'
 
 import { api } from '../util/util';
 
-const Register = () => {
+const Register = (props) => {
     
+    React.useEffect(() => {
+        if (props.authenticated){
+            history.push('/')
+        }
+    })
+
     const [ errors, setErrors ] = React.useState({})
     const [ formLoading, setFormLoading ] = React.useState(false)
 
@@ -202,4 +209,8 @@ const Register = () => {
     )
 }
 
-export default Register
+const mapStateToProps = (state) => ({
+    authenticated: state.user.authenticated
+})
+
+export default connect(mapStateToProps)(Register)

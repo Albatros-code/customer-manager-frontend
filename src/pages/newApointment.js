@@ -269,7 +269,7 @@ const NewAppointment = (props) => {
     return (
         <>
             <h1>New appointment</h1>
-            {dayjs.tz().format('YYYY-MM-DD HH:mm')}
+            {/* {dayjs.tz().format('YYYY-MM-DD HH:mm')} */}
             <FormWrapper
                     form={form}
                     name="new_appointment"

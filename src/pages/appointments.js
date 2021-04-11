@@ -85,7 +85,7 @@ const Appointments = (props) => {
                 </Descriptions>
                 <p className="schedule-table-appointment-details-icons">
                     <Button disabled={true}>Change date</Button>
-                    <Button disabled={dateObj <= dayjs.tz()} onClick={deleteAppointment}>Delete</Button>
+                    <Button disabled={dateObj <= dayjs.tz()} onClick={deleteAppointment}>Cancel</Button>
                 </p>
             </div>
         )

@@ -6,11 +6,18 @@ $sider-width: clamp(160px, 25vw, 200px);
 
 body {
     // overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+#root {
+    width: 100vw;
 }
 
 .layout {
     overflow-x: hidden;
+    max-width: 1200px;
     min-height: 100vh;
+    margin: 0 auto;
     display: grid;
     grid-template-columns: 100vw;
     @media screen and (min-width: $breakpoint-sm) {
@@ -20,16 +27,20 @@ body {
 
     &-hide-sider {
         grid-template-columns: 100vw;
+        @media screen and (min-width: $breakpoint-sm) {
+            grid-template-columns: 100%;
+        }
     }
-    
+
     .header {
         background-color: white;
         position: fixed;
         z-index: 100;
         width: 100vw;
+        max-width: 1200px;
         display: flex;
         flex-direction: row;
-        align-items: center;   
+        align-items: center;
         
         &-container {
             display: inline-block;
@@ -43,7 +54,7 @@ body {
         }
 
         @mixin title {
-            margin: 0 0 0 1rem;
+            margin: 0 0 0 0.5rem;
             padding: 0;
             font-weight: 500;
             font-size: 1.5rem;
@@ -57,6 +68,21 @@ body {
             display: none;
             @media screen and (min-width: $breakpoint-sm){
                 display: inline-block;
+                // height: 48px;
+                // width: 280px;
+                // background-color: $color-primary;
+                // -webkit-mask: url(../images/logo_full.svg) no-repeat center;
+                // mask: url(../images/logo_full.svg) no-repeat center;
+                // mask-size: 280px;
+
+            }
+            img {
+                height: 48px;
+                min-width: 280;
+                padding: 5px;
+                padding-top: 0px;
+                position: relative;
+                top: 10px;
             }
         }
         .title-small {
@@ -65,10 +91,17 @@ body {
             @media screen and (min-width: $breakpoint-sm){
                 display: none;
             }
+            
+            img {
+                height: 48px;
+                padding: 8px 5px;      
+                // padding-top: 8px;
+                // background: $color-gray-light;
+            }
         }
 
         button {
-            margin-left: 1rem;
+            margin-left: 0.5rem;
         };
 
         .navbar {
@@ -157,6 +190,8 @@ body {
         background-color: white;
         padding: 0 2rem;
         height: 100%;
+        // width: 100%;
+        position: relative;
     }
 
     .footer {

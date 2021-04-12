@@ -1,36 +1,45 @@
 import React from 'react';
-import { Form, Input, Button, Spin } from 'antd';
+import { Form, Input, Button, Spin} from 'antd';
 import { useHistory } from 'react-router-dom';
-import {connect} from 'react-redux'
+import {connect} from 'react-redux';
 
 import { api } from '../util/util';
+import {user as userModel, resolveRules, mergeErrors} from '../util/data';
+
+import ModalConfirmation from '../components/ModalConfirmation';
 
 const Register = (props) => {
-    
+
     React.useEffect(() => {
         if (props.authenticated){
             history.push('/')
         }
-    })
-
-    const [ errors, setErrors ] = React.useState({})
-    const [ formLoading, setFormLoading ] = React.useState(false)
-
-    const [form] = Form.useForm();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    },[])
 
     const history = useHistory()
+    const [form] = Form.useForm()
+    
+    const [ errors, setErrors ] = React.useState({})
+    const [ formLoading, setFormLoading ] = React.useState(false)
+    const [ infoModalVisible, setInfoModalVisible ] = React.useState(false)
 
+    const data = resolveRules([
+        userModel.username,
+        userModel.password,
+        userModel.confirmPassword,
+        userModel.data.email,
+        userModel.data.phone,
+        userModel.data.fname,
+        userModel.data.lname,
+    ], {errors: errors})
+    
     const handleSubmit = () => {
         // setFormLoading(true)
     }
     
     const onFinish = (values) => {
         setFormLoading(true)
-
-        // make api call to log in (get tokens)
-        const options = {
-            withCredentials: true
-          };
 
         api.post('/registration', {
             username: values.username,
@@ -39,36 +48,29 @@ const Register = (props) => {
             phone: values.phone,
             fname: values.fname,
             lname: values.lname,
-        }, options)
+        }, {withCredentials: true})
         .then(res => {
+            setInfoModalVisible(true)
+            // console.log('register succesfull')
+            // console.log(res)
             // registered successfully go to login page
-            history.push("/login")
+            // history.push("/login")
         }, err => {
-            // set errors, validate form and clear errror
-            setErrors({...err.response.data.errors})
+            setErrors((prev) => {
+                const { errors: {data, ...rest}} = err.response.data
+                return mergeErrors({...data, ...rest}, prev)
+            })
             form.validateFields()
-                .catch(() => {
-                    // clear errors and stop loading
-                    setErrors({})
-                    setFormLoading(false)
-                })
+            setFormLoading(false)
         })
         .catch(err => {
             
         })
     };
 
-  const onFinishFailed = (errorInfo) => {
-      
-  };
-
-    const apiErrorValidator = 
-    { validator: async (rule, value, callback) => {
-        if (errors.hasOwnProperty(rule.field)) {
-            return Promise.reject(new Error(errors[rule.field]))
-        }
-        return Promise.resolve()
-    }}
+    const onFinishFailed = (errorInfo) => {
+        
+    };
 
     const fillIn = () => {
         let random = Math.floor(Math.random() * 100000);
@@ -76,7 +78,7 @@ const Register = (props) => {
         const values = {
             username: `User${random}`,
             password: "12345678",
-            confirmpassword: "12345678",
+            confirmPassword: "12345678",
             // email: `user${random}@email.com`,
             email: `customerappemail+${random}@gmail.com`,
             phone: `${Math.floor(100000000 + Math.random() * 900000000)}`,
@@ -91,7 +93,7 @@ const Register = (props) => {
         const values = {
             username: "",
             password: "",
-            confirmpassword: "",
+            confirmPassword: "",
             email: '',
             phone: '',
             fname: '',
@@ -101,12 +103,22 @@ const Register = (props) => {
         form.setFieldsValue(values)
     }
 
+    const handleKeyPress = (event) => {
+        
+        if(event.key === 'f'){
+            fillIn()
+        }
+        if(event.key === 'c'){
+            clear()
+        }
+    }
+
     return (
         <>
             <h1>Register</h1>
-            <Button onClick={fillIn}>fill in</Button>
-            <Button onClick={clear}>clear</Button>
-            <hr />
+            {/* <Button onClick={fillIn} onKeyPress={handleKeyPress}>fill in</Button>
+            <Button onClick={clear}>clear</Button> */}
+            
             <Spin spinning={formLoading}>
                 <Form
                     wrapperCol={{span: 18}}
@@ -116,95 +128,39 @@ const Register = (props) => {
                     className="register-form"
                     onFinish={onFinish}
                     onFinishFailed={onFinishFailed}
-                    validateTrigger="onSubmit"
+                    validateTrigger="onChange"
+                    // validateTrigger="onSubmit"
                     requiredMark={false}
                 >
-                    <Form.Item
-                        label="Login"
-                        name="username"
-                        rules={[
-                            { required: true, message: 'Please input your login!' },
-                            apiErrorValidator
-                        ]}
-                    >
-                        <Input/>
-                    </Form.Item>
-                    <Form.Item
-                        label="Password"
-                        name="password"
-                        rules={[
-                            { required: true, message: 'Please input your Password!' },
-                            { min: 8, message: 'The password must contain at least 8 character'}
-                        ]}
-                    >
-                        <Input.Password/>
-                    </Form.Item>
-                    <Form.Item
-                        label="Confirm password"
-                        name="confirmpassword"
-                        validateTrigger="onChange"
-                        rules={[
-                            { required: true, message: 'Please confirm your password!' },
-                            ({ getFieldValue }) => ({
-                                validator(_, value) {
-                                if (!value || getFieldValue('password') === value) {
-                                    return Promise.resolve();
-                                }
-                                return Promise.reject('Passwords do not match!');
-                                },
-                            }),
-                        ]}
-                    >
-                        <Input.Password/>
-                    </Form.Item>
-                    <Form.Item
-                        label="E-mail"
-                        name="email"
-                        rules={[
-                            { required: true, message: 'Please input your e-mail!' },
-                            { type: 'email', message: "The input is not valid E-mail!"},
-                            apiErrorValidator,
-                        ]}
-                    >
-                        <Input/>
-                    </Form.Item>
-                    <Form.Item
-                        label="Phone"
-                        name="phone"
-                        rules={[
-                            { required: true, message: 'Please input your phone number!' },
-                            { pattern: "^\\d{9}$", message: "Phone number should have 9 digit."},
-                            apiErrorValidator,
-                        ]}
-                    >
-                        <Input/>
-                    </Form.Item>
-                    <Form.Item
-                        label="Name"
-                        name="fname"
-                        rules={[
-                            { required: true, message: 'Please input your Username!' },
-                        ]}
-                    >
-                        <Input/>
-                    </Form.Item>
-                    <Form.Item
-                        label="Last name"
-                        name="lname"
-                        rules={[
-                            { required: true, message: 'Please input your Password!' },
-                        ]}
-                    >
-                        <Input/>
-                    </Form.Item>
-
+                    {data.map(item => (
+                        <Form.Item 
+                            label={item.label}
+                            name={item.field}
+                            rules={item.rules}
+                            key={item.field}
+                        >
+                            {item.field.includes('assword') ? <Input.Password/> : <Input/>}
+                        </Form.Item>
+                    ))}
                     <Form.Item wrapperCol={{sm: {offset: 6, span: 12}}}>
-                            <Button type="primary" onClick={handleSubmit} htmlType="submit" className="login-form-button">
+                            <Button type="primary"  onKeyPress={handleKeyPress} onClick={handleSubmit} htmlType="submit" className="login-form-button">
                             Register
                             </Button>
                     </Form.Item>
                 </Form>
             </Spin>
+            <ModalConfirmation 
+                visibilityState={[infoModalVisible, setInfoModalVisible]}
+                modalResolved={
+                    <div>
+                        <h3>Account created successfully</h3>
+                        <p>Email with a confirmation link has been sent to your email address.</p>
+                    </div>
+                }
+                // contentResolved={"Verification email was sent to your e-mail."}
+                onResolve={() => history.push("/login")}
+                onReject={() => {}}
+            />
         </>
     )
 }

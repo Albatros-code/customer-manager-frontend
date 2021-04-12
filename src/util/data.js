@@ -50,7 +50,46 @@ export const resolveRules = (data, {errors}) => {
 }
 
 export const user = {
-    username: 'username',
+    username:  {
+        field: 'username',
+        label: 'Username',
+        type: 'input',
+        rules: [
+            {required: true, message: "Can't be blank!" },
+            {pattern: new RegExp("^(?=[a-zA-Z0-9._]{8,20}$)(?!.*[_.]{2})[^_.].*[^_.]$"), message: "Not valid input."},
+            (errors) => {return apiErrorValidator(errors)},
+
+        ]
+    },
+    password:  {
+        field: 'password',
+        label: 'Password',
+        type: 'input',
+        rules: [
+            {required: true, message: "Can't be blank!" },
+            {min: 8, message: 'The password must contain at least 8 character'},
+            (errors) => {return apiErrorValidator(errors)},
+
+        ]
+    },
+    confirmPassword:  {
+        field: 'confirmPassword',
+        label: 'Confirm Password',
+        type: 'input',
+        rules: [
+            {required: true, message: "Please confirm your password!" },
+            // {min: 8, message: 'The password must contain at least 8 character'},
+            (errors) => {return apiErrorValidator(errors)},
+            () => ({getFieldValue}) => ({
+                validator(_, value) {
+                if (!value || getFieldValue('password') === value) {
+                    return Promise.resolve();
+                }
+                return Promise.reject('Passwords do not match!');
+                },
+            }),
+        ]
+    },
     data: {
         fname: {
             field: 'fname',
@@ -90,7 +129,7 @@ export const user = {
             type: 'input',
             rules: [
                 {required: true, message: "Can't be blank!" },
-                { type: 'email', message: "The input is not valid E-mail!"},
+                {type: 'email', message: "The input is not valid E-mail!"},
                 (errors) => {return apiErrorValidator(errors)},
             ]
         },

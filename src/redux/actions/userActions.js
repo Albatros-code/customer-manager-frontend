@@ -56,10 +56,24 @@ export const loginUser = (username, password, remember, history) => (dispatch) =
     return MyPromise
 }
 
-export const logoutUser = () => (dispatch) => {
+export const logoutUserAction = () => (dispatch) => {
     dispatch({
         type: SET_UNAUTHENTICATED
     });
+}
+
+export const logoutUser = (onResolve, onReject) => (dispatch) => {
+    delete api.defaults.headers.common["Authorization"]
+    api.post('/logout/refresh', {}, {withCredentials: true})
+        .then(res => {
+            dispatch({
+                type: SET_UNAUTHENTICATED
+            });
+            if (onResolve) onResolve()
+        }, err => {
+            if (onReject) onReject()
+        })
+    
 }
 
 export const setAuthenticated = () => ({

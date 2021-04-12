@@ -114,6 +114,12 @@ body {
 
             li {
                 float: right;
+                // margin-right: 10px; 
+                margin-left: 10px; 
+                @media screen and (min-width: $breakpoint-sm){
+                    // margin-right: 20px; 
+                    margin-left: 20px; 
+                }
             }
 
             h5 {

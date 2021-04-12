@@ -2,10 +2,6 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button, Drawer, Menu } from 'antd';
 import { MenuOutlined } from '@ant-design/icons';
-// import { useHistory } from 'react-router-dom';
-
-// import { useAppData } from '../util/context';
-import { api } from '../util/util';
 
 // redux
 import { connect } from 'react-redux';
@@ -39,14 +35,7 @@ const LayoutComp = (props) => {
     }
 
     const handleLogout = () => {
-        delete api.defaults.headers.common["Authorization"]
-        api.post('/logout/refresh', {}, {withCredentials: true})
-            .then(res => {
-                props.logoutUser()
-                // history.push("/login")
-            }, err => {
-                console.log(err.response.data)
-            })
+        props.logoutUser()
     }
 
     const sideMenu = <SideMenu userRole={userRole} username={username} authenticated={authenticated} currentPage={currentPage} handleMenuClick={handleMenuClick}/>
@@ -66,8 +55,8 @@ const LayoutComp = (props) => {
                         >
                             <MenuOutlined/>
                         </Button>
-                        <span className="title-big"><img src={logo_full} alt="logo"/></span>
-                        <span className="title-small"><img src={logo} alt="logo"/></span>
+                        <span className="title-big"><Link to="/"><img src={logo_full} alt="logo"/></Link></span>
+                        <span className="title-small"><Link to="/"><img src={logo} alt="logo"/></Link></span>
                     </div>
                 <Menu className="navbar" theme="light" mode="horizontal"  onClick={handleMenuClick} selectedKeys={[currentPage]}>
                     {/* defaultSelectedKeys={[useLocation().pathname]}> */}

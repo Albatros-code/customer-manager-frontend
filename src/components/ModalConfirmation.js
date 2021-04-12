@@ -7,7 +7,7 @@ const ModalConfirmation = (props) => {
         visibilityState: [modalVisible, setModalVisible],
         title,
         contentInit,
-        contentResolved,
+        // contentResolved,
         contentRejected,
         onConfirm,
         onResolve,
@@ -17,8 +17,11 @@ const ModalConfirmation = (props) => {
     const containerRef = React.createRef()
 
     const [modalLoading, setModalLoading] = React.useState(false)
-    const [modalResolved, setModalResolved] = React.useState(false)
+    const [modalResolvedUseState, setModalResolved] = React.useState(false)
     const [containerHeight, setContainerHeight] = React.useState(false)
+
+    const modalResolved = props.modalResolved ? props.modalResolved : modalResolvedUseState
+    const contentResolved = props.modalResolved ? props.modalResolved : props.contentResolved
 
     React.useEffect(() => {
         if (modalVisible){

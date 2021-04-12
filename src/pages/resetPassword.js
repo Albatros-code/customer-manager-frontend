@@ -1,7 +1,14 @@
 import React from 'react';
-import { useLocation, useHistory } from 'react-router-dom';
-import { Form, Input, Button } from 'antd';
-import { api } from '../util/util';
+import {connect} from 'react-redux';
+import {useLocation, useHistory} from 'react-router-dom';
+import {Form, Input, Button, Spin} from 'antd';
+
+import {logoutUser} from '../redux/actions/userActions'
+
+import {api} from '../util/util';
+import {user as userModel, resolveRules, mergeErrors} from '../util/data';
+
+import ModalConfirmation from '../components/ModalConfirmation';
 
 function useQuery() {
     return new URLSearchParams(useLocation().search);
@@ -10,6 +17,12 @@ function useQuery() {
 
 const ResetPassword = (props) => {
 
+    const {logoutUser} = props
+
+    React.useEffect(() =>{
+        logoutUser()
+    }, [logoutUser])
+
     const history = useHistory()
     
     const query = useQuery()
@@ -17,26 +30,39 @@ const ResetPassword = (props) => {
 
     const [form] = Form.useForm();
 
+    const [ errors, setErrors ] = React.useState({})
+    const [ formLoading, setFormLoading ] = React.useState(false)
+    const [ infoModalVisible, setInfoModalVisible ] = React.useState(false)
+    const [ errorModalVisible, setErrorModalVisible ] = React.useState(false)
+
+    const data = resolveRules([
+        userModel.password,
+        userModel.confirmPassword
+    ], {errors: errors})
+
+    console.log(data)
+
     const onFinish = (data) => {
+        setFormLoading(true)
         api.post('/password-reset/change-password', 
             {
                 token: token,
                 password: data.password,
             }, {withCredentials: true})
             .then(res => {
-                // console.log('password changed successfully')
-                // console.log(res)
+                setInfoModalVisible(true)
             }, err => {
-                // console.log('password not changed')
-                // console.log(err)
+                if (err.response.data.hasOwnProperty('errors')){
+                    setErrors((prev) => {mergeErrors(err.response.data.errors, prev)})
+                    form.validateFields()
+                } else {
+                    setErrorModalVisible(true)
+                }
             })
             .catch(err => {
-                // console.log('server error')
-                // console.log(err)
+                setErrorModalVisible(true)
             })
-            .finally(() => {
-                history.push('/login')
-            })
+            .finally(() => {setFormLoading(false)})
     }
 
     const onFinishFailed = (data) => {
@@ -52,51 +78,68 @@ const ResetPassword = (props) => {
             className="reset-password-form"
             onFinish={onFinish}
             onFinishFailed={onFinishFailed}
-            validateTrigger="onSubmit"
+            validateTrigger="onChange"
             requiredMark={false}
         >
-            <Form.Item
-                label="New password"
-                name="password"
-                rules={[
-                    { required: true, message: 'Please input your Password!' },
-                    { min: 8, message: 'The password must contain at least 8 character'}
-                ]}
-            >
-                <Input.Password/>
-            </Form.Item>
-            <Form.Item
-                label="Confirm password"
-                name="confirmpassword"
-                validateTrigger="onChange"
-                rules={[
-                    { required: true, message: 'Please confirm your password!' },
-                    ({ getFieldValue }) => ({
-                        validator(_, value) {
-                        if (!value || getFieldValue('password') === value) {
-                            return Promise.resolve();
-                        }
-                        return Promise.reject('Passwords do not match!');
-                        },
-                    }),
-                ]}
-            >
-                <Input.Password/>
-            </Form.Item>
-
-            <Form.Item wrapperCol={{sm: {offset: 6, span: 12}}}>
-                    <Button type="primary" htmlType="submit" className="login-form-button">
-                    Change password
-                    </Button>
-            </Form.Item>
+            <Spin spinning={formLoading}>
+                {data.map(item => (
+                    <Form.Item 
+                        label={item.label}
+                        name={item.field}
+                        rules={item.rules}
+                        key={item.field}
+                    >
+                        {item.field.includes('assword') ? <Input.Password/> : <Input/>}
+                    </Form.Item>
+                ))}
+                <Form.Item wrapperCol={{sm: {offset: 6, span: 12}}}>
+                        <Button type="primary" htmlType="submit" className="login-form-button">
+                        Change password
+                        </Button>
+                </Form.Item>
+            </Spin>
         </Form>
+
+    const confirmationModal = 
+        <ModalConfirmation 
+            visibilityState={[infoModalVisible, setInfoModalVisible]}
+            modalResolved={
+                <div>
+                    <h3>Password changed successfully</h3>
+                    <p>Please use new password to log in to your account.</p>
+                </div>
+            }
+            onResolve={() => history.push("/login")}
+        />
+    
+    const errorModal = 
+        <ModalConfirmation 
+            visibilityState={[errorModalVisible, setErrorModalVisible]}
+            modalResolved={
+                <div>
+                    <h3>Something went wrong</h3>
+                    <p>Password cannot be changed.</p>
+                </div>
+            }
+            onResolve={() => history.push("/login")}
+        />
 
     return(
         <>
             <h1>Reset password</h1>
             {resetPasswordForm}
+            {confirmationModal}
+            {errorModal}
         </>
     )
 }
 
-export default ResetPassword
+const mapStateToProps = (state) => ({
+
+})
+
+const mapDispatchToProps = {
+    logoutUser
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(ResetPassword)

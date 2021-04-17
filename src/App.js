@@ -33,6 +33,7 @@ import ResetPassword from './pages/resetPassword'
 
 import AdminAppointments from './pages/adminAppointments'
 import Settings from './pages/settings'
+import AdminUtils from './pages/adminUtils'
 
 
 
@@ -67,6 +68,8 @@ function App() {
               
               <ProtectedRoute exact path="/admin/appointments" component={AdminAppointments}/>
               <ProtectedRoute exact path="/admin/settings" component={Settings}/>
+              <ProtectedRoute exact path="/admin/utils" component={AdminUtils}/>
+              
               <ProtectedRoute path="/users/:userId" component={Profile}/>
 
               <Route component={NotFound} />

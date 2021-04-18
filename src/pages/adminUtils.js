@@ -1,5 +1,5 @@
 import React from 'react'; 
-import {Button, Spin} from 'antd';
+import {Button} from 'antd';
 
 import ModalConfirmation from '../components/ModalConfirmation';
 import {api} from '../util/util';
@@ -7,7 +7,6 @@ import {api} from '../util/util';
 const AdminUtils = (props) => {
 
     const [resetDatabaseVisible, setResetDatabaseModalVisible] = React.useState(false);
-    const [resetDatabaseButtonLoading, setResetDatabaseButtonLoading] = React.useState(false);
 
     const resetDatabaseModal = 
         <ModalConfirmation 
@@ -48,12 +47,11 @@ const AdminUtils = (props) => {
 
             <h2>Reset database content</h2>
             <p>Function deletes all users beside sample users (User1, User2) and creates bunch of new users and appointments for them for next 4 weeks. Having these data, interfaces available for admin can be  reviewed better.</p>
-            <Spin spinning={resetDatabaseButtonLoading}>
-                <Button style={{display: 'block', marginLeft: 'auto', marginRight: 'auto'}} 
-                    onClick={() => {
-                        setResetDatabaseModalVisible(true)
-                    }}>Reset database</Button>
-            </Spin>
+
+            <Button style={{display: 'block', marginLeft: 'auto', marginRight: 'auto'}} 
+                onClick={() => {
+                    setResetDatabaseModalVisible(true)
+                }}>Reset database</Button>
             {resetDatabaseModal}
 
         </>

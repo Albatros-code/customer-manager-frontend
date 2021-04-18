@@ -21,7 +21,7 @@ body {
     display: grid;
     grid-template-columns: 100vw;
     @media screen and (min-width: $breakpoint-sm) {
-        grid-template-columns: $sider-width auto;
+        grid-template-columns: $sider-width calc(100vw - #{$sider-width});
     }
     grid-template-rows: max-content auto;
 

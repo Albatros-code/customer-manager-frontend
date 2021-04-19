@@ -1,0 +1,53 @@
+
+.database-interface-table {
+    .ant-table-pagination.ant-pagination {
+        margin-right: 120px;
+        @media only screen and (max-width: 576px){
+            flex-wrap: wrap;
+            margin-right: auto;
+            margin-bottom: 50px;
+        }
+        // >li {
+        //     @media only screen and (max-width: 576px){
+        //         margin-top: 10px;
+        //     }
+        // }
+    }
+    .ant-pagination-options {
+        @media only screen and (max-width: 576px){
+            display: block;
+        }
+    }
+}
+.database-interface-table-wrapper {
+    position: relative;
+
+    .pagination {
+        position: absolute;
+        width: 105px;
+        right: 0;
+        bottom: 0;
+        margin: 16px 0;
+        @media only screen and (max-width: 576px){
+            left: auto;
+            right: 0;
+        }
+
+        &__hidden {
+            display:none
+        }
+
+        &--select {
+            float: right;
+            width: 60px;
+        }
+
+        &--text {
+            position: relative;
+            font-size: 14px;
+            
+    line-height: 22px;
+            top: 1px
+        }
+    }
+}

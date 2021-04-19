@@ -3,26 +3,39 @@ import { connect } from "react-redux";
 
 import {getServices} from "../redux/actions/dataActions";
 
-const AdminServices = (props) => {
-    
-    const {services, getServices} = props
-    
-    React.useEffect(() => {
-        getServices() 
-    },[getServices, services])
+import DatabaseTable from "../components/DatabaseTable";
 
+const AdminServices = () => {
+
+    const columns = (searchProps) => [
+        {
+            title: 'Name',
+            dataIndex: ['name'],
+            sorter: true,
+            ellipsis: true,
+            width: 140,
+            ...searchProps(['name']),
+        },
+        {
+            title: 'Time',
+            dataIndex: ['time'],
+            sorter: true,
+            width: 140,
+        },
+        {
+            title: 'Prize',
+            dataIndex: ['prize'],
+            width: 135,
+        },
+    ]
 
     return (
         <>
             <h1>Services</h1>
-            {services ?
-            <ol>
-                {services.map(service => (
-                    <li key={service.name}>{service.name}</li>
-                ))}
-            </ol>
-            : <p>loading</p>
-            }
+            <DatabaseTable 
+                columns={columns}
+                dataUrl={'/services-admin'}
+            />
         </>
     )
 }

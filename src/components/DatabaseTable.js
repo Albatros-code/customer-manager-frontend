@@ -1,12 +1,16 @@
 import React from "react";
 import {Table} from "antd";
-import {Input, Space, Button, Select} from "antd";
+import {Input, Space, Button, Select, Modal} from "antd";
 import { SearchOutlined } from '@ant-design/icons';
 
 import {api} from "../util/util"
 
+export const DatabaseTableContext = React.createContext([]);
+
+export const useDatabaseTableContext = () => React.useContext(DatabaseTableContext);
+
 const DatabaseTable = (props) => {
-    const {dataUrl} = props
+    const {dataUrl, itemDetails, defaultItemSelected} = props
     const columns = props.columns(getColumnSearchProps)
 
     const [data, setData] = React.useState({data: [], total: null})
@@ -14,24 +18,44 @@ const DatabaseTable = (props) => {
     const [pagination, setPagination] = React.useState({current: 1, pageSize: 10})
     const [filter, setFilter] = React.useState(null)
     const [order, setOrder] = React.useState(null)
-        
 
-    React.useEffect(() => {
-        function getData(){
+    const [detailsVisible, setDetailsVisible] = React.useState(false)
+
+    
+    const getData = React.useCallback(
+        (filterVal = filter) => {
+            setLoading(true)
             api.get(dataUrl, {
                 params: {
                     pagination: pagination.pageSize,
                     page: pagination.current,
                     order: order,
-                    filter: filter,
+                    filter: filterVal,
                 }})
-            .then(res => {
-                setData({data: res.data.data, total: res.data.total})
-                setLoading(false)
-            }) 
-        }
-        getData()
-    },[pagination, filter, order, dataUrl])    
+                .then(res => {
+                    setData({data: res.data.data, total: res.data.total})
+                    setLoading(false)
+                    if (defaultItemSelected){
+                        setDetailsVisible(0)
+                    }
+                }, err => {
+                }) 
+            }, [dataUrl, defaultItemSelected, filter, order, pagination]);
+            
+    // React.useEffect(() => {
+    //     if (defaultItemSelected && data.data.length > 1){
+    //         getData({id: defaultItemSelected})
+    //         setDetailsVisible(0)
+    //     }
+    // },[data, defaultItemSelected, getData])
+            
+    React.useEffect(() => {
+        // if (!Number.isInteger(detailsVisible)){
+            console.log('effect')
+            const filterQuery = defaultItemSelected ? {id: defaultItemSelected} : undefined
+            getData(filterQuery)        
+        // }
+    },[defaultItemSelected, getData])  
 
     
     const handleSearch = (selectedKeys, confirm, dataIndex, filters) => {
@@ -51,15 +75,20 @@ const DatabaseTable = (props) => {
     }
     
     function orderQuery(sorter){
-        let queryString = sorter.order !== undefined ? sorter.order + '_' : ''
-        if (sorter.hasOwnProperty('field') && sorter.field.length > 0){
-            sorter.field.forEach((item, index) => {
-                queryString = queryString + item
-                if(sorter.field.length !== index + 1){
-                    queryString = queryString + '__'
-                }
-            })
+        let queryString = ''
+        if (sorter.order !== undefined){
+            queryString = sorter.order + '_'
+        } else {
+            return queryString
         }
+
+        sorter.field.forEach((item, index) => {
+            queryString = queryString + item
+            if(sorter.field.length !== index + 1){
+                queryString = queryString + '__'
+            }
+        })
+
         return queryString
     }
     
@@ -109,7 +138,6 @@ const DatabaseTable = (props) => {
         },
     })};
 
-
     return (
         <div className="database-interface-table-wrapper">
             <Table
@@ -123,10 +151,16 @@ const DatabaseTable = (props) => {
                     showSizeChanger: true,
                     simple: true
                 }}
+                rowClassName={() => itemDetails ? 'row__clickable' : ''}
                 dataSource={data.data}
                 loading={loading}
                 onChange={handleTableChange}
                 scroll={{x: true}}
+                onRow={(record, rowIndex) => {
+                    return {
+                        onClick: () => {setDetailsVisible(rowIndex)},
+                    };
+                }}
             />
             <div className={`pagination ${data.data.length === 0 ? 'pagination__hidden' : ''}`}>
                 <span className="pagination--text">show:</span>
@@ -149,8 +183,41 @@ const DatabaseTable = (props) => {
                     ))}
                 </Select>
             </div>
+            {itemDetails ?
+                <DatabaseTableContext.Provider value={{
+                    updateTableContent: getData
+                }}>
+                    <ItemDetails 
+                        visible={detailsVisible}
+                        setVisible={setDetailsVisible}
+                        record={data.data[detailsVisible]}
+                        details={itemDetails}
+                    />
+                </DatabaseTableContext.Provider>
+                : null
+            }
         </div>
     )
 }
 
 export default DatabaseTable
+
+export const ItemDetails = (props) => {
+
+    const {visible, setVisible, details, record} = props
+
+    return (
+        Number.isInteger(visible) ? 
+            <Modal
+                className="database-interface-table--detail"
+                centered
+                visible={Number.isInteger(visible)}
+                onCancel={() => {setVisible(prev=>!prev)}}
+                footer={null}
+            >
+                {details(record, setVisible)}
+          </Modal>
+        : null
+        
+    )
+}

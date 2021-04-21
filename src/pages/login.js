@@ -40,18 +40,22 @@ const Login = (props) => {
                 const push = location.state !== undefined ? location.state.from : '/appointments'
                 history.push(push)
             }, err => {
-                    // set error state in order to validate form fields 
-                    setErrors({...err.response.data.errors})
+                    // set error state in order to validate form fields
+                    let skipGeneralError = {}
+                    if (err.response) {
+                        setErrors({...err.response.data.errors})
+                        skipGeneralError = err.response.data.errors.general ? {general_: err.response.data.errors.general} :{}
+                    } else {
+                        setErrors({general: "Something went wrong."})
+                        skipGeneralError = {general_: "Something went wrong."}
+                    }
                     form.validateFields()
                         .catch(() => {
                             // clear errors
-                            const skipGeneralError = err.response.data.errors.general ? {general_: err.response.data.errors.general} :{}
                             setErrors(skipGeneralError)
+                            setFormLoading(false)
                         })
             })
-            .finally(
-                setFormLoading(false)
-            )
     };
 
   const onFinishFailed = (errorInfo) => {
@@ -142,7 +146,7 @@ const Login = (props) => {
             <p>Please insert your e-mail address and follow further instructions.</p>
             <Form
                 form={formResetPassword}
-                validateTrigger="onSubmit"
+                validateTrigger="onChange"
             >
                 <Form.Item
                     name="email"
@@ -181,10 +185,7 @@ const Login = (props) => {
     return (
         <>
             <h1>Login</h1>
-            {/* {props.authenticated ?
-            <p>Logged in as {props.username}</p>
-            : */}
-            <Spin spinning={formLoading || props.authenticated}>
+            <Spin spinning={formLoading}>
                 <Form
                     form={form}
                     name="normal_login"
@@ -238,7 +239,6 @@ const Login = (props) => {
                 </Form>
                 {resetPasswordModal}
             </Spin>
-            {/* } */}
         </>
     )
 }

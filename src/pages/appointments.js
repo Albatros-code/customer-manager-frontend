@@ -21,7 +21,7 @@ const Appointments = (props) => {
         api.get(`/users/${id}/appointments`)
             .then(res => {
                 
-                setAppointments(res.data)
+                setAppointments(res.data.data.sort((a, b) => dayjs(b.date).tz().unix() - dayjs(a.date).tz().unix()))
             }, err => {
 
             })

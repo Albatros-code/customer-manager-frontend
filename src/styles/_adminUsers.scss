@@ -2,7 +2,7 @@
 .database-interface-table {
     .ant-table-pagination.ant-pagination {
         margin-right: 120px;
-        @media only screen and (max-width: 576px){
+        @media only screen and (max-width: $breakpoint-sm){
             flex-wrap: wrap;
             margin-right: auto;
             margin-bottom: 50px;
@@ -14,8 +14,23 @@
         // }
     }
     .ant-pagination-options {
-        @media only screen and (max-width: 576px){
+        @media only screen and (max-width: $breakpoint-sm){
             display: block;
+        }
+    }
+
+    .row__clickable {
+        cursor: pointer;
+    }
+
+    &--detail {
+        min-width: 200px!important;
+        max-width: Min(900px, calc(100% - 64px))!important;
+        padding-top: 24px;
+        @media only screen and (max-width: $breakpoint-sm){
+            max-width: Min(900px, calc(100% - 36px))!important;
+            padding-top: 10px;
+            padding-bottom: 10px;
         }
     }
 }
@@ -28,7 +43,7 @@
         right: 0;
         bottom: 0;
         margin: 16px 0;
-        @media only screen and (max-width: 576px){
+        @media only screen and (max-width: $breakpoint-sm){
             left: auto;
             right: 0;
         }

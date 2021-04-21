@@ -32,8 +32,9 @@ import EmailVerification from './pages/email-verification'
 import ResetPassword from './pages/resetPassword'
 import AdminServices from './pages/adminServices'
 import AdminUsers from './pages/adminUsers'
-
 import AdminAppointments from './pages/adminAppointments'
+
+import AdminSchedule from './pages/adminSchedule'
 import Settings from './pages/settings'
 import AdminUtils from './pages/adminUtils'
 
@@ -68,13 +69,15 @@ function App() {
               <ProtectedRoute exact path="/appointments" component={Appointments}/>
               <ProtectedRoute exact path="/new-appointment" component={NewAppointment}/>
               
+              <ProtectedRoute exact path="/admin/schedule" component={AdminSchedule}/>
               <ProtectedRoute exact path="/admin/appointments" component={AdminAppointments}/>
               <ProtectedRoute exact path="/admin/services" component={AdminServices}/>
               <ProtectedRoute exact path="/admin/users" component={AdminUsers}/>
               <ProtectedRoute exact path="/admin/settings" component={Settings}/>
               <ProtectedRoute exact path="/admin/utils" component={AdminUtils}/>
               
-              <ProtectedRoute path="/users/:userId" component={Profile}/>
+              <ProtectedRoute path="/admin/users/:userId" component={AdminUsers}/>
+              <ProtectedRoute path="/admin/appointments/:itemId" component={AdminAppointments}/>
 
               <Route component={NotFound} />
             </Switch>

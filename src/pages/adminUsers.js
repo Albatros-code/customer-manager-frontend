@@ -1,36 +1,52 @@
 import React from "react";
 import { connect } from "react-redux";
-import {useParams} from 'react-router-dom';
 
 import DatabaseTable from "../components/DatabaseTable";
 import UserDetails from "../components/UserDetails";
 
 const AdminUsers = (props) => {
 
-    // const userID = "607af83e41351f47327c18f3"
-    // const userId = null
-    const {userId} = useParams()
+    // const goToUser = React.useCallback(() => {
+    //     const isActionPOP = history.action === 'POP'
+    //     const showUserById = state && state.showUserById ? true : false
+
+    //     if ((isActionPOP && userId) || (!isActionPOP && showUserById)){
+    //         return userId
+    //     } else {
+    //         return null
+    //     }
+    // },[history.action, state, userId])
     
     const columns = (searchProps) => [
         {
+            key: 'id',
+            title: 'Id',
+            dataIndex: ['id'],
+            sorter: true,
+            ellipsis: true,
+            maxWidth: 50,
+            ...searchProps(['id']),
+        },
+        {
+            key: 'lname',
             title: 'Last Name',
             dataIndex: ['data','lname'],
             sorter: true,
             ellipsis: true,
             width: 140,
-            filteredValue: userId ? [''] : null,
             ...searchProps(['data','lname']),
         },
         {
+            key: 'fname',
             title: 'First Name',
             dataIndex: ['data','fname'],
             sorter: true,
             ellipsis: true,
             width: 140,
-            filteredValue: userId ? [''] : null,
             ...searchProps(['data','fname']),
         },
         {
+            key: 'username',
             title: 'Username',
             dataIndex: ['username'],
             ellipsis: true,
@@ -38,6 +54,7 @@ const AdminUsers = (props) => {
             ...searchProps(['username']),
         },
         {
+            key: 'email',
             title: 'Email',
             dataIndex: ['data','email'],
             ellipsis: true,
@@ -45,6 +62,7 @@ const AdminUsers = (props) => {
             ...searchProps(['data','email']),
         },
         {
+            key: 'phone',
             title: 'Phone',
             dataIndex: ['data','phone'],
             width: 120,
@@ -69,11 +87,12 @@ const AdminUsers = (props) => {
     return (
         <>
             <h1>Users</h1>
+    
             <DatabaseTable 
                 columns={columns}
                 dataUrl={'/users'}
                 itemDetails={itemDetails}
-                defaultItemSelected={userId}
+                useQueryParams={true}             
             />
         </>
     )

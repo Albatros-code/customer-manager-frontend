@@ -70,14 +70,11 @@ function App() {
               <ProtectedRoute exact path="/new-appointment" component={NewAppointment}/>
               
               <ProtectedRoute exact path="/admin/schedule" component={AdminSchedule}/>
+              <ProtectedRoute exact path="/admin/users" component={AdminUsers}/>
               <ProtectedRoute exact path="/admin/appointments" component={AdminAppointments}/>
               <ProtectedRoute exact path="/admin/services" component={AdminServices}/>
-              <ProtectedRoute exact path="/admin/users" component={AdminUsers}/>
               <ProtectedRoute exact path="/admin/settings" component={Settings}/>
               <ProtectedRoute exact path="/admin/utils" component={AdminUtils}/>
-              
-              <ProtectedRoute path="/admin/users/:userId" component={AdminUsers}/>
-              <ProtectedRoute path="/admin/appointments/:itemId" component={AdminAppointments}/>
 
               <Route component={NotFound} />
             </Switch>

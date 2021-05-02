@@ -1,6 +1,6 @@
 import React from 'react';
 import {Divider} from 'antd';
-import {useHistory} from 'react-router-dom';
+import {useHistory} from 'react-router-dom'
 
 import DataList from '../components/DataList';
 import DatabaseTable, {useDatabaseTableContext} from './DatabaseTable';
@@ -17,7 +17,6 @@ const UserDetails = (props) => {
             <UserData
                 userId={userDoc.id}
                 userData={userDoc.data}
-                // setNeedUpdate={setNeedUpdate}
             />
             <UserAppointments 
                 userId={userDoc.id}
@@ -85,8 +84,8 @@ const UserData = (props) => {
 }
 
 const UserAppointments = (props) => {
-    const history = useHistory()
     const {userId} = props
+    const history = useHistory()
 
     const columns = () => [
         { 

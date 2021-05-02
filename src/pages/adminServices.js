@@ -9,6 +9,7 @@ const AdminServices = () => {
 
     const columns = (searchProps) => [
         {
+            key: 'name',
             title: 'Name',
             dataIndex: ['name'],
             sorter: true,
@@ -17,12 +18,14 @@ const AdminServices = () => {
             ...searchProps(['name']),
         },
         {
+            key: 'time',
             title: 'Time',
             dataIndex: ['time'],
             sorter: true,
             width: 140,
         },
         {
+            key: 'prize',
             title: 'Prize',
             dataIndex: ['prize'],
             width: 135,
@@ -35,6 +38,7 @@ const AdminServices = () => {
             <DatabaseTable 
                 columns={columns}
                 dataUrl={'/services-admin'}
+                useQueryParams={true}
             />
         </>
     )

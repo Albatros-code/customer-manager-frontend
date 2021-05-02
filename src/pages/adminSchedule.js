@@ -134,7 +134,7 @@ const AdminAppointments = (props) => {
                 </Descriptions>
                 <p className="schedule-table-appointment-details-icons">
                     <Button disabled={true}>Change date</Button>
-                    <Button onClick={() => {history.push(`/users/${appointment.user_id}`)}}>Show User</Button>
+                    <Button onClick={() => {history.push(`/admin/users/${appointment.user_id}`)}}>Show User</Button>
                     <Button onClick={deleteAppointment}>Delete</Button>
                 </p>
                     {/* <Button><EditOutlined /></Button><UserOutlined /><DeleteOutlined /></p> */}

@@ -1,13 +1,15 @@
 import React from "react";
 import { connect } from "react-redux";
-import {useParams, useHistory} from 'react-router-dom';
+import {useHistory} from 'react-router-dom';
 
 import DatabaseTable from "../components/DatabaseTable";
 import {dayjsExtended as dayjs} from '../util/util'
 
+var customParseFormat = require('dayjs/plugin/customParseFormat')
+dayjs.extend(customParseFormat)
+
 const AdminAppointments = (props) => {
     const history = useHistory()
-    const {itemId} = useParams()
     
     const columns = (searchProps) => [
         {
@@ -15,27 +17,25 @@ const AdminAppointments = (props) => {
             dataIndex: ['service'],
             sorter: true,
             ellipsis: true,
-            filteredValue: itemId ? [''] : null,
             ...searchProps(['service']),
         },
         {
-            title: 'Day',
-            dataIndex: ['day'],
+            title: 'Date',
+            dataIndex: ['date'],
             sorter: true,
             ellipsis: true,
             width: 110,
-            render: (text, record, index) => dayjs(record.date).tz().format('DD-MM-YYYY'),
-            filteredValue: itemId ? [''] : null,
-            ...searchProps(['date']),
+            render: (text, record, index) => dayjs(record.date).tz().format('DD-MM-YYYY HH:mm'),
+            ...searchProps(['date'], 'date'),
         },
-        {
-            title: 'Time',
-            dataIndex: ['time'],
-            ellipsis: true,
-            width: 110,
-            render: (text, record, index) => dayjs(record.date).tz().format('HH:mm'),
-            ...searchProps(['date']),
-        },
+        // {
+        //     title: 'Time',
+        //     dataIndex: ['date'],
+        //     ellipsis: true,
+        //     width: 110,
+        //     render: (text, record, index) => dayjs(record.date).tz().format('HH:mm'),
+        //     ...searchProps(['date']),
+        // },
     ]
 
     const itemDetails = (record, setVisible) => {
@@ -45,7 +45,7 @@ const AdminAppointments = (props) => {
             <>
                 <h2>{record.service} on {dayjs(record.date).tz().format('DD-MM-YYYY')}</h2>
                 <p>Appointment details</p>
-                <p><strong>User: </strong><button onClick={() => {history.push(`/admin/users/${record.user}`)}}>{record.user}</button></p>
+                <p><strong>User: </strong><button onClick={() => {history.push(`/admin/users?filter=%7B"id__icontains"%3A"${record.user}"%7D&page=1&showRow=0`)}}>{record.user}</button></p>
             </>
         )
     } 
@@ -57,7 +57,7 @@ const AdminAppointments = (props) => {
                 columns={columns}
                 dataUrl={'/appointments'}
                 itemDetails={itemDetails}
-                defaultItemSelected={itemId}
+                useQueryParams={true}
             />
         </>
     )

@@ -10,15 +10,28 @@ const ProtectedRoute =({ component: Component, authenticated, role, ...rest }) =
     const isRoleOk = (rest.path.includes('admin') && role === 'admin') || (!rest.path.includes('admin')) ? true : false
 
     return (
-        <Route {...rest} render={(props) => (
-            authenticated && isRoleOk
-            ? <Component {...props} />
-            : 
-            <Redirect to={{
-                pathname: '/login',
-                state: { from: location.pathname },
-            }} />
-        )} />
+        Component ?
+            <Route {...rest} render={(props) => (
+                authenticated && isRoleOk
+                ? <Component {...props} />
+                : 
+                <Redirect to={{
+                    pathname: '/login',
+                    state: { from: location.pathname },
+                }} />
+            )} />
+            :
+            <Route {...rest}>
+                {
+                    authenticated && isRoleOk
+                    ? rest.children
+                    : 
+                    <Redirect to={{
+                        pathname: '/login',
+                        state: { from: location.pathname },
+                    }} />
+                }
+            </Route>
     )
 }
 

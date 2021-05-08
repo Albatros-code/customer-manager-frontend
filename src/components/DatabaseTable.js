@@ -48,7 +48,7 @@ const DatabaseTable = (props) => {
 
 
     const getData = React.useCallback(() => {
-        console.log('data update')
+
         setLoading(true)
         setDetailsVisible(false)
 
@@ -89,7 +89,7 @@ const DatabaseTable = (props) => {
     // };
     
     function filterToFilteredInfo(filter){
-        // console.log(filter)
+        
         const filterObj = JSON.parse(filter)
         const newObj = Object.fromEntries(Object.entries(filterObj).map(([key, val]) => {
             
@@ -106,7 +106,8 @@ const DatabaseTable = (props) => {
         for (const [key, value] of Object.entries(newObj)) {
             if (key.includes('__gt') || key.includes('__lt')){
                 delete newObj[key]
-                composedFilters['date'] = {...composedFilters['date'], [key]: value}
+                const dataIndexString = key.split('__gt')[0].split('__lt')[0]
+                composedFilters[dataIndexString] = {...composedFilters[dataIndexString], [key]: value}
             }
         }
 
@@ -124,7 +125,7 @@ const DatabaseTable = (props) => {
             order: orderVal,
             field: fieldVal,
         }
-        console.log(sorterObj)
+        
         return sorterObj
     }
 
@@ -169,46 +170,44 @@ const DatabaseTable = (props) => {
         } 
     };
     
-    const handleReset = (selectedKeys, dataIndex, type) => {
-        if (selectedKeys.length !== 0){
-            const removeSingleFilter = () => {
-                if (filter) {
-                    if (type !== 'date'){
-                        const {[Object.keys(getFilterQuery(dataIndex, selectedKeys))[0]]: remove, ...rest} = {...JSON.parse(filter)}
-                        return Object.keys(rest).length !== 0 ? {filter: JSON.stringify(rest)} : null
-                    } else {
-                        console.log(selectedKeys)
-                        console.log(dataIndex)
-                        let newFilter = {...JSON.parse(filter)}
-                        for (const [key, value] of Object.entries(JSON.parse(selectedKeys[0]))) {
-                            delete newFilter[key]
-                        }
-                        return Object.keys(newFilter).length !== 0 ? {filter: JSON.stringify(newFilter)} : null
-                    }
+    const handleReset = (selectedKeys, dataIndex, confirm, type) => {
+        const removeSingleFilter = () => {
+            if (filter) {
+                if (type !== 'date'){
+                    const {[Object.keys(getFilterQuery(dataIndex, selectedKeys))[0]]: remove, ...rest} = {...JSON.parse(filter)}
+                    return Object.keys(rest).length !== 0 ? {filter: JSON.stringify(rest)} : null
                 } else {
-                    return null
+                    let newFilter = filter ? {...JSON.parse(filter)} : {}
+                    delete newFilter[dataIndex.join().replace(',', '__') + '__gt']
+                    delete newFilter[dataIndex.join().replace(',', '__')  + '__lt']
+                    return Object.keys(newFilter).length !== 0 ? {filter: JSON.stringify(newFilter)} : null
                 }
-            }
-            const {filter: excluded, ...restQueryParams} = queryParams
-            
-            if (useQueryParams){
-                history.push({
-                    search: queryString.stringify({
-                        ...restQueryParams,
-                        page: 1,
-                        ...(removeSingleFilter())
-                    })
-                })
             } else {
-                setPage(1)
-                const newFilter = removeSingleFilter()
-                if (newFilter){
-                    setFilter(newFilter.filter)
-                } else {
-                    setFilter()
-                }
+                return null
             }
         }
+
+        const {filter: excluded, ...restQueryParams} = queryParams
+        
+        if (useQueryParams){
+            history.push({
+                search: queryString.stringify({
+                    ...restQueryParams,
+                    page: 1,
+                    ...(removeSingleFilter())
+                })
+            })
+        } else {
+            setPage(1)
+            const newFilter = removeSingleFilter()
+            if (newFilter){
+                setFilter(newFilter.filter)
+            } else {
+                setFilter(null)
+            }
+        }
+        
+        confirm();
     };
 
     const handleTableChange = (pagination, filters, sorter, extra) => {
@@ -216,7 +215,7 @@ const DatabaseTable = (props) => {
 
         const {order: excluded, ...restQueryParams} = queryParams
         const order = getOrderQuery(sorter) ? {order: getOrderQuery(sorter)} : (useQueryParams ? {} : null)
-        console.log(sorter)
+        
         if (useQueryParams){
             history.push({
                 search: queryString.stringify({
@@ -245,9 +244,10 @@ const DatabaseTable = (props) => {
                     ...restQueryParams,
                 })
             })
-        } else {
-            setDetailsVisible(false)
         }
+        // } else {
+        //     setDetailsVisible(false)
+        // }
     }
 
     function setUrl(rowIndex){
@@ -264,14 +264,13 @@ const DatabaseTable = (props) => {
         
     }
 
-    const handleDateSelect = (setSelectedKeys, dataIndex, type, dateString, selectedKeys) => {//(momentObj, dateString) => {
-        console.log('date change')
-        console.log(dateString)
+    const handleDateSelect = (setSelectedKeys, dataIndex, type, dateString, selectedKeys) => {
         let prev = selectedKeys[0] ? JSON.parse(selectedKeys[0]) : {}
+
         if (dateString !== '') {
-            setSelectedKeys([JSON.stringify({...prev, [dataIndex.join() + '__' + type]: dateString})])
+            setSelectedKeys([JSON.stringify({...prev, [dataIndex.join().replace(',', '__') + '__' + type]: dateString})])
         } else {
-            delete prev[dataIndex.join() + '__' + type]
+            delete prev[dataIndex.join().replace(',', '__') + '__' + type]
             setSelectedKeys(Object.keys(prev).length > 0 ? [JSON.stringify(prev)] : [])
         }
 
@@ -279,48 +278,48 @@ const DatabaseTable = (props) => {
 
     const handleDateSearch = (selectedKeys, confirm, dataIndex) => {
         const selectedKeysObj = selectedKeys[0] ? JSON.parse(selectedKeys[0]) : {}
-        const startDateString = selectedKeysObj.hasOwnProperty(dataIndex.join() + '__gt') ? selectedKeysObj[dataIndex.join() + '__gt'] : null
-        const endDateString = selectedKeysObj.hasOwnProperty(dataIndex.join() + '__lt') ? selectedKeysObj[dataIndex.join() + '__lt'] : null
+        const startDateString = selectedKeysObj.hasOwnProperty(dataIndex.join().replace(',', '__') + '__gt') ? selectedKeysObj[dataIndex.join().replace(',', '__') + '__gt'] : null
+        const endDateString = selectedKeysObj.hasOwnProperty(dataIndex.join().replace(',', '__') + '__lt') ? selectedKeysObj[dataIndex.join().replace(',', '__') + '__lt'] : null
         
-        if (startDateString || endDateString){   
+        if (startDateString || endDateString){
+            const {[dataIndex.join().replace(',', '__') + '__gt']: remove1, [dataIndex.join().replace(',', '__') + '__lt']: remove2, ...filterObj} = {...JSON.parse(filter)}
+            
             if (useQueryParams){
                 history.push({
                     search: queryString.stringify({
                         ...queryParams,
                         page: 1,
-                        filter: JSON.stringify({...JSON.parse(filter), ...JSON.parse(selectedKeys[0])})
+                        filter: JSON.stringify({...filterObj, ...JSON.parse(selectedKeys[0])})
                     })
                 })
             } else {
                 setPage(1)
-                setFilter(JSON.stringify({...JSON.parse(filter),  ...JSON.parse(selectedKeys[0])}))
+                setFilter(JSON.stringify({...filterObj,  ...JSON.parse(selectedKeys[0])}))
             }
             confirm();
         }
     }
 
-    const getColumnSearchProps = (dataIndex, type) => {
+    const getColumnSearchProps = (dataIndex, type, label) => {
         let searchField = null
         
         switch (type) {
             case 'date':
                 return ({
-                    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, filters }) => {
+                    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm }) => {
                         const selectedKeysObj = selectedKeys[0] ? JSON.parse(selectedKeys[0]) : {}
-                        const startDateString = selectedKeysObj.hasOwnProperty(dataIndex.join() + '__gt') ? selectedKeysObj[dataIndex.join() + '__gt'] : null
-                        const endDateString = selectedKeysObj.hasOwnProperty(dataIndex.join() + '__lt') ? selectedKeysObj[dataIndex.join() + '__lt'] : null
+                        const startDateString = selectedKeysObj.hasOwnProperty(dataIndex.join().replace(',', '__') + '__gt') ? selectedKeysObj[dataIndex.join().replace(',', '__') + '__gt'] : null
+                        const endDateString = selectedKeysObj.hasOwnProperty(dataIndex.join().replace(',', '__') + '__lt') ? selectedKeysObj[dataIndex.join().replace(',', '__') + '__lt'] : null
         
                         return(
                             <Space style={{ padding: 8 }} direction='vertical'>
                                 <DatePicker
-                                    allowClear={false}
                                     onChange={(momentObj, dateString) => handleDateSelect(setSelectedKeys, dataIndex, 'gt', dateString, selectedKeys)}
                                     style={{width: '100%'}}
                                     placeholder='Start Date'
                                     value={startDateString ? moment(startDateString, 'YYYY-MM-DD') : null}
                                 />
                                 <DatePicker
-                                    allowClear={false}
                                     onChange={(momentObj, dateString) => handleDateSelect(setSelectedKeys, dataIndex, 'lt', dateString, selectedKeys)}
                                     style={{width: '100%'}}
                                     placeholder='End Date'
@@ -338,10 +337,12 @@ const DatabaseTable = (props) => {
                                         Search
                                     </Button>
                                     <Button 
-                                        onClick={() => handleReset(selectedKeys, dataIndex, type)}
+                                        onClick={() => handleReset(selectedKeys, dataIndex, confirm, type)}
                                         size="small"
                                         // disabled={!(startDateString || endDateString)}
                                         style={{ width: 90 }}
+                                        // disabled={!filter || !filteredInfo[dataIndex.join().replace(',', '__')]}
+                                        disabled={!filter || !filteredInfo[dataIndex.join()]}
                                     >
                                         Reset
                                     </Button>
@@ -350,19 +351,19 @@ const DatabaseTable = (props) => {
                     )},
                     filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
                     filteredValue: filteredInfo[dataIndex],
-                    sortOrder: sortedInfo.hasOwnProperty('field') && sortedInfo.field.join() === dataIndex.join() && sortedInfo.order
+                    sortOrder: sortedInfo.hasOwnProperty('field') && sortedInfo.field.join() === dataIndex.join().replace(',', '__') && sortedInfo.order
                     
                 })
             default:
                 return ({
-                    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters, filters }) => {
+                    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, visible }) => {
                         return(
                             <div style={{ padding: 8 }}>
                                 <Input
                                     ref={node => {
                                         searchField = node;
                                     }}
-                                    placeholder={`Search ${dataIndex}`}
+                                    placeholder={`Search ${label ? label : dataIndex}`}
                                     value={selectedKeys[0]}
                                     onChange={e => {
                                         setSelectedKeys(e.target.value ? [e.target.value] : [])
@@ -377,10 +378,17 @@ const DatabaseTable = (props) => {
                                         icon={<SearchOutlined />}
                                         size="small"
                                         style={{ width: 90 }}
+                                        disabled={!selectedKeys[0]}
                                     >
                                         Search
                                     </Button>
-                                    <Button onClick={() => handleReset(selectedKeys, dataIndex)} size="small" style={{ width: 90 }}>
+                                    <Button 
+                                        onClick={() => {handleReset(selectedKeys, dataIndex, confirm)}}
+                                        size="small"
+                                        style={{ width: 90 }}
+                                        // disabled={!filter || !filteredInfo[dataIndex.join().replace(',', '__')]}
+                                        disabled={!filter || !filteredInfo[dataIndex.join()]}
+                                    >
                                         Reset
                                     </Button>
                                 </Space>
@@ -392,8 +400,9 @@ const DatabaseTable = (props) => {
                             setTimeout(() => searchField.select(), 100);
                         }
                     },
+                    filterDropdownVisible: null,
                     filteredValue: filteredInfo[dataIndex],
-                    sortOrder: sortedInfo.hasOwnProperty('field') && sortedInfo.field.join() === dataIndex.join() && sortedInfo.order
+                    sortOrder: sortedInfo.hasOwnProperty('field') && sortedInfo.field.join() === dataIndex.join().replace(',', '__') && sortedInfo.order
                 })
 
             
@@ -404,7 +413,7 @@ const DatabaseTable = (props) => {
         if (item.hasOwnProperty('sorter') && item.sorter && !item.hasOwnProperty('sortOrder')){
             return {
                 ...item,
-                sortOrder: sortedInfo.hasOwnProperty('field') && sortedInfo.field.join() === item.dataIndex.join() && sortedInfo.order
+                sortOrder: sortedInfo.hasOwnProperty('field') && sortedInfo.field.join() === item.dataIndex.join().replace(',', '__') && sortedInfo.order
             }
         } else {
             return item
@@ -429,7 +438,7 @@ const DatabaseTable = (props) => {
                 dataSource={data.data}
                 loading={loading}
                 onChange={handleTableChange}
-                scroll={{x: true}}
+                scroll={{x: '100%'}}
                 onRow={(record, rowIndex) => {
                     return {
                         onClick: () => {

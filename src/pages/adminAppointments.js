@@ -13,6 +13,15 @@ const AdminAppointments = (props) => {
     
     const columns = (searchProps) => [
         {
+            key: 'id',
+            title: 'Id',
+            dataIndex: ['id'],
+            // sorter: true,
+            ellipsis: true,
+            width: 70,
+            ...searchProps(['id']),
+        },
+        {
             title: 'Service',
             dataIndex: ['service'],
             sorter: true,
@@ -24,7 +33,7 @@ const AdminAppointments = (props) => {
             dataIndex: ['date'],
             sorter: true,
             ellipsis: true,
-            width: 110,
+            width: 170,
             render: (text, record, index) => dayjs(record.date).tz().format('DD-MM-YYYY HH:mm'),
             ...searchProps(['date'], 'date'),
         },

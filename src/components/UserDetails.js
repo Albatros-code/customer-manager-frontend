@@ -44,7 +44,7 @@ const UserData = (props) => {
     })
 
     React.useEffect(() => {
-        console.log('effect')
+        // console.log('effect')
         setUserData(props.userData)
     },[props.userData])
 
@@ -116,7 +116,7 @@ const UserAppointments = (props) => {
             <DatabaseTable 
                 columns={columns}
                 dataUrl={`/users/${userId}/appointments`}
-                itemDetails={(record) => {history.push(`/admin/appointments/${record.id}`)}}
+                itemDetails={(record) => {history.push(`/admin/appointments?filter=%7B"id__icontains"%3A"${record.id}"%7D&page=1&showRow=0`)}}
             />
 
         </div>

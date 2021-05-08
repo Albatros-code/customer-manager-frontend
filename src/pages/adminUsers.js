@@ -22,9 +22,9 @@ const AdminUsers = (props) => {
             key: 'id',
             title: 'Id',
             dataIndex: ['id'],
-            sorter: true,
+            // sorter: true,
             ellipsis: true,
-            maxWidth: 50,
+            width: 70,
             ...searchProps(['id']),
         },
         {
@@ -34,7 +34,7 @@ const AdminUsers = (props) => {
             sorter: true,
             ellipsis: true,
             width: 140,
-            ...searchProps(['data','lname']),
+            ...searchProps(['data','lname'], '', 'last name'),
         },
         {
             key: 'fname',
@@ -43,7 +43,7 @@ const AdminUsers = (props) => {
             sorter: true,
             ellipsis: true,
             width: 140,
-            ...searchProps(['data','fname']),
+            ...searchProps(['data','fname'], '', 'first name'),
         },
         {
             key: 'username',
@@ -59,14 +59,14 @@ const AdminUsers = (props) => {
             dataIndex: ['data','email'],
             ellipsis: true,
             width: 200,
-            ...searchProps(['data','email']),
+            ...searchProps(['data','email'], '', 'email'),
         },
         {
             key: 'phone',
             title: 'Phone',
             dataIndex: ['data','phone'],
             width: 120,
-            ...searchProps(['data','phone']),
+            ...searchProps(['data','phone'], '', 'phone'),
         },
     ]
 

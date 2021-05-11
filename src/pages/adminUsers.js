@@ -5,17 +5,6 @@ import DatabaseTable from "../components/DatabaseTable";
 import UserDetails from "../components/UserDetails";
 
 const AdminUsers = (props) => {
-
-    // const goToUser = React.useCallback(() => {
-    //     const isActionPOP = history.action === 'POP'
-    //     const showUserById = state && state.showUserById ? true : false
-
-    //     if ((isActionPOP && userId) || (!isActionPOP && showUserById)){
-    //         return userId
-    //     } else {
-    //         return null
-    //     }
-    // },[history.action, state, userId])
     
     const columns = (searchProps) => [
         {
@@ -83,7 +72,7 @@ const AdminUsers = (props) => {
             </>
         )
     } 
-
+    
     return (
         <>
             <h1>Users</h1>

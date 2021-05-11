@@ -18,6 +18,7 @@ export const useDatabaseTableContext = () => React.useContext(DatabaseTableConte
 
 const DatabaseTable = (props) => {
     const history = useHistory()
+    // const mobile = isMobile()
     const {dataUrl, itemDetails, useQueryParams} = props
     
     const location = useLocation()
@@ -305,6 +306,7 @@ const DatabaseTable = (props) => {
         
         switch (type) {
             case 'date':
+                // if (mobile) return {}
                 return ({
                     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm }) => {
                         const selectedKeysObj = selectedKeys[0] ? JSON.parse(selectedKeys[0]) : {}
@@ -314,12 +316,14 @@ const DatabaseTable = (props) => {
                         return(
                             <Space style={{ padding: 8 }} direction='vertical'>
                                 <DatePicker
+                                    inputReadOnly={true}
                                     onChange={(momentObj, dateString) => handleDateSelect(setSelectedKeys, dataIndex, 'gt', dateString, selectedKeys)}
                                     style={{width: '100%'}}
                                     placeholder='Start Date'
                                     value={startDateString ? moment(startDateString, 'YYYY-MM-DD') : null}
                                 />
                                 <DatePicker
+                                    inputReadOnly={true}
                                     onChange={(momentObj, dateString) => handleDateSelect(setSelectedKeys, dataIndex, 'lt', dateString, selectedKeys)}
                                     style={{width: '100%'}}
                                     placeholder='End Date'

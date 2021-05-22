@@ -33,7 +33,7 @@ const WeekSelector = (props) => {
         <Space  align="start" style={{width: "100%"}} className="week-selector">
             <Button disabled={disabledButtonLeft} icon={<LeftOutlined />} onClick={() => handleChange('-')} />
             <Form.Item  name="week" style={{width: "100%"}}>
-                <Input placeholder="Basic usage" style={{pointerEvents: "none", textAlign: "center"}}/>
+                <Input placeholder="" style={{pointerEvents: "none", textAlign: "center"}}/>
             </Form.Item>
             <Button disabled={disabledButtonRight} icon={<RightOutlined />} onClick={() => handleChange('+')} />
         </Space>

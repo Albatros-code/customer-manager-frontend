@@ -3,12 +3,14 @@ import { connect } from "react-redux";
 import {useHistory} from 'react-router-dom';
 
 import DatabaseTable from "../components/DatabaseTable";
+import AppointmentsDetails from "../components/AppointmentsDetails";
 import {dayjsExtended as dayjs} from '../util/util'
 
 var customParseFormat = require('dayjs/plugin/customParseFormat')
 dayjs.extend(customParseFormat)
 
 const AdminAppointments = (props) => {
+    const {services} = props
     const history = useHistory()
     
     const columns = (searchProps) => [
@@ -35,17 +37,10 @@ const AdminAppointments = (props) => {
             dataIndex: ['service'],
             sorter: true,
             ellipsis: true,
+            render: (text, record, index) => services ? services.find((item) => item.id === text).name : null,
             width: 300,
             ...searchProps(['service']),
         },
-        // {
-        //     title: 'Time',
-        //     dataIndex: ['date'],
-        //     ellipsis: true,
-        //     width: 110,
-        //     render: (text, record, index) => dayjs(record.date).tz().format('HH:mm'),
-        //     ...searchProps(['date']),
-        // },
     ]
 
     const itemDetails = (record, setVisible) => {
@@ -53,7 +48,10 @@ const AdminAppointments = (props) => {
 
         return (
             <>
-                <h2>{record.service} on {dayjs(record.date).tz().format('DD-MM-YYYY')}</h2>
+                <h2>{services ? services.find((item) => item.id === record.service).name : null} on {dayjs(record.date).tz().format('DD-MM-YYYY')}</h2>
+                <AppointmentsDetails 
+                    doc={record}
+                />
                 <p>Appointment details</p>
                 <p><strong>User: </strong><button onClick={() => {history.push(`/admin/users?filter=%7B"id__icontains"%3A"${record.user}"%7D&page=1&showRow=0`)}}>{record.user}</button></p>
             </>
@@ -74,10 +72,10 @@ const AdminAppointments = (props) => {
 }
 
 const mapStateToProps = (state) => ({
+    services: state.data.services
 })
 
 const mapDispatchToProps = {
-    
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(AdminAppointments)

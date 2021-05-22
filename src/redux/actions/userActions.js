@@ -91,8 +91,8 @@ export const setUser = (id, role) => async (dispatch) => {
                     payload: {
                         id: id,
                         role: role,
-                        data: res.data.user.data,
-                        settings: res.data.user.settings,
+                        data: res.data.doc.data,
+                        settings: res.data.doc.settings,
                     }
                 })
                 resolve("resolved")

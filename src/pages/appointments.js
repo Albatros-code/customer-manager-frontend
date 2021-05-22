@@ -12,7 +12,7 @@ const {Column} = Table;
 
 const Appointments = (props) => {
     
-    const {id} = props
+    const {id, services} = props
     const history = useHistory()
     const [appointments, setAppointments] = React.useState(null)
     const [detailsVisible, setDetailsVisible] = React.useState(false)
@@ -63,18 +63,19 @@ const Appointments = (props) => {
         const dateObj = dayjs(appointment.date).tz()
 
         const deleteAppointment = () => {
-            api.delete(`/appointment/${appointment.id}`)
+            api.delete(`/appointments/${appointment.id}`)
                 .then(res => {
                     setAppointments(prev => [...prev].filter((item, index) => index !== detailsVisible))
                     setVisible(false)
                 })
+                .catch(err => {})
         }
 
         return (
             <div className="schedule-table-appointment-details">
-                <h1>{appointment.service}</h1>
+                <h1>{services ? services.find(item => item.id === appointment.service).name : ''}</h1>
 
-                <Descriptions 
+                <Descriptions
                     bordered
                     column={1}
                     className="schedule-table-appointment-details-list"
@@ -134,6 +135,7 @@ const Appointments = (props) => {
                                 title="Service"
                                 dataIndex="service"
                                 key="service"
+                                render={(text, record) => services ? services.find(item => item.id === text).name : ''}
                             />
                             <Column
                                 title="Day"
@@ -164,6 +166,7 @@ const Appointments = (props) => {
 
 const mapStateToProps = (state) => ({
     id: state.user.id,
+    services: state.data.services,
 })
   
   const mapDispatchToProps = {}

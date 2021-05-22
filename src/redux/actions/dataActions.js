@@ -42,21 +42,24 @@ export const setSettings = () => (dispatch) => {
     })
 }
 
-export const getServices = () => (dispatch, getState) => { 
-    if(!getState().data.services){
-        api.get('/services')
-            .then(res => {
-                dispatch({
-                    type: GET_SERVICES,
-                    payload: res.data
+export const getServices = () => (dispatch, getState) => {
+    return new Promise((resolve, reject) => {
+        if(!getState().data.services){
+            api.get('/services')
+                .then(res => {
+                    dispatch({
+                        type: GET_SERVICES,
+                        payload: res.data.data
+                    })
+                    return resolve(res)
+                }, err => {
+                    reject(err)
                 })
-            }, err => {
-                
-            })
-            .catch(err => {
-                
-            })
-    }
+                .catch(err => {
+                    reject(err)
+                })
+            }
+    })
 }
 
 export const getAvaiableDates = (startHour, endHour, interval) => (dispatch, getState) => { 

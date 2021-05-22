@@ -2,7 +2,7 @@ import React from "react";
 import { connect } from "react-redux";
 
 import DatabaseTable from "../components/DatabaseTable";
-import UserDetails from "../components/UserDetails";
+import UserDetails from "../components/UserDetails";;
 
 const AdminUsers = (props) => {
     

@@ -19,6 +19,14 @@
         }
     }
 
+    &__hidden {
+        .ant-table-pagination.ant-pagination {
+            flex-wrap: wrap;
+            margin-right: auto;
+            margin-bottom: auto;
+        }
+    }
+
     .row__clickable {
         cursor: pointer;
     }
@@ -49,7 +57,7 @@
         }
 
         &__hidden {
-            display:none
+            display: none;
         }
 
         &--select {

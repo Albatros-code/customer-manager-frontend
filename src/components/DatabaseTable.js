@@ -19,7 +19,7 @@ export const useDatabaseTableContext = () => React.useContext(DatabaseTableConte
 const DatabaseTable = (props) => {
     const history = useHistory()
     // const mobile = isMobile()
-    const {dataUrl, itemDetails, useQueryParams} = props
+    const {dataUrl, itemDetails, useQueryParams, handleRowClick, paginationHidden} = props
     
     const location = useLocation()
     const queryParams = queryString.parse(location.search)
@@ -39,7 +39,10 @@ const DatabaseTable = (props) => {
     const pagination = useQueryParams ? paginationQuery : paginationState
     const page = useQueryParams ? pageQuery : pageState
     const order = useQueryParams ? orderQuery : orderState
-    const filter = useQueryParams ? filterQuery : filterState
+    const filter = props.filterQuery ? 
+        props.filterQuery 
+        :
+        (useQueryParams ? filterQuery : filterState)
     
     const [loading, setLoading] = React.useState(true)
     const [data, setData] = React.useState({data: [], total: null})
@@ -57,19 +60,23 @@ const DatabaseTable = (props) => {
             params: {
                 pagination: pagination,
                 page: page,
-                order: order,
+                order: props.orderQuery ? props.orderQuery : order,
                 filter: filter,
             }})
             .then(res => {
                 setData({data: res.data.data, total: res.data.total})
                 setLoading(false)
-                setFilteredInfo(filter ? filterToFilteredInfo(filter) : {})
                 setSortedInfo(order ? orderToOrderInfo(order) : {})
+                if(!props.filterQuery){
+                    setFilteredInfo(filter ? filterToFilteredInfo(filter) : {})
+                } else {
+                    setPage(page > Math.ceil(res.data.total/pagination) ? 1 : page)
+                }
             }, err => {
                 setData({data: 0, total: 0})
                 setLoading(false)
         }) 
-    }, [dataUrl, filter, order, page, pagination]);
+    }, [dataUrl, filter, order, page, pagination, props.filterQuery, props.orderQuery]);
     
     React.useEffect(() => {
         getData()
@@ -427,7 +434,7 @@ const DatabaseTable = (props) => {
     return (
         <div className="database-interface-table-wrapper">
             <Table
-                className="database-interface-table"
+                className={`database-interface-table ${paginationHidden ? 'database-interface-table__hidden' : ''}`}
                 columns={columns}
                 rowKey={record => record.id}
                 pagination={{
@@ -444,14 +451,21 @@ const DatabaseTable = (props) => {
                 onChange={handleTableChange}
                 scroll={{x: '100%'}}
                 onRow={(record, rowIndex) => {
-                    return {
-                        onClick: () => {
-                            setUrl(rowIndex)
-                        },
-                    };
+                    
+                    return !handleRowClick ? 
+                        {
+                            onClick: () => {
+                                setUrl(rowIndex)
+                            },
+                        }
+                        :
+                        {
+                            onClick: () => handleRowClick(record, rowIndex)
+                        }
+
                 }}
             />
-            <div className={`pagination ${data.data.length === 0 ? 'pagination__hidden' : ''}`}>
+            <div className={`pagination ${data.data.length === 0 || paginationHidden ? 'pagination__hidden' : ''}`}>
                 <span className="pagination--text">show:</span>
                 <Select 
                     className="pagination--select"
@@ -510,6 +524,7 @@ export const ItemDetails = (props) => {
     return (
         Number.isInteger(visible) && record ? 
             <Modal
+                destroyOnClose={true}
                 className="database-interface-table--detail"
                 centered
                 visible={Number.isInteger(visible)}

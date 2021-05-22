@@ -1,3 +1,6 @@
+import React from 'react';
+import {DataListDataSelector} from "../components/DataSelector"
+
 /*
 error response
 {
@@ -8,8 +11,15 @@ error response
     }
 }
 */
+
 export const getData = (dataModel, values, additionalProps) => Object.entries(dataModel).map(([key, val]) => {
-    return {...val, value: values.hasOwnProperty(key) ? values[key] : "", ...additionalProps[key]}
+    // const valueToShow = val.hasOwnProperty("valueToShow") && values.hasOwnProperty(key) ? {valueToShow: useValueToShow(val.valueToShow(values[key]))} : {}
+    return {
+        value: values.hasOwnProperty(key) ? values[key] : "",
+        ...val,
+        ...additionalProps[key],
+        // ...valueToShow
+    }
 })
 
 export const mergeErrors = (prevs, errs) => {
@@ -119,7 +129,7 @@ export const user = {
             type: 'input',
             rules: [
                 {required: true, message: "Can't be blank!" },
-                // {pattern: new RegExp("^\\d{9}$"), message: "Phone number should have 9 digit."},
+                {pattern: new RegExp("^\\d{9}$"), message: "Phone number should have 9 digit."},
                 (errors) => {return apiErrorValidator(errors)},
             ]
         },
@@ -193,4 +203,70 @@ export const settingsModel = {
     },
 }
 
+export const appointmentModel = {
+    user: {
+        field: 'user',
+        label: 'User',
+        type: 'custom',
+        component: (record, handleChange, isEdited) => (
+            <DataListDataSelector
+                record={record}
+                handleChange={handleChange}
+                isEdited={isEdited}
+                dataUrl={'/users'}
+                displayData={(doc) => doc.data.lname + ' ' + doc.data.fname}
+                queryField={'data__lname'}
+            />
+        ),
+        rules: [
+            {required: true, message: "Can't be blank!" },
+            (errors) => {return apiErrorValidator(errors)},
+        ]
+    },
+    service: {
+        field: 'service',
+        label: 'Service',
+        type: 'custom',
+        rules: [
+            {required: true, message: "Can't be blank!" },
+            (errors) => {return apiErrorValidator(errors)},
+        ],
+        component: (record, handleChange, isEdited) => (
+            <DataListDataSelector
+                record={record}
+                handleChange={handleChange}
+                isEdited={isEdited}
+                dataUrl={'/services-admin'}
+                displayData={(doc) => doc.name}
+                queryField={'name'}
+            />
+        ),
+    },
+    date: {
+        field: 'date',
+        label: 'Date',
+        type: 'date',
+        rules: [
+            {required: true, message: "Can't be blank!" },
+            (errors) => {return apiErrorValidator(errors)},
+        ]
+    },
+    duration: {
+        field: 'duration',
+        label: 'Duration',
+        type: 'input',
+        rules: [
+            {required: true, message: "Can't be blank!" },
+            (errors) => {return apiErrorValidator(errors)},
+            {validator: async (rule, value) => {
+                const parsedVal = parseInt(value)
+                if (String(parsedVal) === value || value === '') {
+                    return Promise.resolve()
+                } else {
+                    return Promise.reject(new Error('Not valid number.'))
+                }
+            }}
+        ]
+    },
+}
 

@@ -32,16 +32,16 @@ export default UserDetails
 const UserData = (props) => {
     const {userId} = props
     const {updateTableContent} = useDatabaseTableContext()
-
+    
     const [needUpdate, setNeedUpdate] = React.useState(false)
-
+    
     React.useEffect(() => {
         return (() => {
             if (needUpdate && updateTableContent) {
                 updateTableContent()
             }            
         })
-    })
+    }, [needUpdate, updateTableContent])
 
     React.useEffect(() => {
         // console.log('effect')

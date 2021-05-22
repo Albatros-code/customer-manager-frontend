@@ -44,10 +44,19 @@
                 padding-top: 24px;
             }
         }
+        
     }
 
     &-input {
         background-color: #f0f0f0;
+        
+        &__hidden {
+            
+            .ant-form-item-control-input {
+                display: none
+            }
+            
+        }
     }
 }
 

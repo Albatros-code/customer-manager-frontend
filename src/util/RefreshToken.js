@@ -8,12 +8,12 @@ import {api} from './util';
 // redux
 import {afterLoginAction} from '../redux/actions/userActions';
 import {stopLoadingUi} from '../redux/actions/uiActions';
-import {getInitialData} from '../redux/actions/dataActions';
+import {getInitialData, getServices} from '../redux/actions/dataActions';
 
 
 const RefreshToken = ( props ) => {
 
-    const {afterLoginAction, stopLoadingUi, getInitialData} = props
+    const {afterLoginAction, stopLoadingUi, getInitialData, getServices} = props
 
     React.useEffect(() => {
         function refreshToken(){
@@ -45,12 +45,13 @@ const RefreshToken = ( props ) => {
 
         Promise.allSettled([
             refreshToken(),
-            getInitialData()
+            getInitialData(),
+            getServices()
         ]).then((results) => {
             stopLoadingUi(false)
         })
         
-    }, [afterLoginAction, getInitialData, stopLoadingUi]);
+    }, [afterLoginAction, getInitialData, stopLoadingUi, getServices]);
 
     return (
         props.loadingUi ?
@@ -71,6 +72,6 @@ const mapStateToProps = (state) => ({
     loadingUi: state.ui.loading
 })
 
-const mapDispatchToProps = { getInitialData, afterLoginAction, stopLoadingUi}
+const mapDispatchToProps = { getInitialData, getServices, afterLoginAction, stopLoadingUi}
 
 export default connect(mapStateToProps, mapDispatchToProps)(RefreshToken)

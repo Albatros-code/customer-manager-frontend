@@ -7,7 +7,6 @@ import { Form, Button, Divider, Spin, Descriptions} from 'antd';
 
 // redux
 import { connect } from 'react-redux';
-import {getServices} from '../redux/actions/dataActions';
 import { api } from '../util/util';
 
 // components
@@ -20,11 +19,6 @@ import HourSelector from '../components/HourSelector';
 
 const NewAppointment = (props) => {
     
-    React.useEffect(() => {
-        getServices()
-        // eslint-disable-next-line react-hooks/exhaustive-deps  
-    },[])
-    
     const history = useHistory()
     const [form] = Form.useForm();
     
@@ -35,7 +29,6 @@ const NewAppointment = (props) => {
         time_interval: timeInterval,
         working_days: workingDays
     }} = props
-    const {getServices} = props
     const {services} = props    
     
     // React.useState
@@ -182,7 +175,7 @@ const NewAppointment = (props) => {
                 column={1}
                 className={`new-appointment-summary-table ${forModal ? null : 'form-item-padding-bottom'}`}
             >
-                <Descriptions.Item label="Service">{service}</Descriptions.Item>
+                <Descriptions.Item label="Service">{services && service ? services.find(item => item.id === service).name : ''}</Descriptions.Item>
                 <Descriptions.Item label="Date">{form.getFieldValue('day') && form.getFieldValue('day') !== null ? selectedDate.format('YYYY-MM-DD') : null}</Descriptions.Item>
                 <Descriptions.Item label="Time">{form.getFieldValue('timeMinutes') ? selectedDate.format('HH:mm') : null}</Descriptions.Item>
             </Descriptions>
@@ -203,7 +196,7 @@ const NewAppointment = (props) => {
                     api.post('/appointments', {
                         service: form.getFieldValue('service'),
                         date: selectedDate.toISOString(),
-                        duration: services.find(item => item.name === form.getFieldValue('service')).time,
+                        duration: services ? services.find(item => item.id === form.getFieldValue('service')).time : null,
                     // }, {withCredentials: true})
                     })
                         .then(res => {
@@ -315,7 +308,6 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = {
-    getServices,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(NewAppointment)

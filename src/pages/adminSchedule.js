@@ -5,7 +5,6 @@ import { Spin, Form, Descriptions, Button } from 'antd';
 
 // redux
 import { connect } from 'react-redux';
-import { getServices } from '../redux/actions/dataActions';
 
 import { api, dayjsExtended as dayjs } from '../util/util'
 import { currentWeekString } from '../util/appointments'
@@ -19,8 +18,7 @@ import {ScheduleTable, ScheduleItem} from '../components/ScheduleTable'
 
 const AdminAppointments = (props) => {
 
-    // const {services} = props
-    const {getServices} = props
+    const {services} = props
     const {settings: {start_hour: startHour, end_hour: endHour, time_interval: timeInterval}} = props
 
     const history = useHistory()
@@ -38,11 +36,6 @@ const AdminAppointments = (props) => {
             return []
         }
     })()
-
-    React.useEffect(() => {
-        getServices()
-    // eslint-disable-next-line react-hooks/exhaustive-deps  
-    }, []) 
 
     React.useEffect(() => {
         function getAppointments(startDate, endDate){
@@ -94,7 +87,7 @@ const AdminAppointments = (props) => {
     const appointmentCardContent = (appointment) => {
         return (
             <div className="schedule-table-appointment-card">
-                <p>{appointment.service}</p>
+                <p>{services.find((item) => item.id === appointment.service).name}</p>
                 <p>{appointment.user}</p>
                 <p>{appointment.phone}</p>
             </div>
@@ -119,7 +112,7 @@ const AdminAppointments = (props) => {
 
         return (
             <div className="schedule-table-appointment-details">
-                <h1>{appointment.service}</h1>
+                <h1>{services.find((item) => item.id === appointment.service).name}</h1>
 
                 <Descriptions 
                     bordered
@@ -192,7 +185,6 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = {
-    getServices,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(AdminAppointments)

@@ -1,7 +1,7 @@
 import React from 'react';
 import {Modal} from 'antd';
 
-
+import {ItemDetails} from '../components/DatabaseTable'
 import {generateTimeTableBase} from '../util/appointments'
 // import { dayjsExtended as dayjs } from '../util/util'
 
@@ -51,7 +51,8 @@ export const ScheduleTable = (props) => {
             <ScheduleItem
                 date={selectedDate.set({hour: endHour+1})}
                 duration={5}
-                details={() => {}}
+                // details={() => {}}
+                // details={null}
             >
                 {null}
             </ScheduleItem>
@@ -98,7 +99,7 @@ export const ScheduleItemDetails = (props) => {
 export const ScheduleItem = (props) => {
 
     const rowHeight = 100
-    const {key, date, duration, details} = props
+    const {key, date, duration, details, record} = props
     const {startHour} = props
     
     const itemPosition = `${((parseInt(date.format('HH')) - startHour) + parseInt(date.format('mm'))/60)  * rowHeight}px`
@@ -108,7 +109,7 @@ export const ScheduleItem = (props) => {
 
     const [detailsVisible, setDetailsVisible] = React.useState(false)
     const handleClick = () => {
-        setDetailsVisible(prev => !prev)
+        setDetailsVisible(1)
     }
 
     return (
@@ -131,10 +132,18 @@ export const ScheduleItem = (props) => {
                     {props.children}
                 </div>
             </div>
-            <ScheduleItemDetails 
+            {/* <ScheduleItemDetails 
                 visible={detailsVisible}
                 setVisible={setDetailsVisible}
                 details={details}
+            /> */}
+            <ItemDetails 
+                visible={detailsVisible}
+                setVisible={setDetailsVisible}
+                details={details}
+                record={record}
+                // record={data.data[detailsVisible]}
+                // details={itemDetails}
             />
         </div>
     )

@@ -3,7 +3,9 @@ import {List, Divider, Input, Form, Button, Checkbox, Spin} from 'antd';
 import {DatePicker} from 'antd';
 // import DatePicker from '../components/antd-dayjs/DatePicker'
 
-import {resolveRules, mergeErrors} from '../util/data'
+
+import { useStore } from 'react-redux';
+import {resolveRules, mergeErrors} from '../util/data';
 import moment from 'moment';
 // import {dayjsExtended as dayjs} from '../util/util'
 
@@ -275,7 +277,8 @@ const ListItem = (props) => {
 }
 
 const DataPickerControlled = ({value, onChange, handleChange, isEdited}) => {
-    
+    const {data: {settings: {start_hour, end_hour, time_interval}}} = useStore().getState()
+
     const onOk = (val) => {
         onChange(moment(val).toISOString())
         handleChange({
@@ -286,16 +289,36 @@ const DataPickerControlled = ({value, onChange, handleChange, isEdited}) => {
         })
     }
 
+    function range(start, end) {
+        const result = [];
+        for (let i = start; i < end; i++) {
+            result.push(i);
+        }
+        return result;
+      }
+
+    function disabledDateTime() {
+        
+        return {
+          disabledHours: () => range(0, 24).filter(item => item < start_hour || item >= end_hour),
+        //   disabledMinutes: () => range(30, 60),
+        };
+      }
+
     return (
         <DatePicker
-            // style={{background: 'red'}}
+            style={{width: '100%'}}
             className={!isEdited ? "data-list-table-input" : null}
-            showTime
+            showTime={{
+                format: 'HH:mm',
+                minuteStep: time_interval,
+            }}
+            hideDisabledOptions={true}
+            disabledTime={disabledDateTime}
+            format="YYYY-MM-DD HH:mm"
             allowClear={false}
             inputReadOnly
-            // value={showVal}
             value={moment(value)}
-            // onChange={handleChange}
             onOk={onOk}
         />
     )

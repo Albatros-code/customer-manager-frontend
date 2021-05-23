@@ -253,9 +253,6 @@ const DatabaseTable = (props) => {
                 })
             })
         }
-        // } else {
-        //     setDetailsVisible(false)
-        // }
     }
 
     function setUrl(rowIndex){
@@ -520,18 +517,27 @@ export default DatabaseTable
 
 export const ItemDetails = (props) => {
     const {visible, setVisible, details, record, resetUrl} = props
-    
+    const computedDetails = record && details(record, setVisible)
+    const computedDetailsArray = Array.isArray(computedDetails) ? computedDetails : [computedDetails]
+
+    const [content, title] = computedDetails ? computedDetailsArray : ['content', 'title']
+
     return (
         Number.isInteger(visible) && record ? 
             <Modal
+                title={title ? title : `Details`}
                 destroyOnClose={true}
                 className="database-interface-table--detail"
                 centered
                 visible={Number.isInteger(visible)}
-                onCancel={() => {resetUrl(); setVisible(false)}}
+                onCancel={() => {
+                    if(resetUrl) resetUrl()
+                    setVisible(false)
+                }}
                 footer={null}
             >
-                {details(record, setVisible)}
+                {/* {details(record, setVisible)[0]} */}
+                {content}
           </Modal>
         : null
         

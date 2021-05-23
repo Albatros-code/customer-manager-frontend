@@ -61,16 +61,15 @@ const AdminUsers = (props) => {
 
     const itemDetails = (record, setVisible) => {
         if (!record) return null
-
-        return (
+        const title = 'Details of ' + record.data.fname + ' ' + record.data.lname
+        return ([
             <>
-                <h2>{record.username}</h2>
                 <UserDetails 
                     userDoc={record}
                 />
                 {/* <button onClick={() => {setVisible(false)}}>Close</button> */}
-            </>
-        )
+            </>, title
+        ])
     } 
     
     return (

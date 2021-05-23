@@ -101,7 +101,7 @@ export const DataListDataSelector = ({record, handleChange, isEdited, dataUrl, d
     }
 
     React.useEffect(() => {
-        console.log('effect')
+        // console.log('effect')
         getValueToShow(
             value,
             dataUrl,

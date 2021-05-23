@@ -1,6 +1,7 @@
 import React from 'react';
 import {Divider} from 'antd';
 import {useHistory} from 'react-router-dom'
+import { useStore } from 'react-redux';
 
 import DataList from '../components/DataList';
 import DatabaseTable, {useDatabaseTableContext} from './DatabaseTable';
@@ -86,6 +87,7 @@ const UserData = (props) => {
 const UserAppointments = (props) => {
     const {userId} = props
     const history = useHistory()
+    const {data: {services}} = useStore().getState()
 
     const columns = () => [
         { 
@@ -93,6 +95,7 @@ const UserAppointments = (props) => {
             dataIndex: ["service"],
             key: "service",
             ellipsis: true,
+            render: (text, record, index) => services ? services.find(item => item.id === record.service).name : null,
         },
         {
             title: "Day",

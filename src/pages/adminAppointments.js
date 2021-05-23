@@ -1,6 +1,5 @@
 import React from "react";
 import { connect } from "react-redux";
-import {useHistory} from 'react-router-dom';
 
 import DatabaseTable from "../components/DatabaseTable";
 import AppointmentsDetails from "../components/AppointmentsDetails";
@@ -11,7 +10,6 @@ dayjs.extend(customParseFormat)
 
 const AdminAppointments = (props) => {
     const {services} = props
-    const history = useHistory()
     
     const columns = (searchProps) => [
         {
@@ -45,16 +43,14 @@ const AdminAppointments = (props) => {
 
     const itemDetails = (record, setVisible) => {
         if (!record) return null
+        const title = (services ? services.find((item) => item.id === record.service).name : null) + ' on ' + dayjs(record.date).tz().format('DD-MM-YYYY')
 
         return (
-            <>
-                <h2>{services ? services.find((item) => item.id === record.service).name : null} on {dayjs(record.date).tz().format('DD-MM-YYYY')}</h2>
+            [<>
                 <AppointmentsDetails 
                     doc={record}
                 />
-                <p>Appointment details</p>
-                <p><strong>User: </strong><button onClick={() => {history.push(`/admin/users?filter=%7B"id__icontains"%3A"${record.user}"%7D&page=1&showRow=0`)}}>{record.user}</button></p>
-            </>
+            </>, title]
         )
     } 
 

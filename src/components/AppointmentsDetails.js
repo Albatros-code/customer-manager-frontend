@@ -1,12 +1,16 @@
 import React from 'react';
+import {Button, Divider} from 'antd';
 
 import DataList from './DataList';
 import {useDatabaseTableContext} from './DatabaseTable';
 import {appointmentModel, getData} from '../util/data';
 import {api} from '../util/util';
+import { useHistory } from 'react-router';
+
 
 const AppointmentsDetails = (props) => {
     const {doc} = props
+    const history = useHistory()
     // const {getData} = prop
 
     return (
@@ -15,6 +19,9 @@ const AppointmentsDetails = (props) => {
                 docId={doc.id}
                 docData={doc}
             />
+            
+            <Divider orientation="left">Appointment's actions</Divider>
+            <p><strong>Go to user: </strong><Button onClick={() => {history.push(`/admin/users?filter=%7B"id__icontains"%3A"${doc.user}"%7D&page=1&showRow=0`)}}>{doc.user}</Button></p>
         </div>
     )
 }
@@ -48,7 +55,7 @@ const ApointmentsData = (props) => {
     })
 
     const OnSave = (values, callbackRes, callbackErr) => {
-        console.log(values)
+        
         const formatedData = {...values}
         formatedData.duration = parseInt(formatedData.duration)
 
@@ -69,7 +76,7 @@ const ApointmentsData = (props) => {
         
         <DataList 
             data={listData}
-            label='Apointments data'
+            label="Apointment's data"
             onSave={OnSave}
         />
     )

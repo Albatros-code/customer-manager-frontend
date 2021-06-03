@@ -37,6 +37,7 @@ const AdminSchedule = (props) => {
     })()
 
     function getAppointments(startDate, endDate){
+        
         api.get('/appointments-schedule', {
             params: {
                 start_date: startDate,
@@ -47,22 +48,20 @@ const AdminSchedule = (props) => {
             }, err => {})
             .catch(err => {})
     }
-
-    React.useEffect(() => {
+    
+    const getData = React.useCallback((check) => {
         const startDate = selectedDate.startOf('week')
         const endDate = selectedDate.endOf('week')
-        if (!appointmentsData.hasOwnProperty(`${startDate.format('YYYY-MM-DD')}:${endDate.format('YYYY-MM-DD')}`)){ 
+        const condition = check ? !appointmentsData.hasOwnProperty(`${startDate.format('YYYY-MM-DD')}:${endDate.format('YYYY-MM-DD')}`) : true
+        if (condition){ 
             getAppointments(startDate.toISOString(), endDate.toISOString())
         }
-    },[appointmentsData, selectedDate])
+    }, [appointmentsData, selectedDate])
 
-    function getData(){
-        const startDate = selectedDate.startOf('week')
-        const endDate = selectedDate.endOf('week')
-        getAppointments(startDate.toISOString(), endDate.toISOString())
-    }
+    React.useEffect(() => {
+        getData(true)
+    },[appointmentsData, getData, selectedDate])
 
-    
     const [form] = Form.useForm()
     
     const handleDayChange = (newWeekDay) => {
@@ -99,72 +98,26 @@ const AdminSchedule = (props) => {
         )
     }
 
-    // const appointmentDetails = (appointment) => (setVisible) => {
-
-        // const dateObj = dayjs(appointment.date)
-        
-        // const deleteAppointment = () => {
-        //     api.delete(`/appointments/${appointment.id}`)
-        //         .then(res => {
-        //             const currentWeek = currentWeekString(selectedDate)
-        //             setAppointmentsData((prev) => {
-        //                 return delete {...prev}[currentWeek]
-        //                 // return prev
-        //             })
-        //             setVisible(prev => !prev)
-        //         })
-        // }
-
-
-    //     return (
-    //         <div className="schedule-table-appointment-details">
-    //             {/* <h1>{services.find((item) => item.id === appointment.service).name}</h1> */}
-    //             <AppointmentsDetails 
-    //                 doc={appointment}
-    //             />
-    //             {/* <Descriptions 
-    //                 bordered
-    //                 column={1}
-    //                 className="schedule-table-appointment-details-list"
-    //             >
-    //                 <Descriptions.Item label="Date">{dateObj.format("YYYY-MM-DD")}</Descriptions.Item>
-    //                 <Descriptions.Item label="Time">{dateObj.format("HH:mm")}</Descriptions.Item>
-    //                 <Descriptions.Item label="User">{appointment.user}</Descriptions.Item>
-    //                 <Descriptions.Item label="Phone">{appointment.phone}</Descriptions.Item>
-    //                 <Descriptions.Item label="Created at">{dateObj.format("YYYY-MM-DD HH:mm")}</Descriptions.Item>
-    //             </Descriptions>
-    //             <p className="schedule-table-appointment-details-icons">
-    //                 <Button disabled={true}>Change date</Button>
-    //                 <Button onClick={() => {history.push(`/admin/users/${appointment.user_id}`)}}>Show User</Button>
-    //                 <Button onClick={deleteAppointment}>Delete</Button>
-    //             </p> */}
-    //                 {/* <Button><EditOutlined /></Button><UserOutlined /><DeleteOutlined /></p> */}
-    //         </div>
-    //     )
-    // }
-
     const itemDetails = (record, setVisible) => {
         if (!record) return null
         const title = (services ? services.find((item) => item.id === record.service).name : null) + ' on ' + dayjs(record.date).tz().format('DD-MM-YYYY')
 
-        return (
-            [<>
-                <AppointmentsDetails 
-                    doc={record}
-                />
-            </>, title]
-        )
+        return ([
+            <AppointmentsDetails 
+                doc={record}
+                setVisible={setVisible}
+            />,
+                title
+        ])
     } 
     
     const appointmentCards = appointments.map((item, index) => {
-        // const service = services.find(s => s.name === item.service)
         return (
             <ScheduleItem
                 date={dayjs(item.date)}
                 duration={item.duration}
                 key={index}
                 record={item}
-                // details={appointmentDetails(item)}
                 details={itemDetails}
             >
                 {appointmentCardContent(item)}
@@ -175,7 +128,6 @@ const AdminSchedule = (props) => {
     return (
         <>
             <h1>Appointments</h1>
-            {/* <p>selectedDate: {selectedDate.format("YYYY-MM-DD")}</p> */}
             <FormWrapper
                 className="schedule-table-form"
                 form={form}
@@ -187,8 +139,8 @@ const AdminSchedule = (props) => {
 
             <Spin spinning={ !appointmentsData.hasOwnProperty(currentWeekString(selectedDate)) && appointments.length === 0}>
                 <DatabaseTableContext.Provider value={{
-                        updateTableContent: getData
-                    }}>
+                    updateTableContent: getData
+                }}>
                     <ScheduleTable
                         startHour={startHour}
                         endHour={endHour}

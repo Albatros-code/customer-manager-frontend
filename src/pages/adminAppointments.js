@@ -49,6 +49,7 @@ const AdminAppointments = (props) => {
             [<>
                 <AppointmentsDetails 
                     doc={record}
+                    setVisible={setVisible}
                 />
             </>, title]
         )

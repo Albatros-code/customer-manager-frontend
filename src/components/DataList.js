@@ -14,20 +14,21 @@ export const DataListContext = React.createContext([]);
 export const useDataListContext = () => React.useContext(DataListContext);
 
 const DataList = (props) => {
-    
     const [form] = Form.useForm();
 
     // React.useEffect(() => {
-    //     form.resetFields()
-    // }, [props.data, form])
-    
+    //     return () => console.log('unmounting DataList')
+    // }, [])
+
 
     const [errors, setErrors] = React.useState({})
     const [formLoading, setFormLoading] = React.useState(false)
     const [editedFields, setEditedFields] = React.useState({})
-    const data = resolveRules(props.data, {errors: errors})
-    
-    const initialValues = Object.fromEntries(data.map(item => {
+    const data = React.useMemo(() => 
+        resolveRules(props.data, {errors: errors})
+    ,[errors, props.data])
+
+    const initialValues = React.useMemo(() => Object.fromEntries(data.map(item => {
         let value = null
         switch (item.type){
             case 'custom':
@@ -51,14 +52,14 @@ const DataList = (props) => {
         return (
             [item.field, value]
         )
-    }))
+    })), [data])
 
-    const handleChange = (e) => {
+    const handleChange = React.useCallback((e) => {
         if (e.target.id.includes('skip')) return
         const label = e.target.id
         const value = e.target.value
         
-        if (initialValues[label] === value){
+        if (initialValues[label] === value || String(initialValues[label]) === String(value)){
             setEditedFields(prev => {
                 const copy = {...prev}
                 delete copy[label]
@@ -67,7 +68,7 @@ const DataList = (props) => {
         } else {
             setEditedFields(prev => ({...prev, [label]: value}))
         }
-    }
+    },[initialValues])
 
     function formatResults(dataModel, values){
         const results = Object.fromEntries(dataModel.map((item) => {
@@ -130,14 +131,13 @@ const DataList = (props) => {
             <div className="data-list-form">
 
             <Spin spinning={formLoading}>
-                <DataListContext.Provider
+                {/* <DataListContext.Provider
                     value={{
                         form: form
                     }}    
-                >
+                > */}
                     <Form
                         form={form}
-                        // className="data-list-form"
                         validateTrigger="onChange"
                         initialValues={initialValues}
                     >
@@ -149,21 +149,21 @@ const DataList = (props) => {
                             {data.map((item, index) => { 
                                 return(
                                     <ListItem
-                                        key={'ListItem' + index}
+                                        key={'ListItem' + item.field + index}
                                         item={item}
                                         edited={editedFields.hasOwnProperty(item.field)}
-                                        handleChange={(e) => {handleChange(e)}}
-                                        form={form}
+                                        // handleChange={(e) => {handleChange(e)}}
+                                        handleChange={handleChange}
                                     />
-                            )} 
-                            )}    
+                                )
+                            })}    
                         </List>
                     </Form>
-                </DataListContext.Provider>
+                {/* </DataListContext.Provider> */}
                 <div className="data-list-table-footer">
                     <Button 
                         onClick={() => {
-                            form.resetFields()
+                            form.resetFields(Object.keys(editedFields))
                             setEditedFields({})
                         }}
                         disabled={Object.keys(editedFields).length === 0 ? true : false}
@@ -183,8 +183,8 @@ const DataList = (props) => {
 export default DataList
 
 const ListItem = (props) => {
-    const {item, edited, form} = props
-    
+    const {item, edited} = props
+
     const rules = (() => {
         if (edited && item.rules){
             return item.rules
@@ -197,9 +197,41 @@ const ListItem = (props) => {
         onChange: props.handleChange,
         name: item.field,
         rules: rules,
-    }) 
+    })
 
-    const valueField = (() => {
+    // field input options
+    
+    // const inputField = 
+    //     <Input
+    //         className={!edited ? 'data-list-table-input' : null}
+    //         autoComplete="off"
+    //         style={{width: '100%'}}
+    //         disabled={item.disabled}
+    //     />
+    
+    // const dateField =
+    //     <DataPickerControlled
+    //         handleChange={props.handleChange}
+    //         isEdited={edited}
+    //     />
+    
+    // const customField = item.component ? item.component(item, props.handleChange, edited) : null;
+
+    // const customField = React.useMemo(() => {
+    //     if (item.component){
+    //         return (
+    //             item.component(item, props.handleChange, edited)
+    //         )
+    //     }
+    // },[item, props.handleChange, edited])
+    
+    // const valueFieldObj = {
+    //     input: inputField,
+    //     custom: customField,
+    //     date: dateField
+    // }
+
+    const valueField = React.useMemo(() => {
         switch (item.type){
             case 'input': 
                 return (
@@ -234,23 +266,22 @@ const ListItem = (props) => {
                 )
             case 'date':
                 return (
-                    <DataPickerControlled 
-                        form={form}
+                    <DataPickerControlled
                         handleChange={props.handleChange}
                         isEdited={edited}
                     />
                 )
-            case 'customWORKING':
-                return (
-                    <>
-                        {item.component(item, form, props.handleChange, edited)}
-                        <Form.Item {...formItemProps} className="data-list-table-input__hidden">
-                            <Input
-                                style={{width: '100%', display: 'none'}}
-                            />
-                        </Form.Item>
-                    </>
-                )
+            // case 'customWORKING':
+            //     return (
+            //         <>
+            //             {item.component(item, form, props.handleChange, edited)}
+            //             <Form.Item {...formItemProps} className="data-list-table-input__hidden">
+            //                 <Input
+            //                     style={{width: '100%', display: 'none'}}
+            //                 />
+            //             </Form.Item>
+            //         </>  
+            //     )
             case 'custom':
                 return (
                     item.component(item, props.handleChange, edited)
@@ -260,7 +291,10 @@ const ListItem = (props) => {
                     <div>no item specified</div>
                 )
         }
-    })()    
+    },[edited, item, props.handleChange])    
+
+    // const [valueFieldState, setValueFieldState] = React.useState(valueField)
+
     return (
         <List.Item>
             <div className="data-list-table-item-label">

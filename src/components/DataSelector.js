@@ -51,7 +51,6 @@ export default function DataSelector(props) {
         centered
         visible={showSelector}
         onCancel={() => {
-            console.log('cancel')
             setSearchString(null)
             setShowSelector(false)
         }}
@@ -93,6 +92,7 @@ export const DataListDataSelector = ({record, handleChange, isEdited, dataUrl, d
         return new Promise((resolve, reject) => {
             api.get(`${url}/${docId}`)
             .then((res) => {
+                // console.log('data fetched ' + docId)
                 const display = handleDisplay(res.data.doc)
                 return resolve(display)
             })
@@ -101,7 +101,6 @@ export const DataListDataSelector = ({record, handleChange, isEdited, dataUrl, d
     }
 
     React.useEffect(() => {
-        // console.log('effect')
         getValueToShow(
             value,
             dataUrl,

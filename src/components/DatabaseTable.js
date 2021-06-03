@@ -536,7 +536,6 @@ export const ItemDetails = (props) => {
                 }}
                 footer={null}
             >
-                {/* {details(record, setVisible)[0]} */}
                 {content}
           </Modal>
         : null

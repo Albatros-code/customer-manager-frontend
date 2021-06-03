@@ -38,7 +38,7 @@ const Settings = (props) => {
             <p>You can change settings here.</p>
             <DataList 
                 data={settingsData}
-                label='Settings'
+                label='Appointments availability'
                 onSave={settingsOnSave}
             />
         </>

@@ -51,8 +51,6 @@ export const ScheduleTable = (props) => {
             <ScheduleItem
                 date={selectedDate.set({hour: endHour+1})}
                 duration={5}
-                // details={() => {}}
-                // details={null}
             >
                 {null}
             </ScheduleItem>
@@ -67,7 +65,6 @@ export const ScheduleTable = (props) => {
     return (
         <div className="schedule-table-wrapper schedule-table-form">
             {timeTable}
-            {/* {React.Children.map(props.children, child => { */}
             {props.items.concat(dummyItems).map((child, index) => {
                 if (child.type === ScheduleItem){
                     return React.cloneElement(child, {key: index, startHour: startHour, timeInterval: timeInterval})
@@ -103,8 +100,6 @@ export const ScheduleItem = (props) => {
     const {startHour} = props
     
     const itemPosition = `${((parseInt(date.format('HH')) - startHour) + parseInt(date.format('mm'))/60)  * rowHeight}px`
-    // const [itemPosition, setItemPosition] = React.useState(itemPositionInit)
-
     const itemHeight = `${duration/60 * rowHeight}px`
 
     const [detailsVisible, setDetailsVisible] = React.useState(false)
@@ -120,9 +115,7 @@ export const ScheduleItem = (props) => {
         >
             <div onClick={handleClick} className="schedule-item-frame">
                 <div className="schedule-item-label">
-                    {/* <button onClick={() => {setItemPosition(prev => `${parseInt(prev) - timeInterval}px`)}} >-</button> */}
                     {date.format('HH:mm')}
-                    {/* <button onClick={() => {setItemPosition(prev => `${parseInt(prev) + timeInterval}px`)}} >+</button> */}
                 </div>
                 <div className="schedule-item-container"
                     style={{
@@ -132,18 +125,11 @@ export const ScheduleItem = (props) => {
                     {props.children}
                 </div>
             </div>
-            {/* <ScheduleItemDetails 
-                visible={detailsVisible}
-                setVisible={setDetailsVisible}
-                details={details}
-            /> */}
             <ItemDetails 
                 visible={detailsVisible}
                 setVisible={setDetailsVisible}
                 details={details}
                 record={record}
-                // record={data.data[detailsVisible]}
-                // details={itemDetails}
             />
         </div>
     )

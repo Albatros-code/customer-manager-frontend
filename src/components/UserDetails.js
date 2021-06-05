@@ -1,5 +1,5 @@
 import React from 'react';
-import {Divider} from 'antd';
+import {Divider, Button, Spin} from 'antd';
 import {useHistory} from 'react-router-dom'
 import { useStore } from 'react-redux';
 
@@ -8,9 +8,11 @@ import DatabaseTable, {useDatabaseTableContext} from './DatabaseTable';
 import {user as userModel, getData} from '../util/data';
 import {api} from '../util/util';
 import {dayjsExtended as dayjs} from '../util/util'
+import ModalConfirmation from '../components/ModalConfirmation';
+
 
 const UserDetails = (props) => {
-    const {userDoc} = props
+    const {userDoc, setVisible} = props
     // const {getData} = prop
 
     return (
@@ -21,6 +23,10 @@ const UserDetails = (props) => {
             />
             <UserAppointments 
                 userId={userDoc.id}
+            />
+            <UserActions
+                docData={userDoc}
+                setVisible={setVisible}
             />
         </div>
     )
@@ -123,5 +129,97 @@ const UserAppointments = (props) => {
             />
 
         </div>
+    )
+}
+
+const UserActions = (props) => {
+    const {docData: doc, setVisible} = props
+    const history = useHistory()
+    const {updateTableContent} = useDatabaseTableContext()
+    
+    const [loading, setLoading] = React.useState(false)
+    const [userDoc, setUserDoc] = React.useState(null)
+    
+    // React.useEffect(() => {
+    //     api.get(`/users/${doc.user}`)
+    //         .then(res => {
+    //             setUserDoc(res.data.doc)
+    //             setLoading(false)
+    //         })
+    // },[doc.user])
+
+    const [submitModalVisible, setSubmitModalVisible] = React.useState(false);
+
+    const submitModal = !submitModalVisible ? null :
+        <ModalConfirmation 
+            visibilityState={[submitModalVisible, setSubmitModalVisible]}
+            title={"Deleting user"}
+            contentInit={"Are you sure?"}
+            contentResolved={"User deleted successfully."}
+            contentRejected={<p>Something went wrong<br/>User not deleted.</p>}
+            onConfirm={() => {
+                return new Promise((resolve, reject) => {
+                    api.delete(`/users/${doc.id}`)  
+                        .then(res => {
+                            return resolve(res)
+                        }, err => {
+                            return reject(err)
+                        })
+                        .catch(err => {
+                            return reject(err)
+                        })
+                    })
+                }}
+            onResolve={
+                // () => {setVisible(false)}
+                () => {
+                    updateTableContent()
+                    setVisible(false)
+                }
+            }
+            onReject={
+                () => {
+                    // console.log('Rejected')
+                }
+            }
+        />
+    
+
+    const btnStyle = {
+        width: '80%',
+        margin: '0.5rem',
+    }
+    return (
+        <>
+            <Divider orientation="left">User's actions</Divider>
+                <Spin spinning={loading}>
+                <div
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        width: '100%',
+                    }}>
+                    {/* <Button 
+                        style={btnStyle}
+                        onClick={() => {history.push(`/admin/users?filter=%7B"id__icontains"%3A"${doc.user}"%7D&page=1&showRow=0`)}}>
+                            {loading ? ' ' :
+                                `Go to user ${userDoc ? (userDoc.data.lname + ' ' + userDoc.data.fname) : null}`
+                            }
+                    </Button> */}
+                    <Button
+                        style={btnStyle}
+                        onClick={() => {
+                            setSubmitModalVisible(true)
+                        }}
+                    >
+                        {loading ? ' ' :
+                            `Delete user`
+                        }
+                    </Button>
+                </div>
+                </Spin>
+                {submitModal}
+        </>
     )
 }

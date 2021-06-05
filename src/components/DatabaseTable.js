@@ -256,11 +256,15 @@ const DatabaseTable = (props) => {
     }
 
     function setUrl(rowIndex){
+        
         if (useQueryParams){
+            const {showRow, ...newQueryParams} = queryParams
+            const rowIndexQueryParam = rowIndex ? {showRow: rowIndex} : {}
+            
             history.push({
                 search: queryString.stringify({
-                    ...queryParams,
-                    showRow: rowIndex
+                    ...newQueryParams,
+                    ...rowIndexQueryParam,
                 })
             })
         } else {
@@ -501,7 +505,8 @@ const DatabaseTable = (props) => {
                 }}>
                     <ItemDetails 
                         visible={detailsVisible}
-                        setVisible={setDetailsVisible}
+                        // setVisible={setDetailsVisible}
+                        setVisible={setUrl}
                         record={data.data[detailsVisible]}
                         details={itemDetails}
                         resetUrl={resetUrl}

@@ -66,6 +66,7 @@ const AdminUsers = (props) => {
             <>
                 <UserDetails 
                     userDoc={record}
+                    setVisible={setVisible}
                 />
                 {/* <button onClick={() => {setVisible(false)}}>Close</button> */}
             </>, title

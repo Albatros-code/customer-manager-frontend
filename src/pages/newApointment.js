@@ -196,7 +196,7 @@ const NewAppointment = (props) => {
                     api.post('/appointments', {
                         service: form.getFieldValue('service'),
                         date: selectedDate.toISOString(),
-                        duration: services ? services.find(item => item.id === form.getFieldValue('service')).time : null,
+                        duration: services ? services.find(item => item.id === form.getFieldValue('service')).duration : null,
                     // }, {withCredentials: true})
                     })
                         .then(res => {

@@ -71,9 +71,13 @@ const Appointments = (props) => {
                 .catch(err => {})
         }
 
+        
+        const serviceDoc = services ? services.find((item) => item.id === appointment.service) : null
+        const serviceName = serviceDoc ? serviceDoc.name : "deleted " + appointment.service
+
         return (
             <div className="schedule-table-appointment-details">
-                <h1>{services ? services.find(item => item.id === appointment.service).name : ''}</h1>
+                <h1>{serviceName}</h1>
 
                 <Descriptions
                     bordered
@@ -135,7 +139,11 @@ const Appointments = (props) => {
                                 title="Service"
                                 dataIndex="service"
                                 key="service"
-                                render={(text, record) => services ? services.find(item => item.id === text).name : ''}
+                                render={(text, record, index) => {
+                                        const serviceDoc = services ? services.find((item) => item.id === record.service) : null
+                                        return serviceDoc ? serviceDoc.name : "deleted " + record.service
+                                }}
+                                // render={(text, record) => services ? services.find(item => item.id === text).name : ''}
                             />
                             <Column
                                 title="Day"

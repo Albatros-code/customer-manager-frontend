@@ -18,7 +18,7 @@ const ServiceSelector = (props) => {
                     onChange={handleServiceChange}
                 >
                     {services ? services.map((item, index) => (
-                        <Select.Option value={item.id} key={"service" + index}>{item.name} - {item.time} min</Select.Option>    
+                        <Select.Option value={item.id} key={"service" + index}>{item.name} - {item.duration} min</Select.Option>    
                     )) : <Select.Option>no option loaded</Select.Option>}
                 </Select>
         </Form.Item>

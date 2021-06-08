@@ -13,7 +13,6 @@ import ModalConfirmation from '../components/ModalConfirmation';
 
 const UserDetails = (props) => {
     const {userDoc, setVisible} = props
-    // const {getData} = prop
 
     return (
         <div>
@@ -101,7 +100,10 @@ const UserAppointments = (props) => {
             dataIndex: ["service"],
             key: "service",
             ellipsis: true,
-            render: (text, record, index) => services ? services.find(item => item.id === record.service).name : null,
+            render: (text, record, index) => {
+                const serviceDoc = services ? services.find((item) => item.id === record.service) : null
+                return serviceDoc ? serviceDoc.name : "deleted " + record.service
+            }
         },
         {
             title: "Day",
@@ -134,19 +136,9 @@ const UserAppointments = (props) => {
 
 const UserActions = (props) => {
     const {docData: doc, setVisible} = props
-    const history = useHistory()
     const {updateTableContent} = useDatabaseTableContext()
     
-    const [loading, setLoading] = React.useState(false)
-    const [userDoc, setUserDoc] = React.useState(null)
-    
-    // React.useEffect(() => {
-    //     api.get(`/users/${doc.user}`)
-    //         .then(res => {
-    //             setUserDoc(res.data.doc)
-    //             setLoading(false)
-    //         })
-    // },[doc.user])
+    const [loading] = React.useState(false)
 
     const [submitModalVisible, setSubmitModalVisible] = React.useState(false);
 

@@ -13,12 +13,10 @@ error response
 */
 
 export const getData = (dataModel, values, additionalProps) => Object.entries(dataModel).map(([key, val]) => {
-    // const valueToShow = val.hasOwnProperty("valueToShow") && values.hasOwnProperty(key) ? {valueToShow: useValueToShow(val.valueToShow(values[key]))} : {}
     return {
         value: values.hasOwnProperty(key) ? values[key] : "",
         ...val,
         ...additionalProps[key],
-        // ...valueToShow
     }
 })
 
@@ -260,7 +258,7 @@ export const appointmentModel = {
             (errors) => {return apiErrorValidator(errors)},
             {validator: async (rule, value) => {
                 const parsedVal = parseInt(value)
-                if (String(parsedVal) === value || value === '') {
+                if (String(parsedVal) === String(value) || value === '') {
                     return Promise.resolve()
                 } else {
                     return Promise.reject(new Error('Not valid number.'))
@@ -270,3 +268,49 @@ export const appointmentModel = {
     },
 }
 
+export const serviceModel = {
+    name: {
+        field: 'name',
+        label: 'Name',
+        type: 'input',
+        rules: [
+            {required: true, message: "Can't be blank!" },
+            // {pattern: new RegExp("^[A-Za-z]*$"), message: "Not valid input."},
+            (errors) => {return apiErrorValidator(errors)},
+        ]
+    },
+    duration: {
+        field: 'duration',
+        label: 'Duration',
+        type: 'input',
+        rules: [
+            (errors) => {return apiErrorValidator(errors)},
+            {validator: async (rule, value) => {
+                const parsedVal = parseInt(value)
+                if (String(parsedVal) === String(value) || value === '') {
+                    return Promise.resolve()
+                } else {
+                    return Promise.reject(new Error('Not valid number.'))
+                }
+            }},
+            {required: true, message: "Can't be blank!" },
+        ]
+    },
+    price: {
+        field: 'price',
+        label: 'Price',
+        type: 'input',
+        rules: [
+            {required: true, message: "Can't be blank!" },
+            (errors) => {return apiErrorValidator(errors)},
+            {validator: async (rule, value) => {
+                const parsedVal = parseInt(value)
+                if (String(parsedVal) === String(value) || value === '') {
+                    return Promise.resolve()
+                } else {
+                    return Promise.reject(new Error('Not valid number.'))
+                }
+            }}
+        ]
+    },
+}

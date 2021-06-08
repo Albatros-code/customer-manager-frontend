@@ -96,7 +96,7 @@ export const DataListDataSelector = ({record, handleChange, isEdited, dataUrl, d
                 const display = handleDisplay(res.data.doc)
                 return resolve(display)
             })
-            .catch(err => reject(err))
+            .catch(err => reject(docId))
         })
     }
 
@@ -109,7 +109,9 @@ export const DataListDataSelector = ({record, handleChange, isEdited, dataUrl, d
             .then(res => {
                 setShowValue(res)
             })
-            .catch(err => {})
+            .catch(err => {
+                setShowValue(err)
+            })
     }, [dataUrl, displayData, value])
 
     const handleOpen = () => {

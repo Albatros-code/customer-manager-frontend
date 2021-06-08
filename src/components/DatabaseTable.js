@@ -21,6 +21,11 @@ const DatabaseTable = (props) => {
     // const mobile = isMobile()
     const {dataUrl, itemDetails, useQueryParams, handleRowClick, paginationHidden} = props
     
+    // React.useEffect(() => {
+    //     console.log('rerender DatabaseTable')
+    //     if (props.forceUpdate !== 0) getData()
+    // },[getData, ])
+
     const location = useLocation()
     const queryParams = queryString.parse(location.search)
     const {
@@ -80,7 +85,7 @@ const DatabaseTable = (props) => {
     
     React.useEffect(() => {
         getData()
-    },[getData])
+    },[getData, props.forceUpdate])
 
     React.useEffect(() => {
         if (useQueryParams){
@@ -259,7 +264,7 @@ const DatabaseTable = (props) => {
         
         if (useQueryParams){
             const {showRow, ...newQueryParams} = queryParams
-            const rowIndexQueryParam = rowIndex ? {showRow: rowIndex} : {}
+            const rowIndexQueryParam = parseInt(rowIndex) >= 0 ? {showRow: rowIndex} : {}
             
             history.push({
                 search: queryString.stringify({

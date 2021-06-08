@@ -88,10 +88,15 @@ const AdminSchedule = (props) => {
         disabledButton={false}
     />
 
+    function getServiceName(doc){
+        const serviceDoc = services ? services.find((item) => item.id === doc.service) : null
+        return serviceDoc ? serviceDoc.name : "deleted " + doc.service
+    }
+
     const appointmentCardContent = (appointment) => {
         return (
             <div className="schedule-table-appointment-card">
-                <p>{services.find((item) => item.id === appointment.service).name}</p>
+                <p>{getServiceName(appointment)}</p>
                 <p>{appointment.user_name}</p>
                 <p>{appointment.phone}</p>
             </div>
@@ -100,7 +105,8 @@ const AdminSchedule = (props) => {
 
     const itemDetails = (record, setVisible) => {
         if (!record) return null
-        const title = (services ? services.find((item) => item.id === record.service).name : null) + ' on ' + dayjs(record.date).tz().format('DD-MM-YYYY')
+        
+        const title = getServiceName(record) + ' on ' + dayjs(record.date).tz().format('DD-MM-YYYY')
 
         return ([
             <AppointmentsDetails 

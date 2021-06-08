@@ -35,7 +35,10 @@ const AdminAppointments = (props) => {
             dataIndex: ['service'],
             sorter: true,
             ellipsis: true,
-            render: (text, record, index) => services ? services.find((item) => item.id === text).name : null,
+            render: (text, record, index) => {
+                const serviceDoc = services ? services.find((item) => item.id === text) : null
+                return serviceDoc ? serviceDoc.name : "deleted " + text
+            },
             width: 300,
             ...searchProps(['service']),
         },
@@ -43,7 +46,9 @@ const AdminAppointments = (props) => {
 
     const itemDetails = (record, setVisible) => {
         if (!record) return null
-        const title = (services ? services.find((item) => item.id === record.service).name : null) + ' on ' + dayjs(record.date).tz().format('DD-MM-YYYY')
+        const serviceDoc = services ? services.find((item) => item.id === record.service) : null
+        const serviceName = serviceDoc ? serviceDoc.name : "deleted " + record.service
+        const title = serviceName + ' on ' + dayjs(record.date).tz().format('DD-MM-YYYY')
 
         return (
             [<>

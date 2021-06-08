@@ -3,23 +3,22 @@ import {Button, Divider, Spin} from 'antd';
 
 import DataList from './DataList';
 import {useDatabaseTableContext} from './DatabaseTable';
-import {appointmentModel, getData} from '../util/data';
+import {serviceModel, getData} from '../util/data';
 import {api} from '../util/util';
-import { useHistory } from 'react-router';
 import ModalConfirmation from '../components/ModalConfirmation';
 
 
-const AppointmentsDetails = (props) => {
+const ServicesDetails = (props) => {
     const {doc, setVisible} = props
 
     return (
         <div>
-            <AppointmentData
+            <ServiceData
                 docId={doc.id}
                 docData={doc}
                 setVisible={setVisible}
             />
-            <AppointmentActions
+            <ServiceActions
                 docData={doc}
                 setVisible={setVisible}
             />
@@ -27,11 +26,11 @@ const AppointmentsDetails = (props) => {
     )
 }
 
-export default AppointmentsDetails
+export default ServicesDetails
 
 
 
-const AppointmentData = (props) => {
+const ServiceData = (props) => {
     const {docId} = props
     const {updateTableContent} = useDatabaseTableContext()
 
@@ -50,7 +49,7 @@ const AppointmentData = (props) => {
     },[props.docData])
 
     const [docData, setdocData] = React.useState(props.docData)
-    const listData = React.useMemo(() => getData(appointmentModel, docData, {
+    const listData = React.useMemo(() => getData(serviceModel, docData, {
         email: {disabled: true}
     }), [docData])
 
@@ -59,8 +58,8 @@ const AppointmentData = (props) => {
         const formatedData = {...values}
         formatedData.duration = parseInt(formatedData.duration)
 
-        api.put(`/appointments/${docId}`, {
-            appointment: formatedData
+        api.put(`/services-admin/${docId}`, {
+            service: formatedData
         })
         .then(() => {
             setdocData(formatedData)
@@ -68,7 +67,7 @@ const AppointmentData = (props) => {
             if (callbackRes) callbackRes()
         })
         .catch(err => {
-            // console.log(err.response)
+            console.log(err)
             if (callbackErr && err.response.data.errors) callbackErr(err.response.data.errors)
         })
     }
@@ -76,44 +75,31 @@ const AppointmentData = (props) => {
         
         <DataList 
             data={listData}
-            label="Apointment's data"
+            label="Service's data"
             onSave={OnSave}
         />
     )
 }
 
-const AppointmentActions = (props) => {
+const ServiceActions = (props) => {
     const {docData: doc, setVisible} = props
-    const history = useHistory()
     const {updateTableContent} = useDatabaseTableContext()
     
-    const [loading, setLoading] = React.useState(true)
-    const [userDoc, setUserDoc] = React.useState(null)
+    const [loading] = React.useState(false)
     
-    React.useEffect(() => {
-        api.get(`/users/${doc.user}`)
-            .then(res => {
-                setUserDoc(res.data.doc)
-                setLoading(false)
-            })
-            .catch(err => {
-                // setUserDoc(doc.user)
-                setLoading(false)
-            })
-    },[doc.user])
 
     const [submitModalVisible, setSubmitModalVisible] = React.useState(false);
 
     const submitModal = !submitModalVisible ? null :
         <ModalConfirmation 
             visibilityState={[submitModalVisible, setSubmitModalVisible]}
-            title={"Deleting appointment"}
+            title={"Deleting service"}
             contentInit={"Are you sure?"}
-            contentResolved={"Appointment deleted successfully."}
-            contentRejected={<p>Something went wrong<br/>Appointment not deleted.</p>}
+            contentResolved={"Service deleted successfully."}
+            contentRejected={<p>Something went wrong<br/>Service not deleted.</p>}
             onConfirm={() => {
                 return new Promise((resolve, reject) => {
-                    api.delete(`/appointments/${doc.id}`)  
+                    api.delete(`/services-admin/${doc.id}`)  
                         .then(res => {
                             return resolve(res)
                         }, err => {
@@ -145,7 +131,7 @@ const AppointmentActions = (props) => {
     }
     return (
         <>
-            <Divider orientation="left">Appointment's actions</Divider>
+            <Divider orientation="left">Service's actions</Divider>
                 <Spin spinning={loading}>
                 <div
                     style={{
@@ -154,19 +140,11 @@ const AppointmentActions = (props) => {
                         alignItems: 'center',
                         width: '100%',
                     }}>
-                    <Button 
-                        style={btnStyle}
-                        disabled={!userDoc}
-                        onClick={() => {history.push(`/admin/users?filter=%7B"id__icontains"%3A"${doc.user}"%7D&page=1&showRow=0`)}}>
-                            {loading ? ' ' :
-                                `Go to user ${userDoc ? (userDoc.data.lname + ' ' + userDoc.data.fname) : doc.user}`
-                            }
-                    </Button>
                     <Button
                         style={btnStyle}
                         onClick={() => {
                             setSubmitModalVisible(true)
-                            // api.delete(`/appointments/${doc.id}`)  
+                            // api.delete(`/Services/${doc.id}`)  
                             //     .then(res => {
                             //         setVisible(false)
                             //         updateTableContent()
@@ -174,7 +152,7 @@ const AppointmentActions = (props) => {
                         }}
                     >
                         {loading ? ' ' :
-                            `Delete appointment`
+                            `Delete service`
                         }
                     </Button>
                 </div>

@@ -16,6 +16,9 @@ export const useDataListContext = () => React.useContext(DataListContext);
 const DataList = (props) => {
     const [form] = Form.useForm();
 
+    // const {buttonTags: {undo: btnUndoTag = 'elo', save: btnSaveTag}} = props
+    const {buttonTags: {undo: btnUndoTag = "Undo", save: btnSaveTag = "Save"} = {}} = props
+
     // React.useEffect(() => {
     //     return () => console.log('unmounting DataList')
     // }, [])
@@ -105,9 +108,10 @@ const DataList = (props) => {
         form.validateFields()
             .then(values => {
                 const formatedValues = formatResults(data, values)
-                const callbackRes = () => {
+                const callbackRes = (props = {}) => {
+                    const {resetFields} = props
                     setEditedFields({})
-                    // form.resetFields()
+                    if (resetFields) form.resetFields()
                     setFormLoading(false)
                 }
                 const callbackErr = (err) => {
@@ -121,7 +125,7 @@ const DataList = (props) => {
                 setFormLoading(false)
             })
             .catch(err => {
-
+                setFormLoading(false)
             })
     }
 
@@ -129,7 +133,7 @@ const DataList = (props) => {
         <div className="data-list-section">
             <Divider orientation="left">{props.label}</Divider>
             <div className="data-list-form">
-
+            {/* <button onClick={() => form.validateFields().then(values => {console.log('resolved'); console.log(values)}, err => {console.log('error'); console.log(err.values)} )}>validate form</button> */}
             <Spin spinning={formLoading}>
                 {/* <DataListContext.Provider
                     value={{
@@ -138,7 +142,8 @@ const DataList = (props) => {
                 > */}
                     <Form
                         form={form}
-                        validateTrigger="onChange"
+                        // validateTrigger="onChange"
+                        validateTrigger="onSubmit"
                         initialValues={initialValues}
                     >
                         <List
@@ -161,18 +166,23 @@ const DataList = (props) => {
                     </Form>
                 {/* </DataListContext.Provider> */}
                 <div className="data-list-table-footer">
+
                     <Button 
                         onClick={() => {
-                            form.resetFields(Object.keys(editedFields))
+                            const touchedFields = Object.keys(form.getFieldsValue()).filter(item => form.isFieldsTouched([item]))
+                            const withErrorFields = form.getFieldsError().filter(item => item.errors.length > 0).map(item => item.name.join())
+                            const toResetFields = [...touchedFields, ...withErrorFields.filter((item) => touchedFields.indexOf(item) < 0)]
+                            // form.resetFields(Object.keys(editedFields))
+                            form.resetFields(toResetFields)
                             setEditedFields({})
                         }}
                         disabled={Object.keys(editedFields).length === 0 ? true : false}
-                    >Undo</Button>
+                    >{btnUndoTag}</Button>
                     <Button 
                         onClick={handleClick}
                         type="primary"
                         disabled={Object.keys(editedFields).length === 0 ? true : false}
-                    >Save</Button>
+                    >{btnSaveTag}</Button>
                 </div>
             </Spin>
             </div>
@@ -185,13 +195,15 @@ export default DataList
 const ListItem = (props) => {
     const {item, edited} = props
 
-    const rules = (() => {
-        if (edited && item.rules){
-            return item.rules
-        } else {
-            return [{validator: async () => edited ? Promise.reject(new Error('Error')) : Promise.resolve()}]
-        }
-    })()
+    // const rules = (() => {
+    //     if (edited && item.rules){
+    //         return item.rules
+    //     } else {
+    //         return [{validator: async () => edited ? Promise.reject(new Error('Error')) : Promise.resolve()}]
+    //     }
+    // })()
+
+    const rules = item.rules
 
     const formItemProps = ({
         onChange: props.handleChange,

@@ -1,6 +1,4 @@
-import React from 'react';
 import {
-  // HashRouter as Router,
   BrowserRouter as Router,
   Switch,
   Route,
@@ -46,20 +44,12 @@ function App() {
     <Provider store={store}>
       <RefreshToken>
         <Router>
-        {/* <Router basename={process.env.REACT_APP_GH_PREFIX}> */}
           <Layout>
             <Switch>
               <Route exact path="/" component={Home}/>
               <Route exact path="/contact" component={Contact}/>
               <Route exact path="/login" component={Login}/>
               <Route exact path="/register" component={Register}/>
-
-              {/* <Route exact path="/email-verified" render={() => (
-                <Redirect to={{
-                  pathname: '/login',
-                  state: { from: '/email-verified' },
-                }}/>
-              )}/> */}
 
               <Route exact path="/reset-password" component={ResetPassword}/>
 

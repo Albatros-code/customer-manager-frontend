@@ -5,8 +5,9 @@ import {connect} from 'react-redux';
 
 import logo_full from '../images/logo_full.svg';
 
+type homeProps = reduxState & {}
 
-const Home = (props) => {
+const Home = (props: homeProps) => {
     const history = useHistory()
     const {authenticated} = props
 
@@ -64,12 +65,12 @@ const Home = (props) => {
     )
 }
 
-const mapStateToProps = (state) => ({
-    id: state.user.id,
-    authenticated: state.user.authenticated,
-    role: state.user.role,
-    settings: state.data.settings,
+interface reduxState {
+    authenticated: boolean,
+}
 
+const mapStateToProps = (state: any):reduxState => ({
+    authenticated: state.user.authenticated,
 })
 
 const mapDispatchToProps = {

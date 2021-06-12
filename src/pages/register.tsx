@@ -8,7 +8,10 @@ import {user as userModel, resolveRules, mergeErrors} from '../util/data';
 
 import ModalConfirmation from '../components/ModalConfirmation';
 
-const Register = (props) => {
+//types
+import {reduxState} from '../redux/types'
+
+const Register = (props: reduxProps) => {
 
     React.useEffect(() => {
         if (props.authenticated){
@@ -24,7 +27,14 @@ const Register = (props) => {
     const [ formLoading, setFormLoading ] = React.useState(false)
     const [ infoModalVisible, setInfoModalVisible ] = React.useState(false)
 
-    const data = resolveRules([
+    interface IDataItem {
+        field: string,
+        label: string,
+        type: string,
+        rules: any[]
+    }
+
+    const data:IDataItem[] = resolveRules([
         userModel.username,
         userModel.password,
         userModel.confirmPassword,
@@ -37,8 +47,17 @@ const Register = (props) => {
     const handleSubmit = () => {
         // setFormLoading(true)
     }
+
+    interface formValues {
+        username: string,
+        password: string,
+        email: string,
+        phone: string,
+        fname: string,
+        lname: string,
+    }
     
-    const onFinish = (values) => {
+    const onFinish = (values: formValues) => {
         setFormLoading(true)
 
         api.post('/registration', {
@@ -68,7 +87,7 @@ const Register = (props) => {
         })
     };
 
-    const onFinishFailed = (errorInfo) => {
+    const onFinishFailed = () => {
         
     };
 
@@ -103,7 +122,7 @@ const Register = (props) => {
         form.setFieldsValue(values)
     }
 
-    const handleKeyPress = (event) => {
+    const handleKeyPress = (event: { key: string; }) => {
         
         if(event.key === 'f'){
             fillIn()
@@ -165,7 +184,11 @@ const Register = (props) => {
     )
 }
 
-const mapStateToProps = (state) => ({
+interface reduxProps {
+    authenticated: boolean,
+}
+
+const mapStateToProps = (state: reduxState) => ({
     authenticated: state.user.authenticated
 })
 

@@ -10,10 +10,19 @@ import { loginUser } from '../redux/actions/userActions';
 
 import { api } from '../util/util';
 
-const Login = (props) => {
+//types
+import {reduxState} from '../redux/types'
 
-    const location = useLocation()
-    const history = useHistory()
+
+const Login = (props: reduxProps) => {
+    
+    interface ILocation {
+        emailVerification: string,
+        from: string
+    }
+
+    const location = useLocation<ILocation>()
+    const history = useHistory<string>()
 
     const initialRender = React.useRef(true);
     React.useEffect(() => {
@@ -24,22 +33,32 @@ const Login = (props) => {
             }
         }
     },[history, props.authenticated])
+
+    interface IErrors {
+        [key: string]: string
+    }
     
-    const [ errors, setErrors ] = React.useState({})
+    const [ errors, setErrors ] = React.useState<IErrors>({})
     const [ formLoading, setFormLoading ] = React.useState(false)
 
     const [form] = Form.useForm();
 
-    const onFinish = (values) => {
+    interface formValues {
+        username: string,
+        password: string,
+        remember: boolean
+    }
+
+    const onFinish = (values: formValues) => {
         if (location.state) location.state.emailVerification = ''
         setFormLoading(true)
 
         props.loginUser(values.username, values.password, values.remember, history)
-            .then(res => {
+            .then(() => {
                 // redirect to proper page
                 const push = location.state !== undefined ? location.state.from : '/appointments'
                 history.push(push)
-            }, err => {
+            }, (err:{response: any}) => {
                     // set error state in order to validate form fields
                     let skipGeneralError = {}
                     if (err.response) {
@@ -58,12 +77,12 @@ const Login = (props) => {
             })
     };
 
-  const onFinishFailed = (errorInfo) => {
+  const onFinishFailed = () => {
         setErrors({});
   };
 
     const apiErrorValidator = 
-        { validator: async (rule, value, callback) => {
+        { validator: async (rule:any) => {
             if (errors.hasOwnProperty(rule.field)) {
                 return Promise.reject(new Error(errors[rule.field]))
             } else if (errors.hasOwnProperty('general')) {
@@ -97,7 +116,7 @@ const Login = (props) => {
             style: {display: resetPasswordModalResolved ? 'none' : 'inline-block'}}
     }
 
-    const showResetPasswordModal = (e) => {
+    const showResetPasswordModal = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
         if (e) e.preventDefault()
         setResetPasswordModalVisible(true);
     };
@@ -107,7 +126,7 @@ const Login = (props) => {
             .then(data => {
                 setResetPasswordModalLoading(true);
 
-                const handleResponse = (response) => {
+                const handleResponse = (response: any) => {
                     setTimeout(() => {
                         setResetPasswordModalResolved(true)
                         setResetPasswordModalLoading(false);
@@ -243,9 +262,15 @@ const Login = (props) => {
     )
 }
 
-const mapStateToProps = (state) => ({
+interface reduxProps {
+    authenticated: boolean,
+    username: string,
+    loginUser: (username: string, password:string, remember: boolean, history: any) => any
+}
+
+const mapStateToProps = (state: reduxState) => ({
     authenticated: state.user.authenticated,
-    username: state.user.username
+    username: state.user.username,
 })
   
   const mapDispatchToProps = { loginUser }

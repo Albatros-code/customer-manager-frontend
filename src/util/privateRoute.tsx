@@ -3,7 +3,16 @@ import { Redirect, Route, useLocation } from 'react-router-dom';
 // redux
 import { connect } from 'react-redux';
 
-const ProtectedRoute =({ component: Component, authenticated, role, ...rest }) => {
+//types
+import {reduxState} from '../redux/types'
+import {RouteProps} from 'react-router'
+
+interface IProtectedRouteProps extends IReduxProps {
+    component: React.FC<RouteProps>,
+    [key: string]: any
+}
+
+const ProtectedRoute = ({ component: Component, authenticated, role, ...rest }: IProtectedRouteProps) => {
     // const { user } = useAppData()
     const location = useLocation()
 
@@ -35,7 +44,12 @@ const ProtectedRoute =({ component: Component, authenticated, role, ...rest }) =
     )
 }
 
-const mapStateToProps = (state) => ({
+interface IReduxProps {
+    authenticated: boolean,
+    role: string,
+}
+
+const mapStateToProps = (state: reduxState):IReduxProps => ({
     authenticated: state.user.authenticated,
     role: state.user.role
 })

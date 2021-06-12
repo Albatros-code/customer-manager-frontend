@@ -1,5 +1,42 @@
 import React from 'react';
-import {DataListDataSelector} from "../components/DataSelector"
+import {DataListDataSelector as NotTyped} from "../components/DataSelector"
+
+const DataListDataSelector = (props: any) => <NotTyped {...props} />
+
+interface IDataItem {
+    field: string,
+    label: string,
+    type: string,
+    rules: any[]
+}
+
+interface IDataModel extends Array<IDataItem>{}
+
+interface IValues {
+    [key: string]: string
+}
+
+interface IRecord {
+    [key: string]: string | {
+        [key2: string]: string
+    },
+}
+
+interface IAdditionalProps {
+    [key: string]: {
+        [key: string]: string | number | boolean
+    }
+}
+
+interface IData {
+    field: string,
+    label: string,
+    type: string,
+    value: string | number | boolean,
+    rules: any[]
+}
+
+   
 
 /*
 error response
@@ -12,7 +49,7 @@ error response
 }
 */
 
-export const getData = (dataModel, values, additionalProps) => Object.entries(dataModel).map(([key, val]) => {
+export const getData = (dataModel:IDataModel, values:IValues, additionalProps:IAdditionalProps):IData[] => Object.entries(dataModel).map(([key, val]):IData => {
     return {
         value: values.hasOwnProperty(key) ? values[key] : "",
         ...val,
@@ -20,7 +57,13 @@ export const getData = (dataModel, values, additionalProps) => Object.entries(da
     }
 })
 
-export const mergeErrors = (prevs, errs) => {
+interface IErrors {
+    [key: string]: {
+        [key: string]: string
+    }
+}
+
+export const mergeErrors = (prevs:IErrors, errs:IErrors) => {
     const prevsCopy = JSON.parse(JSON.stringify(prevs))
     for (const [key, val] of Object.entries(errs)) {
         prevsCopy[key] = {...prevsCopy[key], ...val}
@@ -28,9 +71,9 @@ export const mergeErrors = (prevs, errs) => {
     return prevsCopy
 }
 
-const apiErrorValidator = (errors) => {
-    const validator = async (rule, value) => {
-        if (errors.hasOwnProperty(rule.field) && errors[rule.field].hasOwnProperty([value])) {
+const apiErrorValidator = (errors:IErrors) => {
+    const validator = async (rule:any, value:string) => {
+        if (errors.hasOwnProperty(rule.field) && errors[rule.field].hasOwnProperty([value].join())) {
             return Promise.reject(new Error(errors[rule.field][value]))
         } else {
             return Promise.resolve()
@@ -39,7 +82,7 @@ const apiErrorValidator = (errors) => {
     return {validator: validator}
 }
 
-export const resolveRules = (data, {errors}) => {
+export const resolveRules = (data:IDataModel, {errors}:{errors: IErrors}) => {
     return data.map(item => {
         if (item.rules){
             const rulesResolved = item.rules.map(rule => {
@@ -65,7 +108,7 @@ export const user = {
         rules: [
             {required: true, message: "Can't be blank!" },
             {pattern: new RegExp("^(?=[a-zA-Z0-9._]{8,20}$)(?!.*[_.]{2})[^_.].*[^_.]$"), message: "Not valid input."},
-            (errors) => {return apiErrorValidator(errors)},
+            (errors: IErrors) => {return apiErrorValidator(errors)},
 
         ]
     },
@@ -76,7 +119,7 @@ export const user = {
         rules: [
             {required: true, message: "Can't be blank!" },
             {min: 8, message: 'The password must contain at least 8 character'},
-            (errors) => {return apiErrorValidator(errors)},
+            (errors: IErrors) => {return apiErrorValidator(errors)},
 
         ]
     },
@@ -87,9 +130,9 @@ export const user = {
         rules: [
             {required: true, message: "Please confirm your password!" },
             // {min: 8, message: 'The password must contain at least 8 character'},
-            (errors) => {return apiErrorValidator(errors)},
-            () => ({getFieldValue}) => ({
-                validator(_, value) {
+            (errors: IErrors) => {return apiErrorValidator(errors)},
+            () => ({getFieldValue}:{getFieldValue: (name: string) => string}) => ({
+                validator(_:any, value: string) {
                 if (!value || getFieldValue('password') === value) {
                     return Promise.resolve();
                 }
@@ -106,7 +149,7 @@ export const user = {
             rules: [
                 {required: true, message: "Can't be blank!" },
                 {pattern: new RegExp("^[A-Za-z]*$"), message: "Not valid input."},
-                (errors) => {return apiErrorValidator(errors)},
+                (errors: IErrors) => {return apiErrorValidator(errors)},
 
             ]
         },
@@ -118,7 +161,7 @@ export const user = {
                 {required: true, message: "Can't be blank!" },
                 // {pattern: new RegExp("^[A-Za-z]*$"), message: "Not valid input."},
                 {pattern: new RegExp("^[A-Za-z]+$|^[A-Za-z]+-[A-Za-z]+$"), message: "Not valid input."},
-                (errors) => {return apiErrorValidator(errors)},
+                (errors: IErrors) => {return apiErrorValidator(errors)},
             ]
         },
         phone: {
@@ -128,7 +171,7 @@ export const user = {
             rules: [
                 {required: true, message: "Can't be blank!" },
                 {pattern: new RegExp("^\\d{9}$"), message: "Phone number should have 9 digit."},
-                (errors) => {return apiErrorValidator(errors)},
+                (errors: IErrors) => {return apiErrorValidator(errors)},
             ]
         },
         email: {
@@ -138,7 +181,7 @@ export const user = {
             rules: [
                 {required: true, message: "Can't be blank!" },
                 {type: 'email', message: "The input is not valid E-mail!"},
-                (errors) => {return apiErrorValidator(errors)},
+                (errors: IErrors) => {return apiErrorValidator(errors)},
             ]
         },
         age: {
@@ -148,7 +191,7 @@ export const user = {
             rules: [
                 {required: true, message: "Can't be blank!" },
                 {pattern: new RegExp("^\\d{2}$"), message: "Not valid age."},
-                (errors) => {return apiErrorValidator(errors)},
+                (errors: IErrors) => {return apiErrorValidator(errors)},
             ]
         },        
     },
@@ -165,7 +208,7 @@ export const settingsModel = {
         rules: [
             {required: true, message: "Can't be blank!" },
             {pattern: new RegExp("^\\d{2}$"), message: "Not valid hour."},
-            (errors) => {return apiErrorValidator(errors)},
+            (errors: IErrors) => {return apiErrorValidator(errors)},
         ]
     },
     end_hour: {
@@ -175,7 +218,7 @@ export const settingsModel = {
         rules: [
             {required: true, message: "Can't be blank!" },
             {pattern: new RegExp("^\\d{2}$"), message: "Not valid hour."},
-            (errors) => {return apiErrorValidator(errors)},
+            (errors: IErrors) => {return apiErrorValidator(errors)},
         ]
     },
     time_interval: {
@@ -185,7 +228,7 @@ export const settingsModel = {
         rules: [
             {required: true, message: "Can't be blank!" },
             {pattern: new RegExp("^\\d{2}$"), message: "Not valid minutes."},
-            (errors) => {return apiErrorValidator(errors)},
+            (errors: IErrors) => {return apiErrorValidator(errors)},
         ]
     },
     working_days: {
@@ -196,7 +239,7 @@ export const settingsModel = {
         rules: [
             {required: true, message: "Can't be blank!" },
             {pattern: new RegExp("^\\d{2}$"), message: "Not valid minutes."},
-            (errors) => {return apiErrorValidator(errors)},
+            (errors: IErrors) => {return apiErrorValidator(errors)},
         ]
     },
 }
@@ -206,19 +249,19 @@ export const appointmentModel = {
         field: 'user',
         label: 'User',
         type: 'custom',
-        component: (record, handleChange, isEdited) => (
+        component: (record: IRecord, handleChange: () => void, isEdited: boolean) => (
             <DataListDataSelector
                 record={record}
                 handleChange={handleChange}
                 isEdited={isEdited}
                 dataUrl={'/users'}
-                displayData={(doc) => doc.data.lname + ' ' + doc.data.fname}
+                displayData={(doc:IRecord) => doc.hasOwnProperty('data') && typeof(doc.data) !== "string" ? doc.data.lname + ' ' + doc.data.fname : null}
                 queryField={'data__lname'}
             />
         ),
         rules: [
             {required: true, message: "Can't be blank!" },
-            (errors) => {return apiErrorValidator(errors)},
+            (errors: IErrors) => {return apiErrorValidator(errors)},
         ]
     },
     service: {
@@ -227,15 +270,15 @@ export const appointmentModel = {
         type: 'custom',
         rules: [
             {required: true, message: "Can't be blank!" },
-            (errors) => {return apiErrorValidator(errors)},
+            (errors: IErrors) => {return apiErrorValidator(errors)},
         ],
-        component: (record, handleChange, isEdited) => (
+        component: (record: IRecord, handleChange: () => void, isEdited: boolean) => (
             <DataListDataSelector
                 record={record}
                 handleChange={handleChange}
                 isEdited={isEdited}
                 dataUrl={'/services-admin'}
-                displayData={(doc) => doc.name}
+                displayData={(doc: IRecord) => doc.name}
                 queryField={'name'}
             />
         ),
@@ -246,7 +289,7 @@ export const appointmentModel = {
         type: 'date',
         rules: [
             {required: true, message: "Can't be blank!" },
-            (errors) => {return apiErrorValidator(errors)},
+            (errors: IErrors) => {return apiErrorValidator(errors)},
         ]
     },
     duration: {
@@ -255,8 +298,8 @@ export const appointmentModel = {
         type: 'input',
         rules: [
             {required: true, message: "Can't be blank!" },
-            (errors) => {return apiErrorValidator(errors)},
-            {validator: async (rule, value) => {
+            (errors: IErrors) => {return apiErrorValidator(errors)},
+            {validator: async (rule: any, value: string) => {
                 const parsedVal = parseInt(value)
                 if (String(parsedVal) === String(value) || value === '') {
                     return Promise.resolve()
@@ -276,7 +319,7 @@ export const serviceModel = {
         rules: [
             {required: true, message: "Can't be blank!" },
             // {pattern: new RegExp("^[A-Za-z]*$"), message: "Not valid input."},
-            (errors) => {return apiErrorValidator(errors)},
+            (errors: IErrors) => {return apiErrorValidator(errors)},
         ]
     },
     duration: {
@@ -284,8 +327,8 @@ export const serviceModel = {
         label: 'Duration',
         type: 'input',
         rules: [
-            (errors) => {return apiErrorValidator(errors)},
-            {validator: async (rule, value) => {
+            (errors: IErrors) => {return apiErrorValidator(errors)},
+            {validator: async (rule: any, value: string) => {
                 const parsedVal = parseInt(value)
                 if (String(parsedVal) === String(value) || value === '') {
                     return Promise.resolve()
@@ -302,8 +345,8 @@ export const serviceModel = {
         type: 'input',
         rules: [
             {required: true, message: "Can't be blank!" },
-            (errors) => {return apiErrorValidator(errors)},
-            {validator: async (rule, value) => {
+            (errors: IErrors) => {return apiErrorValidator(errors)},
+            {validator: async (rule: any, value: string) => {
                 const parsedVal = parseInt(value)
                 if (String(parsedVal) === String(value) || value === '') {
                     return Promise.resolve()

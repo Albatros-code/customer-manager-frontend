@@ -1,15 +1,17 @@
-import React from "react";
-import { connect } from "react-redux";
-
 import DatabaseTable from "../components/DatabaseTable";
 import AppointmentsDetails from "../components/AppointmentsDetails";
 import {dayjsExtended as dayjs} from '../util/util'
 
+// redux
+import { useAppSelector } from "../redux/store";
+import { selectData } from "../redux/slices/dataSlice";
+
 var customParseFormat = require('dayjs/plugin/customParseFormat')
 dayjs.extend(customParseFormat)
 
-const AdminAppointments = (props) => {
-    const {services} = props
+const AdminAppointments = () => {
+
+    const {services} = useAppSelector(selectData)
     
     const columns = (searchProps) => [
         {
@@ -73,11 +75,4 @@ const AdminAppointments = (props) => {
     )
 }
 
-const mapStateToProps = (state) => ({
-    services: state.data.services
-})
-
-const mapDispatchToProps = {
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(AdminAppointments)
+export default AdminAppointments

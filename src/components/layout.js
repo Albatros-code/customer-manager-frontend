@@ -4,8 +4,10 @@ import { Button, Drawer, Menu } from 'antd';
 import { MenuOutlined } from '@ant-design/icons';
 
 // redux
-import { connect } from 'react-redux';
-import { logoutUser } from '../redux/actions/userActions';
+// import { connect } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '../redux/store'
+// import { logoutUser } from '../redux/actions/userActions';
+import { selectUser, logoutUser } from '../redux/slices/userSlice';
 
 // static
 import logo from '../images/logo_color.svg';
@@ -14,6 +16,10 @@ import logo_full from '../images/logo_full_color.svg';
 const rootSubmenuKeys = ['sub1', 'sub2', 'sub4'];
 
 const LayoutComp = (props) => {
+
+    const { /*id,*/ role: userRole, authenticated, data: {fname: username}  } = useAppSelector(selectUser)
+    const dispatch = useAppDispatch()
+
     const [ isDrawerOpen, setIsDrawerOpen ] = React.useState(false)
     const [ currentPage, setCurrentPage ] = React.useState(null)
 
@@ -24,7 +30,7 @@ const LayoutComp = (props) => {
     }, [getCurrentPage])
 
     // const { user, setUser } = useAppData()
-    const { authenticated, username, userRole } = props
+    // const { authenticated, username, userRole } = props
 
     // const history = useHistory()
 
@@ -35,7 +41,7 @@ const LayoutComp = (props) => {
     }
 
     const handleLogout = () => {
-        props.logoutUser()
+        dispatch(logoutUser())
     }
 
     const sideMenu = <SideMenu userRole={userRole} username={username} authenticated={authenticated} currentPage={currentPage} handleMenuClick={handleMenuClick}/>
@@ -157,15 +163,4 @@ const SideMenu = (props) => {
     )
 }
 
-const mapStateToProps = (state) => ({
-    authenticated: state.user.authenticated,
-    userRole: state.user.role,
-    username: state.user.username,
-    id: state.user.id,
-})
-
-const mapDispatchToProps = {
-    logoutUser,
-}
-
-export default  connect(mapStateToProps, mapDispatchToProps)(LayoutComp)
+export default LayoutComp

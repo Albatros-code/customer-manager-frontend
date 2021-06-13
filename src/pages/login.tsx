@@ -5,16 +5,16 @@ import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { Link, useHistory, useLocation } from 'react-router-dom';
 
 // redux
-import { connect } from 'react-redux';
-import { loginUser } from '../redux/actions/userActions';
+import { useAppDispatch, useAppSelector } from '../redux/store';
+import { selectUser, loginUser } from '../redux/slices/userSlice'
 
 import { api } from '../util/util';
 
-//types
-import {reduxState} from '../redux/types'
 
+const Login = () => {
 
-const Login = (props: reduxProps) => {
+    const dispatch = useAppDispatch();
+    const { authenticated } = useAppSelector(selectUser)
     
     interface ILocation {
         emailVerification: string,
@@ -28,11 +28,11 @@ const Login = (props: reduxProps) => {
     React.useEffect(() => {
         if (initialRender){
             initialRender.current = false
-            if (props.authenticated){
+            if (authenticated){
                 history.push('/')
             }
         }
-    },[history, props.authenticated])
+    },[history, authenticated])
 
     interface IErrors {
         [key: string]: string
@@ -53,9 +53,10 @@ const Login = (props: reduxProps) => {
         if (location.state) location.state.emailVerification = ''
         setFormLoading(true)
 
-        props.loginUser(values.username, values.password, values.remember, history)
+        dispatch(loginUser(values.username, values.password, values.remember))
             .then(() => {
                 // redirect to proper page
+                console.log('push')
                 const push = location.state !== undefined ? location.state.from : '/appointments'
                 history.push(push)
             }, (err:{response: any}) => {
@@ -147,10 +148,8 @@ const Login = (props: reduxProps) => {
                     handleResponse(err)
                 })
             }, err => {
-                // console.log(err)
             })
             .catch(err => {
-                // console.log(err)
             })
     };
     
@@ -262,17 +261,4 @@ const Login = (props: reduxProps) => {
     )
 }
 
-interface reduxProps {
-    authenticated: boolean,
-    username: string,
-    loginUser: (username: string, password:string, remember: boolean, history: any) => any
-}
-
-const mapStateToProps = (state: reduxState) => ({
-    authenticated: state.user.authenticated,
-    username: state.user.username,
-})
-  
-  const mapDispatchToProps = { loginUser }
-
-export default  connect(mapStateToProps, mapDispatchToProps)(Login)
+export default Login

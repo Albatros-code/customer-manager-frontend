@@ -1,7 +1,3 @@
-import React from "react";
-import { connect } from "react-redux";
-
-import {getServices} from "../redux/actions/dataActions";
 
 import ServicesDetails from "../components/ServiceDetails";
 import DatabaseTable from "../components/DatabaseTable";
@@ -87,12 +83,4 @@ const AdminServices = () => {
     )
 }
 
-const mapStateToProps = (state) => ({
-    services: state.data.services
-})
-
-const mapDispatchToProps = {
-    getServices
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(AdminServices)
+export default AdminServices

@@ -1,9 +1,10 @@
 import React from 'react';
-import {connect} from 'react-redux';
 import {useLocation, useHistory} from 'react-router-dom';
 import {Form, Input, Button, Spin} from 'antd';
 
-import {logoutUser} from '../redux/actions/userActions'
+// redux
+import { logoutUser } from '../redux/slices/userSlice'
+import { useAppDispatch } from '../redux/store';
 
 import {api} from '../util/util';
 import {user as userModel, resolveRules, mergeErrors} from '../util/data';
@@ -15,13 +16,13 @@ function useQuery() {
   }
   
 
-const ResetPassword = (props) => {
+const ResetPassword = () => {
 
-    const {logoutUser} = props
+    const dispatch = useAppDispatch()
 
     React.useEffect(() =>{
-        logoutUser()
-    }, [logoutUser])
+        dispatch(logoutUser())
+    }, [dispatch])
 
     const history = useHistory()
     
@@ -134,12 +135,4 @@ const ResetPassword = (props) => {
     )
 }
 
-const mapStateToProps = (state) => ({
-
-})
-
-const mapDispatchToProps = {
-    logoutUser
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(ResetPassword)
+export default ResetPassword

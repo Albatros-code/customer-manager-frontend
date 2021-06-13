@@ -1,7 +1,6 @@
-import React from 'react';
-import {connect} from 'react-redux';
-
-import {setSettings} from '../redux/actions/dataActions'
+// redux
+import { useAppDispatch, useAppSelector } from '../redux/store';
+import { fetchSettings, selectData } from '../redux/slices/dataSlice';
 
 import DataList from '../components/DataList';
 import {getData, settingsModel} from '../util/data';
@@ -9,7 +8,10 @@ import {api} from '../util/util'
 
 const Settings = (props) => {
 
-    const settingsData = getData(settingsModel, props.settings, {})
+    const dispatch = useAppDispatch()
+    const { settings } = useAppSelector(selectData)
+
+    const settingsData = getData(settingsModel, settings, {})
 
     const settingsOnSave = (values, callbackRes, callbackErr) => {
         const formatedData = {
@@ -23,7 +25,7 @@ const Settings = (props) => {
             settings: formatedData
         }, {withCredentials: true})
         .then(() => {
-            props.setSettings().finally(() => {
+            dispatch(fetchSettings()).finally(() => {
                 if (callbackRes) callbackRes()
             })            
         })
@@ -45,15 +47,4 @@ const Settings = (props) => {
     )
 }
 
-const mapStateToProps = (state) => ({
-    id: state.user.id,
-    role: state.user.role,
-    settings: state.data.settings,
-
-})
-
-const mapDispatchToProps = {
-    setSettings
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(Settings)
+export default Settings

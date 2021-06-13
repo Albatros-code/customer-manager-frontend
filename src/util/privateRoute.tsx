@@ -1,19 +1,20 @@
 import { Redirect, Route, useLocation } from 'react-router-dom';
 
 // redux
-import { connect } from 'react-redux';
+import { useAppSelector  } from '../redux/store'
+import { selectUser  } from '../redux/slices/userSlice'
 
-//types
-import {reduxState} from '../redux/types'
+// import {IReduxState} from '../redux/types'
 import {RouteProps} from 'react-router'
 
-interface IProtectedRouteProps extends IReduxProps {
+interface IProtectedRouteProps {
     component: React.FC<RouteProps>,
     [key: string]: any
 }
 
-const ProtectedRoute = ({ component: Component, authenticated, role, ...rest }: IProtectedRouteProps) => {
-    // const { user } = useAppData()
+const ProtectedRoute = ({ component: Component, ...rest }: IProtectedRouteProps) => {
+    
+    const {authenticated, role} = useAppSelector(selectUser)
     const location = useLocation()
 
     const isRoleOk = (rest.path.includes('admin') && role === 'admin') || (!rest.path.includes('admin')) ? true : false
@@ -44,14 +45,4 @@ const ProtectedRoute = ({ component: Component, authenticated, role, ...rest }: 
     )
 }
 
-interface IReduxProps {
-    authenticated: boolean,
-    role: string,
-}
-
-const mapStateToProps = (state: reduxState):IReduxProps => ({
-    authenticated: state.user.authenticated,
-    role: state.user.role
-})
-  
-export default connect(mapStateToProps)(ProtectedRoute)
+export default ProtectedRoute

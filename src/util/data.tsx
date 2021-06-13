@@ -238,7 +238,6 @@ export const settingsModel = {
         options: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
         rules: [
             {required: true, message: "Can't be blank!" },
-            {pattern: new RegExp("^\\d{2}$"), message: "Not valid minutes."},
             (errors: IErrors) => {return apiErrorValidator(errors)},
         ]
     },

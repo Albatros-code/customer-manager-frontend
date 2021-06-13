@@ -1,6 +1,3 @@
-import React from "react";
-import { connect } from "react-redux";
-
 import DatabaseTable from "../components/DatabaseTable";
 import UserDetails from "../components/UserDetails";;
 
@@ -87,11 +84,4 @@ const AdminUsers = (props) => {
     )
 }
 
-const mapStateToProps = (state) => ({
-})
-
-const mapDispatchToProps = {
-    
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(AdminUsers)
+export default AdminUsers

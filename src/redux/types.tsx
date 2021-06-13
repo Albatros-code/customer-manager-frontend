@@ -1,7 +1,7 @@
 // Data reducers types
-export const GET_INITIALDATA = "GET_INITIALDATA"
-export const GET_SERVICES = "GET_SERVICES"
-export const GET_AVAIABLE_DATES = "GET_AVAIABLE_DATES"
+export const SET_INITIALDATA = "SET_INITIALDATA"
+export const SET_SERVICES = "SET_SERVICES"
+export const SET_AVAILABLE_DATES = "SET_AVAILABLE_DATES"
 
 // User reducers types
 export const LOGIN_USER = "LOGIN_USER"
@@ -18,7 +18,7 @@ export const STOP_LOADING_UI = "STOP_LOADING_UI"
 export const SET_ERRORS = "SET_ERRORS"
 export const CLEAR_ERRORS = "CLEAR_ERRORS"
 
-export interface reduxState {
+export interface IReduxState {
     data: {
         services: Array<any> | null,
         avaiableDates: Array<any> | null,

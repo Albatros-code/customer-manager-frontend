@@ -1,20 +1,23 @@
 import React from 'react';
 import { Form, Input, Button, Spin} from 'antd';
 import { useHistory } from 'react-router-dom';
-import {connect} from 'react-redux';
+
+// redux
+import { useAppSelector } from '../redux/store';
+import { selectUser } from '../redux/slices/userSlice';
 
 import { api } from '../util/util';
 import {user as userModel, resolveRules, mergeErrors} from '../util/data';
 
 import ModalConfirmation from '../components/ModalConfirmation';
 
-//types
-import {reduxState} from '../redux/types'
 
-const Register = (props: reduxProps) => {
+const Register = () => {
+
+    const { authenticated } = useAppSelector(selectUser)
 
     React.useEffect(() => {
-        if (props.authenticated){
+        if (authenticated){
             history.push('/')
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -184,12 +187,4 @@ const Register = (props: reduxProps) => {
     )
 }
 
-interface reduxProps {
-    authenticated: boolean,
-}
-
-const mapStateToProps = (state: reduxState) => ({
-    authenticated: state.user.authenticated
-})
-
-export default connect(mapStateToProps)(Register)
+export default Register

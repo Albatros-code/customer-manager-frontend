@@ -1,9 +1,5 @@
 import React from 'react';
 import { Spin, Form } from 'antd';
-// import {UserOutlined, DeleteOutlined, EditOutlined} from '@ant-design/icons';
-
-// redux
-import { connect } from 'react-redux';
 
 import { api, dayjsExtended as dayjs } from '../util/util'
 import { currentWeekString } from '../util/appointments'
@@ -16,11 +12,15 @@ import {ScheduleTable, ScheduleItem} from '../components/ScheduleTable';
 import AppointmentsDetails from '../components/AppointmentsDetails';
 import {DatabaseTableContext} from '../components/DatabaseTable';
 
+// redux
+import { useAppSelector } from "../redux/store";
+import { selectData } from "../redux/slices/dataSlice";
+
 
 const AdminSchedule = (props) => {
 
-    const {services} = props
-    const {settings: {start_hour: startHour, end_hour: endHour, time_interval: timeInterval}} = props
+    const {services} = useAppSelector(selectData)
+    const {settings: {start_hour: startHour, end_hour: endHour, time_interval: timeInterval}} = useAppSelector(selectData)
 
     const [ selectedDate, setSelectedDate ] = React.useState(dayjs.tz().set({second: 0, millisecond: 0}))
     const [ appointmentsData, setAppointmentsData ] = React.useState({})
@@ -163,12 +163,4 @@ const AdminSchedule = (props) => {
 }
 
 
-const mapStateToProps = (state) => ({
-    services: state.data.services,
-    settings: state.data.settings,
-})
-
-const mapDispatchToProps = {
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(AdminSchedule)
+export default AdminSchedule

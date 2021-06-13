@@ -1,5 +1,4 @@
 import React from 'react';
-import {connect} from 'react-redux';
 import {useHistory} from 'react-router-dom'
 import { Table, Button, Descriptions, Alert} from 'antd';
 
@@ -8,11 +7,18 @@ import { api } from '../util/util';
 
 import {ScheduleItemDetails} from '../components/ScheduleTable'
 
+// redux
+import { useAppSelector } from "../redux/store";
+import { selectData } from "../redux/slices/dataSlice";
+import { selectUser } from "../redux/slices/userSlice";
+
 const {Column} = Table;
 
 const Appointments = (props) => {
     
-    const {id, services} = props
+    const { services } = useAppSelector(selectData)
+    const { id } = useAppSelector(selectUser)
+
     const history = useHistory()
     const [appointments, setAppointments] = React.useState(null)
     const [detailsVisible, setDetailsVisible] = React.useState(false)
@@ -172,11 +178,4 @@ const Appointments = (props) => {
     )
 }
 
-const mapStateToProps = (state) => ({
-    id: state.user.id,
-    services: state.data.services,
-})
-  
-  const mapDispatchToProps = {}
-
-export default  connect(mapStateToProps, mapDispatchToProps)(Appointments)
+export default  Appointments

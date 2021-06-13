@@ -1,21 +1,23 @@
-import React from 'react';
 import {useHistory, Link} from 'react-router-dom';
 import {Button} from 'antd';
-import {connect} from 'react-redux';
 
+// redux
+import { useAppSelector } from '../redux/store';
+import { selectUser } from '../redux/slices/userSlice'
+
+// pictures
 import logo_full from '../images/logo_full.svg';
 
-type homeProps = reduxState & {}
+const Home = () => {
 
-const Home = (props: homeProps) => {
+    const { authenticated } = useAppSelector(selectUser)
+
     const history = useHistory()
-    const {authenticated} = props
 
     return (
         <>
         {!authenticated ?
         <>
-            {/* <h1>Home</h1> */}
             <div className="home-container">
                 <div className="home-container__pic">
                     <img src={logo_full} alt="logo" className="homepage__logo"/>
@@ -65,15 +67,4 @@ const Home = (props: homeProps) => {
     )
 }
 
-interface reduxState {
-    authenticated: boolean,
-}
-
-const mapStateToProps = (state: any):reduxState => ({
-    authenticated: state.user.authenticated,
-})
-
-const mapDispatchToProps = {
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(Home)
+export default Home

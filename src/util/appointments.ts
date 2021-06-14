@@ -1,6 +1,7 @@
-import {dayjsExtended as dayjs} from '../util/util'
+import { Dayjs } from 'dayjs'
+import {dayjsExtended as dayjs} from './util'
 
-export function generateTimeTableBase(dateObj, startHour, endHour, intervalMinutes){
+export function generateTimeTableBase(dateObj: Dayjs, startHour: number, endHour: number, intervalMinutes: number){
 
     const start = dateObj.set({hour: startHour, minute: 0, second: 0, millisecond: 0})
     const end = dateObj.set({hour: endHour-1, minute: 59, second: 59, millisecond: 999})
@@ -28,7 +29,7 @@ export function generateTimeTableBase(dateObj, startHour, endHour, intervalMinut
     return array
 }
 
-export function currentWeekString(dayObj, accuracy){
+export function currentWeekString(dayObj: Dayjs, accuracy?: string){
     const startDate = dayObj.startOf('week')
     const endDate = dayObj.endOf('week')
 

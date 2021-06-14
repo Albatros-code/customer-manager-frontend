@@ -11,6 +11,8 @@ import {user as userModel, resolveRules, mergeErrors} from '../util/data';
 
 import ModalConfirmation from '../components/ModalConfirmation';
 
+// type
+import type { IDataModelItem } from '../util/data';
 
 const Register = () => {
 
@@ -30,14 +32,7 @@ const Register = () => {
     const [ formLoading, setFormLoading ] = React.useState(false)
     const [ infoModalVisible, setInfoModalVisible ] = React.useState(false)
 
-    interface IDataItem {
-        field: string,
-        label: string,
-        type: string,
-        rules: any[]
-    }
-
-    const data:IDataItem[] = resolveRules([
+    const data = resolveRules<IDataModelItem>([
         userModel.username,
         userModel.password,
         userModel.confirmPassword,

@@ -3,17 +3,35 @@ import {DataListDataSelector as NotTyped} from "../components/DataSelector"
 
 const DataListDataSelector = (props: any) => <NotTyped {...props} />
 
-interface IDataItem {
+// interface IDataItem {
+//     field: string,
+//     label: string,
+//     type: string,
+//     rules: any[]
+// }
+
+// interface IDataModel extends Array<IDataItem>{}
+
+export interface IDataModel {
+    [key: string]: IDataModelItem
+}
+
+export interface IDataModelItem {
     field: string,
     label: string,
     type: string,
-    rules: any[]
+    rules?: any[],
+    custom?: () => any
 }
 
-interface IDataModel extends Array<IDataItem>{}
+export interface IData extends Array<IDataItem> {}
+
+export interface IDataItem extends IDataModelItem {
+    value?: string | number | boolean,
+}
 
 interface IValues {
-    [key: string]: string
+    [key: string]: string | number
 }
 
 interface IRecord {
@@ -28,13 +46,6 @@ interface IAdditionalProps {
     }
 }
 
-interface IData {
-    field: string,
-    label: string,
-    type: string,
-    value: string | number | boolean,
-    rules: any[]
-}
 
    
 
@@ -49,9 +60,9 @@ error response
 }
 */
 
-export const getData = (dataModel:IDataModel, values:IValues, additionalProps:IAdditionalProps):IData[] => Object.entries(dataModel).map(([key, val]):IData => {
+export const getData = (dataModel:IDataModel, values:IValues, additionalProps:IAdditionalProps):IData => Object.entries(dataModel).map(([key, val]):IDataItem => {
     return {
-        value: values.hasOwnProperty(key) ? values[key] : "",
+        value: (typeof values === 'object' && key in values) ? values[key] : "",
         ...val,
         ...additionalProps[key],
     }
@@ -82,8 +93,13 @@ const apiErrorValidator = (errors:IErrors) => {
     return {validator: validator}
 }
 
-export const resolveRules = (data:IDataModel, {errors}:{errors: IErrors}) => {
-    return data.map(item => {
+// interface IResolveRules<D extends IDataModelItem> {
+//     // (data: IData[], {errors}: {errors: IErrors}):IData[]
+//     (data: Array<D>, {errors}: {errors: IErrors}):Array<D>
+// }
+
+export function resolveRules<D extends IDataModelItem>(data:Array<D>, {errors}: {errors: IErrors}):Array<D>{
+    return data.map((item) => {
         if (item.rules){
             const rulesResolved = item.rules.map(rule => {
                 if (typeof(rule) === 'function'){

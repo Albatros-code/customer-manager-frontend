@@ -1,8 +1,22 @@
 import { Form, Radio, Space} from 'antd';
+import { Dayjs } from 'dayjs';
 
 import {generateTimeTableBase} from '../util/appointments'
 
-const HourSelector = (props) => {
+interface IHoursSelector {
+    selectedDate: Dayjs,
+
+    handleMinutesChange: (minute: string) => void,
+    handleHourChange: (hour: number) => void,
+    disabledMinutes: (minutes: Dayjs) => boolean,
+    disabledHour: (hour: Dayjs) => boolean,
+    
+    startHour?: number,
+    endHour?: number,
+    timeInterval?: number,
+}
+
+const HourSelector = (props: IHoursSelector) => {
     
     const {
         selectedDate,
@@ -12,7 +26,7 @@ const HourSelector = (props) => {
         disabledMinutes,
         disabledHour,
         
-        startHour, endHour, timeInterval
+        startHour = 10, endHour = 20, timeInterval = 15
     } = props
 
     const timeTableBase = generateTimeTableBase(selectedDate, startHour, endHour, timeInterval)

@@ -6,8 +6,12 @@ import {dayjsExtended as dayjs} from '../util/util'
 import { Form, Button, Divider, Spin, Descriptions} from 'antd';
 
 // redux
-import { connect } from 'react-redux';
+import { useAppSelector } from '../redux/store';
+import { selectData } from '../redux/slices/dataSlice'
+
+// utils
 import { api } from '../util/util';
+import { currentWeekString } from '../util/appointments'
 
 // components
 import ModalConfirmation from '../components/ModalConfirmation';
@@ -17,28 +21,45 @@ import ServiceSelector from '../components/ServiceSelector';
 import WeekSelector from '../components/WeekSelector';
 import HourSelector from '../components/HourSelector';
 
-const NewAppointment = (props) => {
+// types
+import { IGetAvailableHoursAPI } from '../interfaces'
+import { Dayjs } from 'dayjs';
+
+interface IAvailableHours {
+    [dataRande: string]: {
+        [date: string]: {
+            [hour: number]: {
+                [minuteInterval: number]: boolean
+            }
+        },
+        
+    },
+}
+
+const NewAppointment = () => {
     
+    const { services, settings } = useAppSelector(selectData)
+
     const history = useHistory()
     const [form] = Form.useForm();
     
     // from redux
-    const {settings: {
+    const {
         start_hour: startHour,
         end_hour: endHour,
         time_interval: timeInterval,
         working_days: workingDays
-    }} = props
-    const {services} = props    
+    } = settings ? settings : {start_hour: undefined, end_hour: undefined, time_interval: undefined, working_days: undefined }
     
     // React.useState
-    const [ selectedDate, setSelectedDate ] = React.useState(dayjs.tz().set({second: 0, millisecond: 0}))
-    const [ service, setService ] = React.useState(null)
-    const [availableSlots, setAvailableSlots] = React.useState({})
+    const [ selectedDate, setSelectedDate ] = React.useState<Dayjs>(dayjs.tz(dayjs()).set({second: 0, millisecond: 0}))
+    const [ service, setService ] = React.useState<string | null>(null)
+    const [availableSlots, setAvailableSlots] = React.useState<IAvailableHours>({})
     
 
     const currentAvailableSlots = (() => {
-        if (availableSlots.hasOwnProperty(currentWeekString(selectedDate))){
+        // if (availableSlots.hasOwnProperty(currentWeekString(selectedDate))){
+        if (typeof availableSlots === 'object' && currentWeekString(selectedDate) in availableSlots){
             return availableSlots[currentWeekString(selectedDate)]
         } else {
             return {}
@@ -47,46 +68,41 @@ const NewAppointment = (props) => {
     
     // useEffect for fetching missing slots availability info
     React.useEffect(() => {
-        function getAvailableSlots(startDate, endDate, startHour, endHour, interval, service, setAvailableSlots){
+
+        function getAvailableSlots(
+            startDate: string,
+            endDate: string,
+            setAvailableSlots: (key: any) => void,
+            startHour?: number,
+            endHour?: number,
+            interval?: number,
+            service?: string,
+            ): void {
             
-            api.get('/available-slots', {
-                params: {
-                    start_date: startDate,
-                    end_date: endDate,
-                    start_hour: startHour,
-                    end_hour: endHour,
-                    interval: interval,
-                    service: service
-            }})
-                .then(res => {
-                    setAvailableSlots((prev) => ({...prev, [res.data.date_range]: res.data.slots}))
-                })
+                api.get<IGetAvailableHoursAPI>('/available-slots', {
+                    params: {
+                        start_date: startDate,
+                        end_date: endDate,
+                        start_hour: startHour,
+                        end_hour: endHour,
+                        interval: interval,
+                        service: service
+                }})
+                    .then(res => {
+                        setAvailableSlots((prev: IAvailableHours) => ({...prev, [res.data.date_range]: res.data.slots}))
+                    })
         }
 
         const startDate = selectedDate.startOf('week')
         const endDate = selectedDate.endOf('week')
-        if (service && !availableSlots.hasOwnProperty(`${startDate.format('YYYY-MM-DD')}:${endDate.format('YYYY-MM-DD')}`)){ 
-            getAvailableSlots(startDate.toISOString(), endDate.toISOString(), startHour, endHour, timeInterval, service, setAvailableSlots)
+        // if (service && !availableSlots.hasOwnProperty(`${startDate.format('YYYY-MM-DD')}:${endDate.format('YYYY-MM-DD')}`)){ 
+        if (service && !(`${startDate.format('YYYY-MM-DD')}:${endDate.format('YYYY-MM-DD')}` in availableSlots)){ 
+            
+            getAvailableSlots(startDate.toISOString(), endDate.toISOString(), setAvailableSlots, startHour, endHour, timeInterval, service)
         }
     },[availableSlots, endHour, selectedDate, service, startHour, timeInterval])
 
-    
-    function currentWeekString(dayObj, accuracy){
-        const startDate = dayObj.startOf('week')
-        const endDate = dayObj.endOf('week')
-
-        switch(accuracy) {
-            case 'month':
-                return `${startDate.format('MM-DD')}:${endDate.format('MM-DD')}`;
-            case 'display':
-                return `${startDate.format('DD.MM')}-${endDate.format('DD.MM')}`;
-            default:
-                return `${startDate.format('YYYY-MM-DD')}:${endDate.format('YYYY-MM-DD')}`
-          }
-        
-    }
-
-    const handleServiceChange = (value) => {
+    const handleServiceChange = (value: string) => {
         setAvailableSlots({})
         setService(value)
         form.setFieldsValue({
@@ -96,17 +112,17 @@ const NewAppointment = (props) => {
         })
     }
 
-    const handleWeekChange = (dayObj) => {
+    const handleWeekChange = (dayObj: Dayjs) => {
         setSelectedDate(dayObj)
         form.setFieldsValue({'day': null, 'timeHour': null, 'timeMinutes': null})
     }
 
-    const handleDayChange = (newWeekDay) => {
+    const handleDayChange = (newWeekDay: number) => {
         setSelectedDate(prev => prev.weekday(newWeekDay))
         form.setFieldsValue({timeHour: null, timeMinutes: null})
     }
 
-    const handleHourChange = (hour) => {
+    const handleHourChange = (hour: number) => {
         const minutes = Object.entries(currentAvailableSlots[selectedDate.format('YYYY-MM-DD')][hour])
             .filter(([key, val]) => val).map(([key]) => key).sort()[0]
 
@@ -116,7 +132,7 @@ const NewAppointment = (props) => {
         setSelectedDate(prev => prev.set({hour: hour, minute: minutes}))
     }
 
-    const handleMinutesChange = (val) => {
+    const handleMinutesChange = (val: string) => {
         
         let [ hour, minutes ] = String(val).split(":")
 
@@ -126,7 +142,7 @@ const NewAppointment = (props) => {
         setSelectedDate(prev => prev.set({hour: hour, minute: minutes}))
     }
 
-    const isAvaiableDay = (timeObj) => {
+    const isAvaiableDay = (timeObj: Dayjs) => {
         const day = timeObj.format('YYYY-MM-DD')
 
         try {
@@ -141,9 +157,9 @@ const NewAppointment = (props) => {
         return false
     }
 
-    const isAvaiableHour = (timeObj) => {
+    const isAvaiableHour = (timeObj: Dayjs) => {
         const day = timeObj.format('YYYY-MM-DD')
-        const hour = timeObj.format('HH')
+        const hour = parseInt(timeObj.format('HH'))
 
         try {
             if (Object.values(currentAvailableSlots[day][hour]).includes(true)){
@@ -156,10 +172,10 @@ const NewAppointment = (props) => {
         }
     }
     
-    function isAvaiableMinute(timeObj){
+    function isAvaiableMinute(timeObj: Dayjs){
         const day = timeObj.format('YYYY-MM-DD')
-        const hour = timeObj.format('HH')
-        const minutes = timeObj.format('mm')
+        const hour = parseInt(timeObj.format('HH'))
+        const minutes = parseInt(timeObj.format('mm'))
 
         try {
             return currentAvailableSlots[day][hour][minutes]
@@ -168,17 +184,39 @@ const NewAppointment = (props) => {
         }
     }
 
-    const appointmentSummary =(forModal) =>
+    const appointmentSummary = (forModal?: boolean) => {
+        const selectedDayDate = () => {
+            if (form.getFieldValue('day') && form.getFieldValue('day') !== null){
+                return selectedDate.format('YYYY-MM-DD')
+            }
+        }
+
+        const selectedService = () => {
+            if (services && service){
+                const serviceName = services.find(item => item.id === service)
+                return serviceName ? serviceName.name : ''
+            }
+        }
+
+        const selectedTime = () => {
+            if (form.getFieldValue('timeMinutes')){
+                return selectedDate.format('HH:mm') 
+            }
+        }  
+
+        return(
              <Descriptions 
                 bordered
                 size="small"
                 column={1}
                 className={`new-appointment-summary-table ${forModal ? null : 'form-item-padding-bottom'}`}
             >
-                <Descriptions.Item label="Service">{services && service ? services.find(item => item.id === service).name : ''}</Descriptions.Item>
-                <Descriptions.Item label="Date">{form.getFieldValue('day') && form.getFieldValue('day') !== null ? selectedDate.format('YYYY-MM-DD') : null}</Descriptions.Item>
-                <Descriptions.Item label="Time">{form.getFieldValue('timeMinutes') ? selectedDate.format('HH:mm') : null}</Descriptions.Item>
+                <Descriptions.Item label="Service">{selectedService()}</Descriptions.Item>
+                <Descriptions.Item label="Date">{selectedDayDate()}</Descriptions.Item>
+                <Descriptions.Item label="Time">{selectedTime()}</Descriptions.Item>
             </Descriptions>
+        )
+    }
 
     // modal
 
@@ -193,11 +231,19 @@ const NewAppointment = (props) => {
             contentRejected={<p>Something went wrong<br/>Appointment not scheduled.</p>}
             onConfirm={() => {
                 return new Promise((resolve, reject) => {
+                    const serviceDuration = () => {
+                        if (services && service){
+                            const serviceName = services.find(item => item.id === service)
+                            return serviceName ? serviceName.duration : ''
+                        } else {
+                            return null
+                        }
+                    }
+
                     api.post('/appointments', {
                         service: form.getFieldValue('service'),
                         date: selectedDate.toISOString(),
-                        duration: services ? services.find(item => item.id === form.getFieldValue('service')).duration : null,
-                    // }, {withCredentials: true})
+                        duration: serviceDuration(),
                     })
                         .then(res => {
                             return resolve(res)
@@ -227,11 +273,11 @@ const NewAppointment = (props) => {
         <WeekSelector
             handleWeekChange={handleWeekChange}
             selectedDate={selectedDate}
-            disabledButtonLeft={form.getFieldValue('service') && (selectedDate.startOf('week') > dayjs.tz().startOf('week')) ? false : true}
-            disabledButtonRight={form.getFieldValue('service') && (selectedDate.startOf('week') <= dayjs.tz().add(3, 'month').startOf('week'))  ? false : true}
+            disabledButtonLeft={form.getFieldValue('service') && (selectedDate.startOf('week') > dayjs.tz(dayjs()).startOf('week')) ? false : true}
+            disabledButtonRight={form.getFieldValue('service') && (selectedDate.startOf('week') <= dayjs.tz(dayjs()).add(3, 'month').startOf('week'))  ? false : true}
         />
 
-    const daySelector = 
+    const daySelector =
         <DaySelector
             handleDayChange={handleDayChange}
             selectedDate={selectedDate}
@@ -280,7 +326,7 @@ const NewAppointment = (props) => {
 
                         {weekSelector}
 
-                    <Spin spinning={service && Object.keys(currentAvailableSlots).length === 0}>
+                    <Spin spinning = {typeof service === 'string' && Object.keys(currentAvailableSlots).length === 0}>
                         {daySelector}
 
                         <Divider className="divider" orientation="left">Avaiable hours</Divider>
@@ -302,12 +348,4 @@ const NewAppointment = (props) => {
     )
 }
 
-const mapStateToProps = (state) => ({
-    services: state.data.services,
-    settings: state.data.settings
-})
-
-const mapDispatchToProps = {
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(NewAppointment)
+export default NewAppointment

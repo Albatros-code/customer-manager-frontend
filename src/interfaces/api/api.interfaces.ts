@@ -1,17 +1,21 @@
+export const working_days_keys = [0, 1, 2, 3, 4, 5, 6]
+
 export interface IGetSettingsAPI {
     start_hour: number,
     end_hour: number,
     time_interval: number,
     working_days: {
-        0: true,
-        1: true,
-        2: true,
-        3: true,
-        4: true,
-        5: false,
-        6: false
+        0: boolean,
+        1: boolean,
+        2: boolean,
+        3: boolean,
+        4: boolean,
+        5: boolean,
+        6: boolean,
+        // [key: number]: boolean
     }
 }
+
 
 export interface IGetServicesAPI {
     total: number,

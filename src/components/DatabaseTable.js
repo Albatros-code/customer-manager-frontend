@@ -55,6 +55,7 @@ const DatabaseTable = (props) => {
     const [filteredInfo, setFilteredInfo] = React.useState({})
     const [detailsVisible, setDetailsVisible] = React.useState(false)
 
+    console.log(sortedInfo)
 
     const getData = React.useCallback(() => {
 
@@ -296,7 +297,7 @@ const DatabaseTable = (props) => {
         const endDateString = selectedKeysObj.hasOwnProperty(dataIndex.join().replace(',', '__') + '__lt') ? selectedKeysObj[dataIndex.join().replace(',', '__') + '__lt'] : null
         
         if (startDateString || endDateString){
-            const {[dataIndex.join().replace(',', '__') + '__gt']: remove1, [dataIndex.join().replace(',', '__') + '__lt']: remove2, ...filterObj} = {...JSON.parse(filter)}
+            const {[dataIndex.join().replace(',', '__') + '__gt']: remove1, [dataIndex.join().replace(',', '__') + '__lte']: remove2, ...filterObj} = {...JSON.parse(filter)}
             
             if (useQueryParams){
                 history.push({
@@ -337,7 +338,13 @@ const DatabaseTable = (props) => {
                                 />
                                 <DatePicker
                                     inputReadOnly={true}
-                                    onChange={(momentObj, dateString) => handleDateSelect(setSelectedKeys, dataIndex, 'lt', dateString, selectedKeys)}
+                                    onChange={(momentObj, dateString) => {
+                                        // const nextDayString = moment(momentObj).add({day: 1}).format("YYYY-MM-DD")
+
+                                        return (
+                                            handleDateSelect(setSelectedKeys, dataIndex, 'lt', dateString, selectedKeys)
+                                        )
+                                    }}
                                     style={{width: '100%'}}
                                     placeholder='End Date'
                                     value={endDateString ? moment(endDateString, 'YYYY-MM-DD') : null}
@@ -427,10 +434,14 @@ const DatabaseTable = (props) => {
     }
 
     const columns = props.columns(getColumnSearchProps).map(item => {
-        if (item.hasOwnProperty('sorter') && item.sorter && !item.hasOwnProperty('sortOrder')){
+        console.log(item)
+        if (item.hasOwnProperty('sorter') && item.sorter && 'field' in sortedInfo){
+        // if (item.hasOwnProperty('sorter') && item.sorter && !item.hasOwnProperty('sortOrder')){
+            console.log(sortedInfo.field.join())
+            console.log(item.dataIndex.join().replace(',', '__'))
             return {
                 ...item,
-                sortOrder: sortedInfo.hasOwnProperty('field') && sortedInfo.field.join() === item.dataIndex.join().replace(',', '__') && sortedInfo.order
+                sortOrder: sortedInfo.hasOwnProperty('field') && sortedInfo.field.join() === item.dataIndex.join() && sortedInfo.order
             }
         } else {
             return item

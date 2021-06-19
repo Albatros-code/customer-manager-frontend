@@ -223,7 +223,7 @@ export const settingsModel = {
         type: 'input',
         rules: [
             {required: true, message: "Can't be blank!" },
-            {pattern: new RegExp("^\\d{2}$"), message: "Not valid hour."},
+            {pattern: new RegExp("^([0-9]|[01][0-9]|2[0-4])$"), message: "Not valid hour."},
             (errors: IErrors) => {return apiErrorValidator(errors)},
         ]
     },
@@ -233,7 +233,7 @@ export const settingsModel = {
         type: 'input',
         rules: [
             {required: true, message: "Can't be blank!" },
-            {pattern: new RegExp("^\\d{2}$"), message: "Not valid hour."},
+            {pattern: new RegExp("^([0-9]|[01][0-9]|2[0-4])$"), message: "Not valid hour."},
             (errors: IErrors) => {return apiErrorValidator(errors)},
         ]
     },
@@ -243,8 +243,16 @@ export const settingsModel = {
         type: 'input',
         rules: [
             {required: true, message: "Can't be blank!" },
-            {pattern: new RegExp("^\\d{2}$"), message: "Not valid minutes."},
+            // {pattern: new RegExp("^([5]|[1-5][0|5]|60)$"), message: "Not valid interval."},
             (errors: IErrors) => {return apiErrorValidator(errors)},
+            {validator: async (rule:any, value:string) => {
+                console.log(60%parseInt(value))
+                if (value !== '' && (!/^(5|[1-5][0|5]|60)$/.test(value) || 60%parseInt(value) !== 0)){
+                    return Promise.reject(new Error('Not valid interval.'))
+                } else {
+                    return Promise.resolve()
+                }
+            }}
         ]
     },
     working_days: {

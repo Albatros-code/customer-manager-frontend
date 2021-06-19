@@ -7,8 +7,10 @@ import utc from 'dayjs/plugin/utc';
 import weekday from 'dayjs/plugin/weekday';
 import 'dayjs/locale/pl';
 
+const defaultURL = 'http://localhost:5000'
+
 export const api = axios.create({
-    baseURL: process.env.REACT_APP_API_HOST
+    baseURL: process.env.REACT_APP_API_HOST ? process.env.REACT_APP_API_HOST : defaultURL
   });
 
 dayjs.extend(objectSupport);

@@ -8,7 +8,7 @@ import {api} from '../util/util';
 import { useHistory } from 'react-router';
 import ModalConfirmation from '../components/ModalConfirmation';
 
-
+// TODO: Move user doc fetching to AppointmentsDetails. Changing user for appointment doesn't change go to user action.
 const AppointmentsDetails = (props) => {
     const {doc, setVisible} = props
 
@@ -68,12 +68,12 @@ const AppointmentData = (props) => {
             if (callbackRes) callbackRes()
         })
         .catch(err => {
-            // console.log(err.response)
             if (callbackErr && err.response.data.errors) callbackErr(err.response.data.errors)
         })
     }
         return (
-        
+        // TODO: Validation of appointment's Date/Duration need to be more flexible. Since there is connection between these two some additional mechanism is needed to clear errors on one after other is changed. E.g. appointment date might be ok if duration will be shorten.
+
         <DataList 
             data={listData}
             label="Apointment's data"
@@ -125,7 +125,6 @@ const AppointmentActions = (props) => {
                     })
                 }}
             onResolve={
-                // () => {setVisible(false)}
                 () => {
                     updateTableContent()
                     setVisible(false)
@@ -165,12 +164,7 @@ const AppointmentActions = (props) => {
                     <Button
                         style={btnStyle}
                         onClick={() => {
-                            setSubmitModalVisible(true)
-                            // api.delete(`/appointments/${doc.id}`)  
-                            //     .then(res => {
-                            //         setVisible(false)
-                            //         updateTableContent()
-                            //     })  
+                            setSubmitModalVisible(true) 
                         }}
                     >
                         {loading ? ' ' :

@@ -7,6 +7,7 @@ import {useHistory, useLocation} from 'react-router-dom';
 
 import {api} from "../util/util"
 import {dayjsExtended as dayjs} from '../util/util'
+// TODO: change moment to day js in AntDesign
 import moment from "moment";
 
 var customParseFormat = require('dayjs/plugin/customParseFormat')
@@ -18,13 +19,8 @@ export const useDatabaseTableContext = () => React.useContext(DatabaseTableConte
 
 const DatabaseTable = (props) => {
     const history = useHistory()
-    // const mobile = isMobile()
+
     const {dataUrl, itemDetails, useQueryParams, handleRowClick, paginationHidden} = props
-    
-    // React.useEffect(() => {
-    //     console.log('rerender DatabaseTable')
-    //     if (props.forceUpdate !== 0) getData()
-    // },[getData, ])
 
     const location = useLocation()
     const queryParams = queryString.parse(location.search)
@@ -54,8 +50,6 @@ const DatabaseTable = (props) => {
     const [sortedInfo, setSortedInfo] = React.useState({})
     const [filteredInfo, setFilteredInfo] = React.useState({})
     const [detailsVisible, setDetailsVisible] = React.useState(false)
-
-    console.log(sortedInfo)
 
     const getData = React.useCallback(() => {
 
@@ -434,11 +428,7 @@ const DatabaseTable = (props) => {
     }
 
     const columns = props.columns(getColumnSearchProps).map(item => {
-        console.log(item)
         if (item.hasOwnProperty('sorter') && item.sorter && 'field' in sortedInfo){
-        // if (item.hasOwnProperty('sorter') && item.sorter && !item.hasOwnProperty('sortOrder')){
-            console.log(sortedInfo.field.join())
-            console.log(item.dataIndex.join().replace(',', '__'))
             return {
                 ...item,
                 sortOrder: sortedInfo.hasOwnProperty('field') && sortedInfo.field.join() === item.dataIndex.join() && sortedInfo.order
@@ -544,22 +534,20 @@ export const ItemDetails = (props) => {
     const [content, title] = computedDetails ? computedDetailsArray : ['content', 'title']
 
     return (
-        Number.isInteger(visible) && record ? 
-            <Modal
-                title={title ? title : `Details`}
-                destroyOnClose={true}
-                className="database-interface-table--detail"
-                centered
-                visible={Number.isInteger(visible)}
-                onCancel={() => {
-                    if(resetUrl) resetUrl()
-                    setVisible(false)
-                }}
-                footer={null}
-            >
-                {content}
-          </Modal>
-        : null
+        <Modal
+            title={title ? title : `Details`}
+            destroyOnClose={true}
+            className="database-interface-table--detail"
+            centered
+            visible={Number.isInteger(visible)}
+            onCancel={() => {
+                if(resetUrl) resetUrl()
+                setVisible(false)
+            }}
+            footer={null}
+        >
+            {content}
+        </Modal>
         
     )
 }

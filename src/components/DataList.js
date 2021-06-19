@@ -1,13 +1,12 @@
 import React from 'react';
 import {List, Divider, Input, Form, Button, Checkbox, Spin} from 'antd';
 import {DatePicker} from 'antd';
-// import DatePicker from '../components/antd-dayjs/DatePicker'
 
 
 import { useStore } from 'react-redux';
 import {resolveRules, mergeErrors} from '../util/data';
+// TODO: change moment to dayjs in ant design
 import moment from 'moment';
-// import {dayjsExtended as dayjs} from '../util/util'
 
 export const DataListContext = React.createContext([]);
 
@@ -16,13 +15,7 @@ export const useDataListContext = () => React.useContext(DataListContext);
 const DataList = (props) => {
     const [form] = Form.useForm();
 
-    // const {buttonTags: {undo: btnUndoTag = 'elo', save: btnSaveTag}} = props
     const {buttonTags: {undo: btnUndoTag = "Undo", save: btnSaveTag = "Save"} = {}} = props
-
-    // React.useEffect(() => {
-    //     return () => console.log('unmounting DataList')
-    // }, [])
-
 
     const [errors, setErrors] = React.useState({})
     const [formLoading, setFormLoading] = React.useState(false)
@@ -35,15 +28,12 @@ const DataList = (props) => {
         let value = null
         switch (item.type){
             case 'custom':
-                // value = item.hasOwnProperty('valueToShow') ? item.valueToShow : item.value
                 value = item.value
                 break
             case 'input':
-                // value = item.hasOwnProperty('valueToShow') ? item.valueToShow : item.value
                 value = item.value
                 break
             case 'date':
-                // value = moment(item.value)
                 value = item.value
                 break
             case 'checkbox-list':
@@ -133,38 +123,31 @@ const DataList = (props) => {
         <div className="data-list-section">
             <Divider orientation="left">{props.label}</Divider>
             <div className="data-list-form">
-            {/* <button onClick={() => form.validateFields().then(values => {console.log('resolved'); console.log(values)}, err => {console.log('error'); console.log(err.values)} )}>validate form</button> */}
             <Spin spinning={formLoading}>
-                {/* <DataListContext.Provider
-                    value={{
-                        form: form
-                    }}    
-                > */}
-                    <Form
-                        form={form}
-                        // validateTrigger="onChange"
-                        validateTrigger="onSubmit"
-                        initialValues={initialValues}
+                <Form
+                    form={form}
+                    validateTrigger="onChange"
+                    // validateTrigger="onSubmit"
+                    initialValues={initialValues}
+                >
+                    <List
+                        className="data-list-table"
+                        bordered
+                        itemLayout="horizontal"
                     >
-                        <List
-                            className="data-list-table"
-                            bordered
-                            itemLayout="horizontal"
-                        >
-                            {data.map((item, index) => { 
-                                return(
-                                    <ListItem
-                                        key={'ListItem' + item.field + index}
-                                        item={item}
-                                        edited={editedFields.hasOwnProperty(item.field)}
-                                        // handleChange={(e) => {handleChange(e)}}
-                                        handleChange={handleChange}
-                                    />
-                                )
-                            })}    
-                        </List>
-                    </Form>
-                {/* </DataListContext.Provider> */}
+                        {data.map((item, index) => { 
+                            return(
+                                <ListItem
+                                    key={'ListItem' + item.field + index}
+                                    item={item}
+                                    edited={editedFields.hasOwnProperty(item.field)}
+                                    // handleChange={(e) => {handleChange(e)}}
+                                    handleChange={handleChange}
+                                />
+                            )
+                        })}    
+                    </List>
+                </Form>
                 <div className="data-list-table-footer">
 
                     <Button 
@@ -195,14 +178,6 @@ export default DataList
 const ListItem = (props) => {
     const {item, edited} = props
 
-    // const rules = (() => {
-    //     if (edited && item.rules){
-    //         return item.rules
-    //     } else {
-    //         return [{validator: async () => edited ? Promise.reject(new Error('Error')) : Promise.resolve()}]
-    //     }
-    // })()
-
     const rules = item.rules
 
     const formItemProps = ({
@@ -210,38 +185,6 @@ const ListItem = (props) => {
         name: item.field,
         rules: rules,
     })
-
-    // field input options
-    
-    // const inputField = 
-    //     <Input
-    //         className={!edited ? 'data-list-table-input' : null}
-    //         autoComplete="off"
-    //         style={{width: '100%'}}
-    //         disabled={item.disabled}
-    //     />
-    
-    // const dateField =
-    //     <DataPickerControlled
-    //         handleChange={props.handleChange}
-    //         isEdited={edited}
-    //     />
-    
-    // const customField = item.component ? item.component(item, props.handleChange, edited) : null;
-
-    // const customField = React.useMemo(() => {
-    //     if (item.component){
-    //         return (
-    //             item.component(item, props.handleChange, edited)
-    //         )
-    //     }
-    // },[item, props.handleChange, edited])
-    
-    // const valueFieldObj = {
-    //     input: inputField,
-    //     custom: customField,
-    //     date: dateField
-    // }
 
     const valueField = React.useMemo(() => {
         switch (item.type){
@@ -283,17 +226,6 @@ const ListItem = (props) => {
                         isEdited={edited}
                     />
                 )
-            // case 'customWORKING':
-            //     return (
-            //         <>
-            //             {item.component(item, form, props.handleChange, edited)}
-            //             <Form.Item {...formItemProps} className="data-list-table-input__hidden">
-            //                 <Input
-            //                     style={{width: '100%', display: 'none'}}
-            //                 />
-            //             </Form.Item>
-            //         </>  
-            //     )
             case 'custom':
                 return (
                     item.component(item, props.handleChange, edited)
@@ -304,8 +236,6 @@ const ListItem = (props) => {
                 )
         }
     },[edited, item, props.handleChange])    
-
-    // const [valueFieldState, setValueFieldState] = React.useState(valueField)
 
     return (
         <List.Item>
@@ -346,8 +276,7 @@ const DataPickerControlled = ({value, onChange, handleChange, isEdited}) => {
     function disabledDateTime() {
         
         return {
-          disabledHours: () => range(0, 24).filter(item => item < start_hour || item >= end_hour),
-        //   disabledMinutes: () => range(30, 60),
+            disabledHours: () => range(0, 24).filter(item => item < start_hour || item >= end_hour),
         };
       }
 

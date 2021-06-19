@@ -71,8 +71,8 @@ const Appointments = (props) => {
         const deleteAppointment = () => {
             api.delete(`/appointments/${appointment.id}`)
                 .then(res => {
-                    setAppointments(prev => [...prev].filter((item, index) => index !== detailsVisible))
                     setVisible(false)
+                    setAppointments(prev => [...prev].filter((item, index) => index !== detailsVisible))
                 })
                 .catch(err => {})
         }

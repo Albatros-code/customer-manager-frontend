@@ -9,7 +9,7 @@ import { Provider } from 'react-redux'
 import store from './redux/store'
 
 // components
-import Layout from './components/layout'
+import Layout from './components/Layout'
 
 // util
 // import { AppDataWraper } from './util/context'

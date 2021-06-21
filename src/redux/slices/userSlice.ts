@@ -126,7 +126,7 @@ export const setUser = (id: string, role: string): ThunkAction<Promise<string>, 
 )
 
 
-export const logoutUser = (onResolve: () => any, onReject: () => any): ThunkAction<void, RootState, unknown, AnyAction> => (
+export const logoutUser = (onResolve?: () => any, onReject?: () => any): ThunkAction<void, RootState, unknown, AnyAction> => (
     async (dispatch) => {
         delete api.defaults.headers.common["Authorization"]
         try {

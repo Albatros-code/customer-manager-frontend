@@ -263,10 +263,10 @@ const NewAppointment = () => {
             }
         />
       
-    const serviceSelector =
+    const serviceSelector = 
         <ServiceSelector
             handleServiceChange={handleServiceChange}
-            services={services}
+            services={services ? services : undefined}
         />
 
     const weekSelector =

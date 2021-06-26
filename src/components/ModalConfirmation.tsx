@@ -18,9 +18,9 @@ interface IModalConfirmationProps {
 
 const defaultProps = {
     modalResolved: false,
-    contentInit: "Modal content",
-    contentRejected: "Rejected",
-    contentResolved: "Resolved",
+    contentInit: "Modal content - Initial",
+    contentRejected: "Modal content - Rejected",
+    contentResolved: "Modal content - Resolved",
     onResolve: () => {},
     onConfirm: () => Promise.resolve(),
 }
@@ -31,7 +31,7 @@ const ModalConfirmation = (props: IModalConfirmationProps) => {
         visibilityState: [modalVisible, setModalVisible],
         title,
         contentInit,
-        // contentResolved,
+        contentResolved,
         contentRejected,
         onConfirm,
         onResolve,
@@ -43,12 +43,7 @@ const ModalConfirmation = (props: IModalConfirmationProps) => {
     const [modalLoading, setModalLoading] = React.useState(false)
     const [containerHeight, setContainerHeight] = React.useState(0)
 
-    // const [modalResolved2, setModalResolved2] = React.useState(false)
-
-    const [modalResolvedUseState, setModalResolved] = React.useState<false | JSX.Element>(false)
-    
-    const modalResolved = props.modalResolved ? props.modalResolved : modalResolvedUseState
-    const contentResolved = props.modalResolved ? props.modalResolved : props.contentResolved
+    const [modalResolved, setModalResolved] = React.useState<false | 'resolved' | 'rejected'>(false)
 
     React.useEffect(() => {
         if (modalVisible && containerRef.current){
@@ -72,17 +67,15 @@ const ModalConfirmation = (props: IModalConfirmationProps) => {
             setModalLoading(true)
             onConfirm()
                 .then(res => {
-                    setModalResolved(contentResolved)
-                }, err => {
-                    setModalResolved(contentRejected)
+                    setModalResolved('resolved')
                 })
                 .catch(err => {
-                    setModalResolved(contentRejected)
+                    setModalResolved('rejected')
                 })
                 .finally(() =>{
                     setModalLoading(false)
                 })
-        } else if (modalResolved === contentResolved) {
+        } else if (modalResolved === 'resolved') {
             setModalVisible(false)
             setModalResolved(false)
             onResolve()
@@ -94,13 +87,16 @@ const ModalConfirmation = (props: IModalConfirmationProps) => {
     };
 
     const submitModalHandleCancel = () => {
-        if(modalResolved === contentResolved){
+        if(modalResolved === 'resolved'){
             submitModalHandleOk()
         } else {
             setModalVisible(false)
             setModalResolved(false)
         }
     };
+
+    const modalContentResolved = modalResolved === 'resolved' ? contentResolved : contentRejected
+    const modalContent = !modalResolved ? contentInit : modalContentResolved
 
     return(
         <Modal
@@ -114,11 +110,7 @@ const ModalConfirmation = (props: IModalConfirmationProps) => {
         >
             <Spin spinning={modalLoading}>
                 <div className="modal-container" ref={containerRef}>
-                    {!modalResolved ?
-                        contentInit
-                        :
-                        modalResolved
-                    }
+                    {modalContent}
                 </div>
             </Spin>
         </Modal>

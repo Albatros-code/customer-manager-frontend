@@ -3,24 +3,27 @@ import { Spin } from 'antd';
 import { useHistory, Redirect } from 'react-router-dom';
 import { api} from '../util/util'
 
-const EmailVerification = (props) => {
+interface IEmailVerification {
+    match: {
+        params: {
+            emailVerificationString: string
+        }
+    }
+}
+
+const EmailVerification = (props: IEmailVerification) => {
 
     const history = useHistory()
 
     const [requestResolved, setRequestResolved] = React.useState(false)
-    const [message, setMessage] = React.useState(null)
+    const [message, setMessage] = React.useState<null | string>(null)
 
     React.useEffect(() => {
         const email_verification_string = props.match.params.emailVerificationString
     
         api.get(`/registration/${email_verification_string}`)
-        .then(res => {
-            // registered successfully go to login page
-            // history.push("/login")
+        .then(() => {
             setMessage('verified')
-            setRequestResolved(true)
-        }, err => {
-            setMessage(err.response.data.error)
             setRequestResolved(true)
         })
         .catch(err => {

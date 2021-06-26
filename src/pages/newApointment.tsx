@@ -227,7 +227,7 @@ const NewAppointment = () => {
             visibilityState={[submitModalVisible, setSubmitModalVisible]}
             title={"Scheduling new appointment"}
             contentInit={appointmentSummary(true)}
-            contentResolved={"Appointment added successfully."}
+            contentResolved={<span>"Appointment added successfully."</span>}
             contentRejected={<p>Something went wrong<br/>Appointment not scheduled.</p>}
             onConfirm={() => {
                 return new Promise((resolve, reject) => {
@@ -240,13 +240,13 @@ const NewAppointment = () => {
                         }
                     }
 
-                    api.post('/appointments', {
+                    api.post<any>('/appointments', {
                         service: form.getFieldValue('service'),
                         date: selectedDate.toISOString(),
                         duration: serviceDuration(),
                     })
                         .then(res => {
-                            return resolve(res)
+                            return resolve()
                         }, err => {
                             return reject(err)
                         })

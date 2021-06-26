@@ -1,7 +1,31 @@
 import React from 'react';
 import {Modal, Spin} from 'antd';
 
-const ModalConfirmation = (props) => {
+type visibilityState = [boolean, React.Dispatch<React.SetStateAction<boolean>>]
+
+interface IModalConfirmationProps {
+    modalResolved: false | JSX.Element,
+    
+    visibilityState: visibilityState,
+    title: string,
+    contentInit: JSX.Element,
+    contentRejected: JSX.Element,
+    onConfirm: () => Promise<void>,
+    onResolve: () => void,
+    onReject: () => void,
+    contentResolved: JSX.Element,
+}
+
+const defaultProps = {
+    modalResolved: false,
+    contentInit: "Modal content",
+    contentRejected: "Rejected",
+    contentResolved: "Resolved",
+    onResolve: () => {},
+    onConfirm: () => Promise.resolve(),
+}
+
+const ModalConfirmation = (props: IModalConfirmationProps) => {
 
     const {
         visibilityState: [modalVisible, setModalVisible],
@@ -14,17 +38,20 @@ const ModalConfirmation = (props) => {
         onReject,
     } = props
 
-    const containerRef = React.createRef()
+    const containerRef = React.createRef<HTMLDivElement>()
 
     const [modalLoading, setModalLoading] = React.useState(false)
-    const [modalResolvedUseState, setModalResolved] = React.useState(false)
-    const [containerHeight, setContainerHeight] = React.useState(false)
+    const [containerHeight, setContainerHeight] = React.useState(0)
 
+    // const [modalResolved2, setModalResolved2] = React.useState(false)
+
+    const [modalResolvedUseState, setModalResolved] = React.useState<false | JSX.Element>(false)
+    
     const modalResolved = props.modalResolved ? props.modalResolved : modalResolvedUseState
     const contentResolved = props.modalResolved ? props.modalResolved : props.contentResolved
 
     React.useEffect(() => {
-        if (modalVisible){
+        if (modalVisible && containerRef.current){
             if (!containerHeight){
                 setContainerHeight(containerRef.current.clientHeight)
             } else {
@@ -97,6 +124,8 @@ const ModalConfirmation = (props) => {
         </Modal>
     ) 
 }
+
+ModalConfirmation.defaultProps = defaultProps
 
 export default ModalConfirmation
 

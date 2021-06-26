@@ -166,7 +166,8 @@ const Register = () => {
                     </Form.Item>
                 </Form>
             </Spin>
-            <ModalConfirmation 
+            <ModalConfirmation
+                title={"Registration"}
                 visibilityState={[infoModalVisible, setInfoModalVisible]}
                 modalResolved={
                     <div>

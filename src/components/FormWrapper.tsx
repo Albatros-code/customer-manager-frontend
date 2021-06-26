@@ -1,11 +1,18 @@
 import React from 'react';
 import {Form} from 'antd';
+import { FormInstance } from 'antd/lib/form';
 
-export const FormContext = React.createContext();
+export const FormContext = React.createContext<any>(null);
 
 export const useFormContext = () => React.useContext(FormContext);
 
-const FormWrapper = ({ form, children, ...rest }) => {
+interface IFormWrapper {
+    form: FormInstance,
+    children: React.ReactNode,
+    [key: string]: any,
+}
+
+const FormWrapper = ({ form, children, ...rest }: IFormWrapper) => {
    
     return (
         <FormContext.Provider value={{form}}>

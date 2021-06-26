@@ -103,7 +103,7 @@ const LayoutComp = (props: ILayoutCompProps) => {
 }
 
 interface ISideMenuProps {
-    userRole: string | null,
+    userRole: string | undefined,
     authenticated: boolean,
     currentPage: string,
     handleMenuClick: (any: any) => any

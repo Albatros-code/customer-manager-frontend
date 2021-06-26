@@ -13,15 +13,15 @@ import { IGetSettingsAPI, IGetServicesAPI } from '../../interfaces'
 
 
 interface IDataReduxState {
-    services: IGetServicesAPI["data"] | null
-    avaiableDates: Array<any> | null,
-    settings: IGetSettingsAPI | null
+    services: IGetServicesAPI["data"] | undefined
+    avaiableDates: Array<any> | undefined,
+    settings: IGetSettingsAPI | undefined
 }
 
 const initialState: IDataReduxState = {
-    services: null,
-    avaiableDates: null,
-    settings: null,
+    services: undefined,
+    avaiableDates: undefined,
+    settings: undefined,
 }
 
 export const dataSlice = createSlice({

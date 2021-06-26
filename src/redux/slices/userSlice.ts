@@ -17,18 +17,18 @@ import { IUsersIDAPI, ITokenRefreshAPI, IDecodedJWT } from '../../interfaces'
 
 interface IUserReduxState {
     authenticated: boolean,
-    id: string | null,
-    username?: string | null,
-    role: string | null,
+    id: string | undefined,
+    username?: string | undefined,
+    role: string | undefined,
     data: IUsersIDAPI['doc']['data'] | {},
     settings: IUsersIDAPI['doc']['settings'] | {},
 }
 
 const initialState: IUserReduxState = {
     authenticated: false,
-    id: null,
-    username: null,
-    role: null,
+    id: undefined,
+    username: undefined,
+    role: undefined,
     data: {},
     settings: {},
 }
@@ -48,8 +48,8 @@ export const userSlice = createSlice({
         },
         SET_UNAUTHENTICATED: (state) => {
             state.authenticated = false
-            state.username = null
-            state.role = null
+            state.username = undefined
+            state.role = undefined
             state.data = {}
             state.settings = {}
         },

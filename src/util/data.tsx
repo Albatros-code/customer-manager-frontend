@@ -98,7 +98,11 @@ const apiErrorValidator = (errors:IErrors) => {
 //     (data: Array<D>, {errors}: {errors: IErrors}):Array<D>
 // }
 
+export function resolveRules(data:Array<IDataModelItem>, {errors}: {errors: IErrors}): Array<IDataModelItem>
+export function resolveRules<D extends IDataModelItem>(data:Array<IDataModelItem>, {errors}: {errors: IErrors}): Array<D>
+
 export function resolveRules<D extends IDataModelItem>(data:Array<D>, {errors}: {errors: IErrors}):Array<D>{
+// export function resolveRules(data:Array<IDataModelItem>, {errors}: {errors: IErrors}):Array<IDataModelItem>{
     return data.map((item) => {
         if (item.rules){
             const rulesResolved = item.rules.map(rule => {

@@ -22,6 +22,7 @@ const defaultProps = {
     contentRejected: "Modal content - Rejected",
     contentResolved: "Modal content - Resolved",
     onResolve: () => {},
+    onReject: () => {},
     onConfirm: () => Promise.resolve(),
 }
 

@@ -7,7 +7,7 @@ import { logoutUser } from '../redux/slices/userSlice'
 import { useAppDispatch } from '../redux/store';
 
 import {api} from '../util/util';
-import {user as userModel, resolveRules, mergeErrors} from '../util/data';
+import { user as userModel, resolveRules, mergeErrors } from '../util/data';
 
 import ModalConfirmation from '../components/ModalConfirmation';
 
@@ -41,9 +41,7 @@ const ResetPassword = () => {
         userModel.confirmPassword
     ], {errors: errors})
 
-    console.log(data)
-
-    const onFinish = (data) => {
+    const onFinish = (data: {password: string}) => {
         setFormLoading(true)
         api.post('/password-reset/change-password', 
             {
@@ -66,8 +64,8 @@ const ResetPassword = () => {
             .finally(() => {setFormLoading(false)})
     }
 
-    const onFinishFailed = (data) => {
-        console.log('Failed submit')
+    const onFinishFailed = () => {
+        console.log('Something went wrong.')
     }
 
     const resetPasswordForm = 
@@ -102,11 +100,11 @@ const ResetPassword = () => {
         </Form>
 
     const confirmationModal = 
-        <ModalConfirmation 
+        <ModalConfirmation
+            title={"Password changed successfully"} 
             visibilityState={[infoModalVisible, setInfoModalVisible]}
             modalResolved={
                 <div>
-                    <h3>Password changed successfully</h3>
                     <p>Please use new password to log in to your account.</p>
                 </div>
             }
@@ -114,11 +112,11 @@ const ResetPassword = () => {
         />
     
     const errorModal = 
-        <ModalConfirmation 
+        <ModalConfirmation
+            title={"Something went wrong."}
             visibilityState={[errorModalVisible, setErrorModalVisible]}
             modalResolved={
                 <div>
-                    <h3>Something went wrong</h3>
                     <p>Password cannot be changed.</p>
                 </div>
             }

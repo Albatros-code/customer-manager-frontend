@@ -8,20 +8,46 @@ import {resolveRules, mergeErrors} from '../util/data';
 // TODO: change moment to dayjs in ant design
 import moment from 'moment';
 
+// types
+import { IData, IDataItem, IFieldErrors } from '../util/data'
+
 export const DataListContext = React.createContext([]);
 
 export const useDataListContext = () => React.useContext(DataListContext);
 
-const DataList = (props) => {
+export interface IDataList<D> {
+    data: IData<D>,
+    onSave: (
+        values: {[fieldName: string]: any},
+        callbackRes: (properties?: {
+            resetFields: () => void
+        }) => void,
+        callbackErr: (errors: IFieldErrors) => void
+    ) => void,
+    label: string,
+    buttonTags?: {
+        undo: string,
+        save: string,
+    },
+}
+
+const defaultProps = {
+    buttonTags: {
+        undo: "Undo",
+        save: "Save",
+    },
+}
+
+export default function DataList<D>(props:IDataList<D>) {
     const [form] = Form.useForm();
 
     const {buttonTags: {undo: btnUndoTag = "Undo", save: btnSaveTag = "Save"} = {}} = props
 
-    const [errors, setErrors] = React.useState({})
+    const [errors, setErrors] = React.useState<IFieldErrors>({})
     const [formLoading, setFormLoading] = React.useState(false)
-    const [editedFields, setEditedFields] = React.useState({})
+    const [editedFields, setEditedFields] = React.useState<{[key: string]: string}>({})
     const data = React.useMemo(() => 
-        resolveRules(props.data, {errors: errors})
+        resolveRules<D, IDataItem<D>>(props.data, {errors: errors})
     ,[errors, props.data])
 
     const initialValues = React.useMemo(() => Object.fromEntries(data.map(item => {
@@ -47,7 +73,7 @@ const DataList = (props) => {
         )
     })), [data])
 
-    const handleChange = React.useCallback((e) => {
+    const handleChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.id.includes('skip')) return
         const label = e.target.id
         const value = e.target.value
@@ -63,9 +89,9 @@ const DataList = (props) => {
         }
     },[initialValues])
 
-    function formatResults(dataModel, values){
+    function formatResults(dataModel: IData<D>, values: {[key: string]: string}){
         const results = Object.fromEntries(dataModel.map((item) => {
-            let value
+            let value: any
             switch (item.type){
                 case 'input':
                     value = values[item.field]
@@ -98,13 +124,13 @@ const DataList = (props) => {
         form.validateFields()
             .then(values => {
                 const formatedValues = formatResults(data, values)
-                const callbackRes = (props = {}) => {
-                    const {resetFields} = props
+                const callbackRes = (properties: {resetFields?: () => void} = {}) => {
+                    const {resetFields} = properties
                     setEditedFields({})
                     if (resetFields) form.resetFields()
                     setFormLoading(false)
                 }
-                const callbackErr = (err) => {
+                const callbackErr = (err: IFieldErrors) => {
                     setErrors(prev => mergeErrors(prev, err))
                     form.validateFields()
                     setFormLoading(false)
@@ -141,7 +167,6 @@ const DataList = (props) => {
                                     key={'ListItem' + item.field + index}
                                     item={item}
                                     edited={editedFields.hasOwnProperty(item.field)}
-                                    // handleChange={(e) => {handleChange(e)}}
                                     handleChange={handleChange}
                                 />
                             )
@@ -173,9 +198,16 @@ const DataList = (props) => {
     )
 }
 
-export default DataList
+DataList.defaultProps = defaultProps
 
-const ListItem = (props) => {
+interface IListItem<D> {
+    item: IDataItem<D>,
+    edited: boolean,
+    handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+    
+}
+
+function ListItem<D = any>(props: IListItem<D>){
     const {item, edited} = props
 
     const rules = item.rules
@@ -191,33 +223,32 @@ const ListItem = (props) => {
             case 'input': 
                 return (
                     <Input
-                        className={!edited ? 'data-list-table-input' : null}
+                        className={!edited ? 'data-list-table-input' : ''}
                         autoComplete="off"
                         style={{width: '100%'}}
                         disabled={item.disabled}
                     />
                 )
             case 'checkbox-list':
+                const itemOptions = item.options ? item.options : []
                 const options = Object.keys(item.value).map((key, index) => {
                     return ({
-                        label: item.options[index],
+                        label: itemOptions[index],
                         value: key,
                     })
                 })
-
+                
                 return (
                     <Checkbox.Group className="checkbox-list__wrapper">
-                        {options.map((option, index) => 
-                            // <Row key={option.label+index}>
-                                <Checkbox 
-                                    key={option.label+index}
-                                    value={option.value}
-                                >
-                                    {option.label}
-                                </Checkbox>
-                            // </Row>
-                        )}
-                    </Checkbox.Group>
+                    {options.map((option, index) => 
+                        <Checkbox 
+                            key={option.label+index}
+                            value={option.value}
+                            >
+                            {option.label}
+                        </Checkbox>
+                    )}
+                </Checkbox.Group>
                 )
             case 'date':
                 return (
@@ -227,8 +258,10 @@ const ListItem = (props) => {
                     />
                 )
             case 'custom':
+                const component = item.component ? item.component : () => null
+                // TODO: solve any issue
                 return (
-                    item.component(item, props.handleChange, edited)
+                    component(item as any, props.handleChange, edited)
                 )
             default:
                 return (
@@ -252,20 +285,30 @@ const ListItem = (props) => {
     )
 }
 
-const DataPickerControlled = ({value, onChange, handleChange, isEdited}) => {
+interface IDataPickerControlledParams {
+    handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
+    isEdited: boolean,
+    value?: string,
+    onChange?: (value: string) => void,
+}
+
+const DataPickerControlled = ({value, onChange, handleChange, isEdited}:IDataPickerControlledParams) => {
     const {data: {settings: {start_hour, end_hour, time_interval}}} = useStore().getState()
 
-    const onOk = (val) => {
-        onChange(moment(val).toISOString())
-        handleChange({
-            target: {
-                value: moment(val).toISOString(),
-                id: 'date'
+    function onOk(val: moment.Moment) {
+        if (onChange) {
+            onChange(moment(val).toISOString())
+            const newChangeObj = {
+                target: {
+                    value: moment(val).toISOString(),
+                    id: 'date'
+                }
             }
-        })
+            handleChange(newChangeObj as React.ChangeEvent<HTMLInputElement>)
+        }
     }
 
-    function range(start, end) {
+    function range(start: number, end: number) {
         const result = [];
         for (let i = start; i < end; i++) {
             result.push(i);
@@ -283,7 +326,7 @@ const DataPickerControlled = ({value, onChange, handleChange, isEdited}) => {
     return (
         <DatePicker
             style={{width: '100%'}}
-            className={!isEdited ? "data-list-table-input" : null}
+            className={!isEdited ? "data-list-table-input" : ""}
             showTime={{
                 format: 'HH:mm',
                 minuteStep: time_interval,

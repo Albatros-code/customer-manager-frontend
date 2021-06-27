@@ -1,4 +1,5 @@
 import React from 'react';
+import { ReactNode } from 'react';
 import {DataListDataSelector as NotTyped} from "../components/DataSelector"
 
 const DataListDataSelector = (props: any) => <NotTyped {...props} />
@@ -12,22 +13,24 @@ const DataListDataSelector = (props: any) => <NotTyped {...props} />
 
 // interface IDataModel extends Array<IDataItem>{}
 
-export interface IDataModel {
-    [key: string]: IDataModelItem
+export interface IDataModel<D> {
+    [key: string]: IDataModelItem<D>
 }
 
-export interface IDataModelItem {
+export interface IDataModelItem<D> {
     field: string,
     label: string,
     type: string,
     rules?: any[],
-    custom?: () => any
+    component?: (record: D, handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void, isEdited: boolean) => ReactNode,
+    disabled?: boolean,
+    options?: Array<string>
 }
 
-export interface IData extends Array<IDataItem> {}
+export interface IData<D> extends Array<IDataItem<D>> {}
 
-export interface IDataItem extends IDataModelItem {
-    value?: string | number | boolean,
+export interface IDataItem<D> extends IDataModelItem<D> {
+    value?: any,
 }
 
 interface IValues {
@@ -40,33 +43,33 @@ interface IRecord {
     },
 }
 
+interface IDataRecord {
+    [key: string]: any
+}
+
 interface IAdditionalProps {
     [key: string]: {
         [key: string]: string | number | boolean
     }
 }
 
-
-   
-
-/*
-error response
-{
-    errors: {
-        field_name: {
-            value: message
-        }
+export interface IFieldErrors {
+    [field_name: string]: {
+        [value: string]: string
     }
 }
-*/
 
-export const getData = (dataModel:IDataModel, values:IValues, additionalProps:IAdditionalProps):IData => Object.entries(dataModel).map(([key, val]):IDataItem => {
-    return {
-        value: (typeof values === 'object' && key in values) ? values[key] : "",
-        ...val,
-        ...additionalProps[key],
-    }
-})
+export function getData<D>(dataModel:IDataModel<D>, values:IValues, additionalProps:IAdditionalProps):IData<D>{
+    return (
+        Object.entries(dataModel).map(([key, val]):IDataItem<D> => {
+            return {
+                value: (typeof values === 'object' && key in values) ? values[key] : "",
+                ...val,
+                ...additionalProps[key],
+            }
+        })
+    )
+}
 
 interface IErrors {
     [key: string]: {
@@ -98,10 +101,10 @@ const apiErrorValidator = (errors:IErrors) => {
 //     (data: Array<D>, {errors}: {errors: IErrors}):Array<D>
 // }
 
-export function resolveRules(data:Array<IDataModelItem>, {errors}: {errors: IErrors}): Array<IDataModelItem>
-export function resolveRules<D extends IDataModelItem>(data:Array<IDataModelItem>, {errors}: {errors: IErrors}): Array<D>
+export function resolveRules<D>(data:Array<IDataModelItem<D>>, {errors}: {errors: IErrors}): Array<IDataModelItem<D>>
+export function resolveRules<D, T extends IDataModelItem<D>>(data:Array<IDataModelItem<D>>, {errors}: {errors: IErrors}): Array<T>
 
-export function resolveRules<D extends IDataModelItem>(data:Array<D>, {errors}: {errors: IErrors}):Array<D>{
+export function resolveRules<D, T extends IDataModelItem<D>>(data:Array<T>, {errors}: {errors: IErrors}):Array<T>{
 // export function resolveRules(data:Array<IDataModelItem>, {errors}: {errors: IErrors}):Array<IDataModelItem>{
     return data.map((item) => {
         if (item.rules){
@@ -276,7 +279,7 @@ export const appointmentModel = {
         field: 'user',
         label: 'User',
         type: 'custom',
-        component: (record: IRecord, handleChange: () => void, isEdited: boolean) => (
+        component: (record: IDataRecord, handleChange: () => void, isEdited: boolean) => (
             <DataListDataSelector
                 record={record}
                 handleChange={handleChange}

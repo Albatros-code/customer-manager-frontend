@@ -103,7 +103,8 @@ const ResetPassword = () => {
         <ModalConfirmation
             title={"Password changed successfully"} 
             visibilityState={[infoModalVisible, setInfoModalVisible]}
-            modalResolved={
+            modalResolved={'resolved'}
+            contentResolved={
                 <div>
                     <p>Please use new password to log in to your account.</p>
                 </div>
@@ -115,7 +116,8 @@ const ResetPassword = () => {
         <ModalConfirmation
             title={"Something went wrong."}
             visibilityState={[errorModalVisible, setErrorModalVisible]}
-            modalResolved={
+            modalResolved={'resolved'}
+            contentResolved={
                 <div>
                     <p>Password cannot be changed.</p>
                 </div>

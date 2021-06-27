@@ -4,16 +4,15 @@ import {Modal, Spin} from 'antd';
 type visibilityState = [boolean, React.Dispatch<React.SetStateAction<boolean>>]
 
 interface IModalConfirmationProps {
-    modalResolved: false | JSX.Element,
-    
+    modalResolved: false | 'resolved' | 'rejected',
     visibilityState: visibilityState,
     title: string,
     contentInit: JSX.Element,
+    contentResolved: JSX.Element,
     contentRejected: JSX.Element,
     onConfirm: () => Promise<void>,
     onResolve: () => void,
     onReject: () => void,
-    contentResolved: JSX.Element,
 }
 
 const defaultProps = {
@@ -44,7 +43,7 @@ const ModalConfirmation = (props: IModalConfirmationProps) => {
     const [modalLoading, setModalLoading] = React.useState(false)
     const [containerHeight, setContainerHeight] = React.useState(0)
 
-    const [modalResolved, setModalResolved] = React.useState<false | 'resolved' | 'rejected'>(false)
+    const [modalResolved, setModalResolved] = React.useState<false | 'resolved' | 'rejected'>(props.modalResolved)
 
     React.useEffect(() => {
         if (modalVisible && containerRef.current){

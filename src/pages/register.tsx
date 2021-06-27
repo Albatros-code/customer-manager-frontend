@@ -14,6 +14,16 @@ import ModalConfirmation from '../components/ModalConfirmation';
 // type
 import type { IDataModelItem } from '../util/data';
 
+interface IRegisterFormData {
+    username: typeof userModel.username,
+    password: typeof userModel.password,
+    confirmPassword: typeof userModel.confirmPassword,
+    email: typeof userModel.data.email,
+    phone: typeof userModel.data.phone,
+    fname: typeof userModel.data.fname,
+    lname: typeof userModel.data.lname,
+}
+
 const Register = () => {
 
     const { authenticated } = useAppSelector(selectUser)
@@ -32,7 +42,7 @@ const Register = () => {
     const [ formLoading, setFormLoading ] = React.useState(false)
     const [ infoModalVisible, setInfoModalVisible ] = React.useState(false)
 
-    const data = resolveRules<IDataModelItem>([
+    const data = resolveRules<IDataModelItem<IRegisterFormData>>([
         userModel.username,
         userModel.password,
         userModel.confirmPassword,
@@ -68,10 +78,6 @@ const Register = () => {
         }, {withCredentials: true})
         .then(res => {
             setInfoModalVisible(true)
-            // console.log('register succesfull')
-            // console.log(res)
-            // registered successfully go to login page
-            // history.push("/login")
         }, err => {
             setErrors((prev) => {
                 const { errors: {data, ...rest}} = err.response.data
@@ -133,9 +139,6 @@ const Register = () => {
     return (
         <>
             <h1>Register</h1>
-            {/* <Button onClick={fillIn} onKeyPress={handleKeyPress}>fill in</Button>
-            <Button onClick={clear}>clear</Button> */}
-            
             <Spin spinning={formLoading}>
                 <Form
                     wrapperCol={{span: 18}}
@@ -167,15 +170,14 @@ const Register = () => {
                 </Form>
             </Spin>
             <ModalConfirmation
-                title={"Registration"}
+                title={"Account created successfully"}
                 visibilityState={[infoModalVisible, setInfoModalVisible]}
-                modalResolved={
+                modalResolved={'resolved'}
+                contentResolved={
                     <div>
-                        <h3>Account created successfully</h3>
                         <p>Email with a confirmation link has been sent to your email address.</p>
                     </div>
                 }
-                // contentResolved={"Verification email was sent to your e-mail."}
                 onResolve={() => history.push("/login")}
                 onReject={() => {}}
             />

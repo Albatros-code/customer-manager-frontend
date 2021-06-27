@@ -127,7 +127,7 @@ const UserAppointments = (props) => {
             <DatabaseTable 
                 columns={columns}
                 dataUrl={`/users/${userId}/appointments`}
-                itemDetails={(record) => {history.push(`/admin/appointments?filter=%7B"id__icontains"%3A"${record.id}"%7D&page=1&showRow=0`)}}
+                handleRowClick={(record) => {history.push(`/admin/appointments?filter=%7B"id__icontains"%3A"${record.id}"%7D&page=1&showRow=0`)}}
             />
 
         </div>

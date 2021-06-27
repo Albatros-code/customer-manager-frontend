@@ -1,18 +1,29 @@
 import React from 'react';
 import {Modal} from 'antd';
 
-import {ItemDetails} from '../components/DatabaseTable'
+import {ItemDetails} from './DatabaseTable'
 import {generateTimeTableBase} from '../util/appointments'
-// import { dayjsExtended as dayjs } from '../util/util'
+import { Dayjs } from 'dayjs';
 
+interface IScheduleTable {
+    startHour: number,
+    endHour: number,
+    timeInterval: number,
+    selectedDate: Dayjs,
+    items: React.FunctionComponentElement<typeof ScheduleItem>[]
+}
 
-export const ScheduleTable = (props) => {
-    const startHour = props.startHour ? props.startHour : 12
-    const endHour = props.endHour ? props.endHour :20
-    const timeInterval = props.timeInterval ? props.timeInterval : 15
+const defaultProps = {
+    startHour: 12,
+    endHour: 20,
+    timeInterval: 15,
+}
+
+export const ScheduleTable = (props: IScheduleTable) => {
+
+    const { startHour, endHour, timeInterval, selectedDate } = props
     
     const rowHeight = 100
-    const {selectedDate} = props
 
     const timeTable = <div className={"schedule-table-board"}>
         {generateTimeTableBase(selectedDate, startHour, endHour, timeInterval)
@@ -34,7 +45,7 @@ export const ScheduleTable = (props) => {
                             return (
                                 <div
                                     className="schedule-table-minutes-item"
-                                    key={minute}
+                                    key={minute.toISOString()}
                                     style={{height: minuteSlotHeight}}
                                 >
                                 </div>
@@ -51,8 +62,12 @@ export const ScheduleTable = (props) => {
             <ScheduleItem
                 date={selectedDate.set({hour: endHour+1})}
                 duration={5}
+                key={'string'}
+                startHour={1}
+                details={() => <p>none</p>}
+                record={{}}
             >
-                {null}
+                {<p></p>}
             </ScheduleItem>
         
         const array = []
@@ -65,7 +80,8 @@ export const ScheduleTable = (props) => {
     return (
         <div className="schedule-table-wrapper schedule-table-form">
             {timeTable}
-            {props.items.concat(dummyItems).map((child, index) => {
+            {/* {props.items.concat(dummyItems).map((child: React.FunctionComponentElement<typeof ScheduleItem>, index: number) => { */}
+            {props.items.concat(dummyItems).map((child: any, index: number) => {
                 if (child.type === ScheduleItem){
                     return React.cloneElement(child, {key: index, startHour: startHour, timeInterval: timeInterval})
                 } else {
@@ -76,7 +92,13 @@ export const ScheduleTable = (props) => {
     )
 }
 
-export const ScheduleItemDetails = (props) => {
+interface IScheduleItemDetails {
+    visible: boolean,
+    setVisible: React.Dispatch<React.SetStateAction<boolean>>,
+    details: (setVisible: (visible: boolean) => void) => JSX.Element
+}
+
+export const ScheduleItemDetails = (props: IScheduleItemDetails) => {
 
     const {visible, setVisible, details} = props
 
@@ -85,7 +107,7 @@ export const ScheduleItemDetails = (props) => {
             title="Appointment Details"
             centered
             visible={visible}
-            onCancel={() => {setVisible(prev=>!prev)}}
+            onCancel={() => {setVisible(prev => !prev)}}
             footer={null}
         >
             {details(setVisible)}
@@ -93,7 +115,17 @@ export const ScheduleItemDetails = (props) => {
     )
 }
 
-export const ScheduleItem = (props) => {
+interface IScheduleItem {
+    key: string,
+    date: Dayjs,
+    duration: number,
+    startHour: number,
+    details: (setVisible: (visible: boolean) => void) => JSX.Element
+    record: any,
+    children: JSX.Element
+}
+
+export const ScheduleItem = (props: IScheduleItem) => {
 
     const rowHeight = 100
     const {key, date, duration, details, record} = props
@@ -102,7 +134,7 @@ export const ScheduleItem = (props) => {
     const itemPosition = `${((parseInt(date.format('HH')) - startHour) + parseInt(date.format('mm'))/60)  * rowHeight}px`
     const itemHeight = `${duration/60 * rowHeight}px`
 
-    const [detailsVisible, setDetailsVisible] = React.useState(false)
+    const [detailsVisible, setDetailsVisible] = React.useState<number | undefined>(undefined)
     const handleClick = () => {
         setDetailsVisible(1)
     }
@@ -134,6 +166,9 @@ export const ScheduleItem = (props) => {
         </div>
     )
 }
+
+
+ScheduleTable.defaultProps = defaultProps
 
 export default ScheduleTable
 

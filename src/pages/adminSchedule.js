@@ -153,9 +153,9 @@ const AdminSchedule = (props) => {
                         timeInterval={timeInterval}
                         selectedDate={selectedDate}
                         items={appointmentCards}
-                    >
-                        {appointmentCards}
-                    </ScheduleTable>
+                    />
+                        {/* {appointmentCards}
+                    </ScheduleTable> */}
                 </DatabaseTableContext.Provider>
             </Spin>
         </>

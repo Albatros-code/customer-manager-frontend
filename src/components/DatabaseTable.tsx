@@ -570,7 +570,7 @@ interface ItemDetailsProps<R> {
     setVisible: (visible: number | undefined) => void,
     details: any,
     record: R | undefined,
-    resetUrl: () => void,
+    resetUrl?: () => void,
 }
 
 export function ItemDetails<R>(props: ItemDetailsProps<R>){

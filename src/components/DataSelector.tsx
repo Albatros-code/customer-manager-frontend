@@ -1,21 +1,32 @@
 import React from 'react';
 import {Input, Modal, Spin} from 'antd';
-import DatabaseTable from '../components/DatabaseTable';
+import DatabaseTable from './DatabaseTable';
 import { api } from '../util/util';
 
-export default function DataSelector(props) {
+// types
+import { IDatabaseTable } from '../components/DatabaseTable'
+
+interface IDataSelector<R extends {id: string}> {
+    showSelector: boolean,
+    setShowSelector: React.Dispatch<React.SetStateAction<boolean>>,
+    onRowClick: (recordId: string) => void,
+    queryField: string,
+    dataUrl: string,
+    displayData: (doc: R) => string,
+}
+
+export default function DataSelector<R extends {id: string}>(props: IDataSelector<R>) {
     const {showSelector, setShowSelector, onRowClick, queryField, dataUrl, displayData} = props
 
-    // const searchInput = React.createRef(null)
-    const searchField = React.useRef(null)
+    const searchField = React.useRef<Input>(null)
 
     React.useEffect(() => {
         if (showSelector) {
-            setTimeout(() => searchField.current.select(), 400);
+            setTimeout(() => searchField.current?.select(), 400);
         }
-    }, [showSelector])
+    }, [showSelector]) 
 
-    const columns = () => [
+    const columns:IDatabaseTable<R>['columns'] = () => [
         {
             key: 'id',
             title: 'Name',
@@ -26,15 +37,15 @@ export default function DataSelector(props) {
         },
     ]
 
-    const [searchString, setSearchString] = React.useState(null)
+    const [searchString, setSearchString] = React.useState('')
 
-    const handleSearch = (e) => {
+    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchString(e.target.value)
     }
 
-    const handleRowClick = (record, rowIndex) => {
+    const handleRowClick:IDatabaseTable<R>['handleRowClick'] = (record, rowIndex) => {
         onRowClick(record.id)
-        setSearchString(null)
+        setSearchString('')
     }
 
     return (
@@ -51,7 +62,7 @@ export default function DataSelector(props) {
         centered
         visible={showSelector}
         onCancel={() => {
-            setSearchString(null)
+            setSearchString('')
             setShowSelector(false)
         }}
         footer={null}>
@@ -82,25 +93,37 @@ export default function DataSelector(props) {
     )
 }
 
-export const DataListDataSelector = ({record, handleChange, isEdited, dataUrl, displayData, queryField, value, onChange}) => {
+interface IDataListDataSelector<R extends {id: string}, D extends {id: string}> {
+    record: R,
+    handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
+    isEdited: boolean,
+    dataUrl: string,
+    displayData: (doc: D) => string,
+    queryField: string,
+    value?: any,
+    onChange?: any,
+}
 
-    const [showValue, setShowValue] = React.useState(null)
+export function DataListDataSelector<R extends {id: string, field: string}, D extends {id: string}>({record, handleChange, isEdited, dataUrl, displayData, queryField, value, onChange}:IDataListDataSelector<R, D>){
+
+    const [showValue, setShowValue] = React.useState('')
     const [modalVisible, setModalVisible] = React.useState(false)
 
-    function getValueToShow(docId, url, handleDisplay){
-        
-        return new Promise((resolve, reject) => {
-            api.get(`${url}/${docId}`)
-            .then((res) => {
-                // console.log('data fetched ' + docId)
-                const display = handleDisplay(res.data.doc)
-                return resolve(display)
-            })
-            .catch(err => reject(docId))
-        })
-    }
-
+    
     React.useEffect(() => {
+        function getValueToShow(docId: string, url: string, handleDisplay: (doc: D) => string){
+            
+            return new Promise<string>((resolve, reject) => {
+                api.get<{doc: D, total: number}>(`${url}/${docId}`)
+                .then((res) => {
+                    // console.log('data fetched ' + docId)
+                    const display = handleDisplay(res.data.doc)
+                    return resolve(display)
+                })
+                .catch(() => reject(docId))
+            })
+        }
+
         getValueToShow(
             value,
             dataUrl,
@@ -118,7 +141,7 @@ export const DataListDataSelector = ({record, handleChange, isEdited, dataUrl, d
         setModalVisible(true)
     }
 
-    const handleRowClick = (id) => {
+    const handleRowClick = (id: string) => {
         if (id !== value) {
             onChange(id)
             handleChange({
@@ -126,8 +149,8 @@ export const DataListDataSelector = ({record, handleChange, isEdited, dataUrl, d
                     value: id,
                     id: record.field
                 }
-            })
-            setShowValue(null)
+            } as React.ChangeEvent<HTMLInputElement>)
+            setShowValue('')
         }
         setModalVisible(false)
     }
@@ -137,7 +160,7 @@ export const DataListDataSelector = ({record, handleChange, isEdited, dataUrl, d
             <Spin spinning={!showValue}>
                 <Input
                     style={{width: '100%'}}
-                    className={!isEdited ? 'data-list-table-input' : null}
+                    className={!isEdited ? 'data-list-table-input' : ''}
                     autoComplete="off"
                     id={record.field}
                     value={showValue}

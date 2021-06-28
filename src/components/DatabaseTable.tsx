@@ -25,23 +25,25 @@ export const DatabaseTableContext = React.createContext<IDatabaseTableContext | 
 
 export const useDatabaseTableContext = () => React.useContext(DatabaseTableContext);
 
-interface IDatabaseTable<R extends {id: string}> {
+export interface IDatabaseTable<R extends {id: string}> {
     dataUrl: string,
-    itemDetails: React.ReactNode,
+    itemDetails?: React.ReactNode,
     useQueryParams: boolean,
     handleRowClick(record: R, rowIndex: number | undefined): void,
     paginationHidden: boolean,
-    filterQuery?: string,
+    filterQuery?: {[key: string]: string}
     orderQuery?: string,
     forceUpdate?(): void,
-    columns: (searchProps: (dataIndex: string[], type: string, label: string) => ColumnType<any>) => [{
-        key: string,
-        title: string,
-        dataIndex: string[],
-        sorter?: boolean,
-        ellipsis?: boolean,
-        width?: number,
-    } & FilterDropdownProps]
+    // columns: (searchProps?: (dataIndex: string[], type: string, label: string) => ColumnType<any>) => [{
+    //     key: string,
+    //     title: string,
+    //     dataIndex: string[],
+    //     sorter?: boolean,
+    //     ellipsis?: boolean,
+    //     width?: number,
+    // }]
+    // } & FilterDropdownProps]
+    columns: (searchProps?: (dataIndex: string[], type: string, label: string) => ColumnType<R>) => Array<ColumnType<R>> 
 }
 
 interface IQueryParams {
@@ -50,6 +52,10 @@ interface IQueryParams {
     order?: string,
     filter?: string,
     showRow?: number,
+}
+
+const defaultProps = {
+    useQueryParams: false
 }
 
 export default function DatabaseTable<R extends {id: string}>(props: IDatabaseTable<R>): JSX.Element{
@@ -76,10 +82,7 @@ export default function DatabaseTable<R extends {id: string}>(props: IDatabaseTa
     const pagination = useQueryParams ? paginationQuery : paginationState
     const page = useQueryParams ? pageQuery : pageState
     const order = useQueryParams ? orderQuery : orderState
-    const filter = props.filterQuery ? 
-        props.filterQuery 
-        :
-        (useQueryParams ? filterQuery : filterState)
+    const filter = useQueryParams ? filterQuery : filterState
     
     const [loading, setLoading] = React.useState(true)
     const [data, setData] = React.useState<{data: Array<R>, total: number}>({data: [], total: 0})
@@ -97,7 +100,7 @@ export default function DatabaseTable<R extends {id: string}>(props: IDatabaseTa
                 pagination: pagination,
                 page: page,
                 order: props.orderQuery ? props.orderQuery : order,
-                filter: filter,
+                filter: props.filterQuery? props.filterQuery : filter,
             }})
             .then(res => {
                 setData({data: res.data.data, total: res.data.total})
@@ -471,9 +474,10 @@ export default function DatabaseTable<R extends {id: string}>(props: IDatabaseTa
 
     const columns = props.columns(getColumnSearchProps).map(item => {
         if (item.hasOwnProperty('sorter') && item.sorter && 'field' in sortedInfo){
+            const dataIndexString = Array.isArray(item.dataIndex) ? item.dataIndex.join() : item.dataIndex
             return {
                 ...item,
-                sortOrder: sortedInfo.hasOwnProperty('field') && sortedInfo.field.join() === item.dataIndex.join() && sortedInfo.order
+                sortOrder: sortedInfo.hasOwnProperty('field') && sortedInfo.field.join() === dataIndexString && sortedInfo.order
             }
         } else {
             return item
@@ -598,3 +602,5 @@ export function ItemDetails<R>(props: ItemDetailsProps<R>){
         
     )
 }
+
+DatabaseTable.defaultProps = defaultProps

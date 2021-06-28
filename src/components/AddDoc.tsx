@@ -1,13 +1,25 @@
-import React from 'react'
+import React, { CSSProperties } from 'react'
 import {Button, Modal} from 'antd'
 
-import DataList from '../components/DataList'
+import DataList from './DataList'
 
 import {useDatabaseTableContext} from './DatabaseTable';
 import {getData} from '../util/data';
 import {api} from '../util/util';
 
-const AddDoc = (props) => {
+// types
+import { IDataModel } from '../util/data'
+import { IDataList } from './DataList'
+
+interface IAddDoc<D> {
+    label: string,
+    forceUpdate: any,
+    dataModel: IDataModel<D>,
+    apiUrl: string,
+    buttonStyle?: CSSProperties,
+}
+
+export default function AddDoc<D>(props: IAddDoc<D>){
 
     const {label, forceUpdate, buttonStyle, dataModel, apiUrl} = props
 
@@ -21,7 +33,9 @@ const AddDoc = (props) => {
         setModalVisible(false)
     }
 
-    const {updateTableContent} = useDatabaseTableContext()
+    const databaseTableContext = useDatabaseTableContext()
+    const updateTableContent = databaseTableContext?.updateTableContent
+
 
     const [needUpdate, setNeedUpdate] = React.useState(false)
 
@@ -40,7 +54,7 @@ const AddDoc = (props) => {
     // const [docData, setdocData] = React.useState({})
     const listData = React.useMemo(() => getData(dataModel, {}, {}), [dataModel])
 
-    const OnSave = (values, callbackRes, callbackErr) => {
+    const OnSave:IDataList<D>['onSave'] = (values, callbackRes, callbackErr) => {
         
         const formatedData = {...values}
         formatedData.duration = parseInt(formatedData.duration)
@@ -51,7 +65,7 @@ const AddDoc = (props) => {
         })
         .then(() => {
             setNeedUpdate(true)
-            if (callbackRes) callbackRes({resetFields: true})
+            if (callbackRes) callbackRes({resetFields: () => true})
             setModalVisible(false)
             forceUpdate()
             // updateTableContent()
@@ -85,5 +99,3 @@ const AddDoc = (props) => {
         </>
     )
 }
-
-export default AddDoc

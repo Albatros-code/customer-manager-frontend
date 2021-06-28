@@ -20,7 +20,7 @@ export interface IDataList<D> {
     onSave: (
         values: {[fieldName: string]: any},
         callbackRes: (properties?: {
-            resetFields: () => void
+            resetFields: (() => void)
         }) => void,
         callbackErr: (errors: IFieldErrors) => void
     ) => void,

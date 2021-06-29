@@ -336,20 +336,30 @@ export default function DatabaseTable<R extends {id: string}>(props: IDatabaseTa
         const startDateString = selectedKeysObj.hasOwnProperty(dataIndex.join().replace(',', '__') + '__gt') ? selectedKeysObj[dataIndex.join().replace(',', '__') + '__gt'] : null
         const endDateString = selectedKeysObj.hasOwnProperty(dataIndex.join().replace(',', '__') + '__lt') ? selectedKeysObj[dataIndex.join().replace(',', '__') + '__lt'] : null
         
-        if (filter && (startDateString || endDateString)){
-            const {[dataIndex.join().replace(',', '__') + '__gt']: remove1, [dataIndex.join().replace(',', '__') + '__lte']: remove2, ...filterObj} = {...JSON.parse(filter)}
+        if ((startDateString || endDateString)){
+
+            const filterObj = () => {
+                if (filter) {
+                    const {[dataIndex.join().replace(',', '__') + '__gt']: remove1, [dataIndex.join().replace(',', '__') + '__lte']: remove2, ...filterObj} = {...JSON.parse(filter)}
+                    return filterObj
+                } else {
+                    return {}
+                }
+
+            }
+
             
             if (useQueryParams){
                 history.push({
                     search: queryString.stringify({
                         ...queryParams,
                         page: 1,
-                        filter: JSON.stringify({...filterObj, ...JSON.parse(String(selectedKeys[0]))})
+                        filter: JSON.stringify({...filterObj(), ...JSON.parse(String(selectedKeys[0]))})
                     })
                 })
             } else {
                 setPage(1)
-                setFilter(JSON.stringify({...filterObj,  ...JSON.parse(String(selectedKeys[0]))}))
+                setFilter(JSON.stringify({...filterObj(),  ...JSON.parse(String(selectedKeys[0]))}))
             }
             confirm();
         }

@@ -1,30 +1,41 @@
 import React from 'react';
 import {Divider, Button, Spin} from 'antd';
 import {useHistory} from 'react-router-dom'
-import { useStore } from 'react-redux';
 
-import DataList from '../components/DataList';
+import DataList from './DataList';
 import DatabaseTable, {useDatabaseTableContext} from './DatabaseTable';
 import {user as userModel, getData} from '../util/data';
 import {api} from '../util/util';
 import {dayjsExtended as dayjs} from '../util/util'
-import ModalConfirmation from '../components/ModalConfirmation';
+import ModalConfirmation from './ModalConfirmation';
 
+// redux
+import { selectData } from '../redux/slices/dataSlice';
+import { useAppSelector } from '../redux/store';
 
-const UserDetails = (props) => {
-    const {userDoc, setVisible} = props
+// types
+import { IAppointmentDoc, IUserDataDoc, IUserDoc } from '../interfaces';
+import { IDatabaseTable } from '../components/DatabaseTable'
+import { OnSaveFunc } from './DataList';
 
+interface IUserDetails {
+    doc: IUserDoc,
+    setVisible: React.Dispatch<React.SetStateAction<boolean>>
+}
+
+const UserDetails = (props: IUserDetails) => {
+    const { doc, setVisible } = props
     return (
         <div>
             <UserData
-                userId={userDoc.id}
-                userData={userDoc.data}
+                userId={doc.id}
+                userData={doc.data}
             />
             <UserAppointments 
-                userId={userDoc.id}
+                userId={doc.id}
             />
             <UserActions
-                docData={userDoc}
+                doc={doc}
                 setVisible={setVisible}
             />
         </div>
@@ -33,11 +44,15 @@ const UserDetails = (props) => {
 
 export default UserDetails
 
+interface IUserData {
+    userId: string
+    userData: IUserDataDoc
+}
 
-
-const UserData = (props) => {
+const UserData = (props: IUserData) => {
     const {userId} = props
-    const {updateTableContent} = useDatabaseTableContext()
+    const databaseTableContext = useDatabaseTableContext()
+    const updateTableContent = databaseTableContext?.updateTableContent
     
     const [needUpdate, setNeedUpdate] = React.useState(false)
     
@@ -60,7 +75,7 @@ const UserData = (props) => {
         email: {disabled: true}
     })
 
-    const OnSave = (values, callbackRes, callbackErr) => {
+    const OnSave: OnSaveFunc<IUserDataDoc> = (values, callbackRes, callbackErr) => {
         const formatedData = {...values}
         formatedData.fname = formatedData.fname.charAt(0).toUpperCase() + formatedData.fname.slice(1).toLowerCase()
 
@@ -89,12 +104,17 @@ const UserData = (props) => {
     )
 }
 
-const UserAppointments = (props) => {
+interface IUserAppointments {
+    userId: string,
+}
+
+const UserAppointments = (props: IUserAppointments) => {
     const {userId} = props
     const history = useHistory()
-    const {data: {services}} = useStore().getState()
+    
+    const { services } = useAppSelector(selectData)
 
-    const columns = () => [
+    const columns: IDatabaseTable<IAppointmentDoc>['columns'] = () => [
         { 
             title: "Service",
             dataIndex: ["service"],
@@ -134,9 +154,15 @@ const UserAppointments = (props) => {
     )
 }
 
-const UserActions = (props) => {
-    const {docData: doc, setVisible} = props
-    const {updateTableContent} = useDatabaseTableContext()
+interface IUserActions {
+    doc: IUserDoc,
+    setVisible: React.Dispatch<React.SetStateAction<boolean>>
+}
+
+const UserActions = (props: IUserActions) => {
+    const {doc, setVisible} = props
+    const databaseTableContext = useDatabaseTableContext()
+    const updateTableContent = databaseTableContext?.updateTableContent
     
     const [loading] = React.useState(false)
 
@@ -146,14 +172,14 @@ const UserActions = (props) => {
         <ModalConfirmation 
             visibilityState={[submitModalVisible, setSubmitModalVisible]}
             title={"Deleting user"}
-            contentInit={"Are you sure?"}
-            contentResolved={"User deleted successfully."}
+            contentInit={<span>"Are you sure?"</span>}
+            contentResolved={<span>"User deleted successfully."</span>}
             contentRejected={<p>Something went wrong<br/>User not deleted.</p>}
             onConfirm={() => {
                 return new Promise((resolve, reject) => {
                     api.delete(`/users/${doc.id}`)  
                         .then(res => {
-                            return resolve(res)
+                            return resolve()
                         }, err => {
                             return reject(err)
                         })
@@ -163,16 +189,13 @@ const UserActions = (props) => {
                     })
                 }}
             onResolve={
-                // () => {setVisible(false)}
                 () => {
-                    updateTableContent()
+                    updateTableContent && updateTableContent()
                     setVisible(false)
                 }
             }
             onReject={
-                () => {
-                    // console.log('Rejected')
-                }
+                () => {}
             }
         />
     

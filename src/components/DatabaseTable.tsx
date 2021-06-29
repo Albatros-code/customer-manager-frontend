@@ -30,7 +30,7 @@ export interface IDatabaseTable<R extends {id: string}> {
     itemDetails?: React.ReactNode,
     useQueryParams: boolean,
     handleRowClick(record: R, rowIndex: number | undefined): void,
-    paginationHidden: boolean,
+    paginationHidden?: boolean,
     filterQuery?: {[key: string]: string}
     orderQuery?: string,
     forceUpdate?(): void,
@@ -55,7 +55,8 @@ interface IQueryParams {
 }
 
 const defaultProps = {
-    useQueryParams: false
+    useQueryParams: false,
+    paginationHidden: false,
 }
 
 export default function DatabaseTable<R extends {id: string}>(props: IDatabaseTable<R>): JSX.Element{

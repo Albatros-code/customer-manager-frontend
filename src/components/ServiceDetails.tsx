@@ -5,10 +5,19 @@ import DataList from './DataList';
 import {useDatabaseTableContext} from './DatabaseTable';
 import {serviceModel, getData} from '../util/data';
 import {api} from '../util/util';
-import ModalConfirmation from '../components/ModalConfirmation';
+import ModalConfirmation from './ModalConfirmation';
+
+// types
+import { IServiceDoc } from '../interfaces/doc.interfaces';
+import { OnSaveFunc } from './DataList';
 
 
-const ServicesDetails = (props) => {
+interface IServiceDetails {
+    doc: IServiceDoc,
+    setVisible: React.Dispatch<React.SetStateAction<boolean>>
+}
+
+const ServicesDetails = (props: IServiceDetails) => {
     const {doc, setVisible} = props
 
     return (
@@ -28,11 +37,16 @@ const ServicesDetails = (props) => {
 
 export default ServicesDetails
 
+interface IServiceData {
+    docId: string,
+    docData: IServiceDoc,
+    setVisible: React.Dispatch<React.SetStateAction<boolean>>
+}
 
-
-const ServiceData = (props) => {
+const ServiceData = (props: IServiceData) => {
     const {docId} = props
-    const {updateTableContent} = useDatabaseTableContext()
+    const databaseTableContext = useDatabaseTableContext()
+    const updateTableContent = databaseTableContext?.updateTableContent
 
     const [needUpdate, setNeedUpdate] = React.useState(false)
 
@@ -53,16 +67,13 @@ const ServiceData = (props) => {
         email: {disabled: true}
     }), [docData])
 
-    const OnSave = (values, callbackRes, callbackErr) => {
+    const OnSave: OnSaveFunc<IServiceDoc> = (values, callbackRes, callbackErr) => {
         
-        const formatedData = {...values}
-        formatedData.duration = parseInt(formatedData.duration)
-
         api.put(`/services-admin/${docId}`, {
-            service: formatedData
+            service: values
         })
         .then(() => {
-            setdocData(formatedData)
+            setdocData(values)
             setNeedUpdate(true)
             if (callbackRes) callbackRes()
         })
@@ -81,9 +92,15 @@ const ServiceData = (props) => {
     )
 }
 
-const ServiceActions = (props) => {
+interface IServiceActions {
+    docData: IServiceDoc,
+    setVisible: React.Dispatch<React.SetStateAction<boolean>>
+}
+
+const ServiceActions = (props: IServiceActions) => {
     const {docData: doc, setVisible} = props
-    const {updateTableContent} = useDatabaseTableContext()
+    const databaseTableContext = useDatabaseTableContext()
+    const updateTableContent = databaseTableContext?.updateTableContent
     
     const [loading] = React.useState(false)
     
@@ -94,14 +111,14 @@ const ServiceActions = (props) => {
         <ModalConfirmation 
             visibilityState={[submitModalVisible, setSubmitModalVisible]}
             title={"Deleting service"}
-            contentInit={"Are you sure?"}
-            contentResolved={"Service deleted successfully."}
+            contentInit={<span>"Are you sure?"</span>}
+            contentResolved={<span>"Service deleted successfully."</span>}
             contentRejected={<p>Something went wrong<br/>Service not deleted.</p>}
             onConfirm={() => {
                 return new Promise((resolve, reject) => {
                     api.delete(`/services-admin/${doc.id}`)  
                         .then(res => {
-                            return resolve(res)
+                            return resolve()
                         }, err => {
                             return reject(err)
                         })
@@ -113,7 +130,7 @@ const ServiceActions = (props) => {
             onResolve={
                 // () => {setVisible(false)}
                 () => {
-                    updateTableContent()
+                    updateTableContent && updateTableContent()
                     setVisible(false)
                 }
             }

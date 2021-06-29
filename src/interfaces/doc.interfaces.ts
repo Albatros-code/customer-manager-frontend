@@ -26,6 +26,7 @@ export interface IAppointmentDoc {
 }
 
 export interface IServiceDoc {
+    id: string,
     name: string,
     service:string,
     price: number

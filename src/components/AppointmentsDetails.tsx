@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { SetStateAction } from 'react';
 import {Button, Divider, Spin} from 'antd';
 
 import DataList from './DataList';
@@ -6,10 +6,20 @@ import {useDatabaseTableContext} from './DatabaseTable';
 import {appointmentModel, getData} from '../util/data';
 import {api} from '../util/util';
 import { useHistory } from 'react-router';
-import ModalConfirmation from '../components/ModalConfirmation';
+import ModalConfirmation from './ModalConfirmation';
+
+// type
+import { OnSaveFunc } from './DataList'
+import { IAppointmentDoc, IUserDoc, IUsersIDAPI } from '../interfaces'
 
 // TODO: Move user doc fetching to AppointmentsDetails. Changing user for appointment doesn't change go to user action.
-const AppointmentsDetails = (props) => {
+
+interface IAppointmentsDetails {
+    doc: IAppointmentDoc,
+    setVisible: React.Dispatch<SetStateAction<boolean>>,
+}
+
+const AppointmentsDetails = (props: IAppointmentsDetails) => {
     const {doc, setVisible} = props
 
     return (
@@ -29,11 +39,16 @@ const AppointmentsDetails = (props) => {
 
 export default AppointmentsDetails
 
+interface IAppointmentData {
+    docId: string,
+    docData: IAppointmentDoc,
+    setVisible: React.Dispatch<SetStateAction<boolean>>,
+}
 
-
-const AppointmentData = (props) => {
+const AppointmentData = (props: IAppointmentData) => {
     const {docId} = props
-    const {updateTableContent} = useDatabaseTableContext()
+    const databaseTableContext = useDatabaseTableContext()
+    const updateTableContent = databaseTableContext?.updateTableContent
 
     const [needUpdate, setNeedUpdate] = React.useState(false)
 
@@ -50,14 +65,14 @@ const AppointmentData = (props) => {
     },[props.docData])
 
     const [docData, setdocData] = React.useState(props.docData)
-    const listData = React.useMemo(() => getData(appointmentModel, docData, {
+    const listData = React.useMemo(() => getData<IAppointmentDoc>(appointmentModel, docData, {
         email: {disabled: true}
     }), [docData])
 
-    const OnSave = (values, callbackRes, callbackErr) => {
+    const OnSave: OnSaveFunc<IAppointmentDoc> = (values, callbackRes, callbackErr) => {
         
         const formatedData = {...values}
-        formatedData.duration = parseInt(formatedData.duration)
+        // formatedData.duration = parseInt(formatedData.duration)
 
         api.put(`/appointments/${docId}`, {
             appointment: formatedData
@@ -74,7 +89,7 @@ const AppointmentData = (props) => {
         return (
         // TODO: Validation of appointment's Date/Duration need to be more flexible. Since there is connection between these two some additional mechanism is needed to clear errors on one after other is changed. E.g. appointment date might be ok if duration will be shorten.
 
-        <DataList 
+        <DataList<IAppointmentDoc> 
             data={listData}
             label="Apointment's data"
             onSave={OnSave}
@@ -82,16 +97,22 @@ const AppointmentData = (props) => {
     )
 }
 
-const AppointmentActions = (props) => {
+interface IAppointmentActions {
+    docData: IAppointmentDoc,
+    setVisible: React.Dispatch<SetStateAction<boolean>>,
+}
+
+const AppointmentActions = (props: IAppointmentActions) => {
     const {docData: doc, setVisible} = props
     const history = useHistory()
-    const {updateTableContent} = useDatabaseTableContext()
+    const databaseTableContext = useDatabaseTableContext()
+    const updateTableContent = databaseTableContext?.updateTableContent
     
     const [loading, setLoading] = React.useState(true)
-    const [userDoc, setUserDoc] = React.useState(null)
+    const [userDoc, setUserDoc] = React.useState<IUserDoc | null>(null)
     
     React.useEffect(() => {
-        api.get(`/users/${doc.user}`)
+        api.get<IUsersIDAPI>(`/users/${doc.user}`)
             .then(res => {
                 setUserDoc(res.data.doc)
                 setLoading(false)
@@ -108,14 +129,14 @@ const AppointmentActions = (props) => {
         <ModalConfirmation 
             visibilityState={[submitModalVisible, setSubmitModalVisible]}
             title={"Deleting appointment"}
-            contentInit={"Are you sure?"}
-            contentResolved={"Appointment deleted successfully."}
+            contentInit={<span>"Are you sure?"</span>}
+            contentResolved={<span>"Appointment deleted successfully."</span>}
             contentRejected={<p>Something went wrong<br/>Appointment not deleted.</p>}
             onConfirm={() => {
                 return new Promise((resolve, reject) => {
                     api.delete(`/appointments/${doc.id}`)  
                         .then(res => {
-                            return resolve(res)
+                            return resolve()
                         }, err => {
                             return reject(err)
                         })
@@ -126,7 +147,7 @@ const AppointmentActions = (props) => {
                 }}
             onResolve={
                 () => {
-                    updateTableContent()
+                    updateTableContent && updateTableContent()
                     setVisible(false)
                 }
             }

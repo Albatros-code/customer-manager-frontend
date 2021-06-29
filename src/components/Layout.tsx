@@ -21,7 +21,7 @@ interface ILayoutCompProps {
 const LayoutComp = (props: ILayoutCompProps) => {
 
     const { role: userRole, authenticated, data  } = useAppSelector(selectUser)
-    const { fname } = 'fname' in data ? data : {fname: null}
+    const fname = data?.fname
     const dispatch = useAppDispatch()
 
     const [ isDrawerOpen, setIsDrawerOpen ] = React.useState(false)

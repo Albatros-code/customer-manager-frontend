@@ -12,7 +12,7 @@ import { PayloadAction } from '@reduxjs/toolkit'
 import { AxiosResponse } from 'axios'
 
 import { RootState } from '../store'
-import { IUsersIDAPI, ITokenRefreshAPI, IDecodedJWT } from '../../interfaces'
+import { IUsersIDAPI, ITokenRefreshAPI, IDecodedJWT, IUserDataDoc, IUserSettingsDoc } from '../../interfaces'
 
 
 interface IUserReduxState {
@@ -20,8 +20,8 @@ interface IUserReduxState {
     id: string | undefined,
     username?: string | undefined,
     role: string | undefined,
-    data: IUsersIDAPI['doc']['data'] | {},
-    settings: IUsersIDAPI['doc']['settings'] | {},
+    data: IUserDataDoc | undefined,
+    settings: IUserSettingsDoc | undefined,
 }
 
 const initialState: IUserReduxState = {
@@ -29,8 +29,8 @@ const initialState: IUserReduxState = {
     id: undefined,
     username: undefined,
     role: undefined,
-    data: {},
-    settings: {},
+    data: undefined,
+    settings: undefined,
 }
 
 export const userSlice = createSlice({
@@ -50,8 +50,8 @@ export const userSlice = createSlice({
             state.authenticated = false
             state.username = undefined
             state.role = undefined
-            state.data = {}
-            state.settings = {}
+            state.data = undefined
+            state.settings = undefined
         },
     }
 })

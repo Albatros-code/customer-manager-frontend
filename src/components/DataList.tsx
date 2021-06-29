@@ -9,21 +9,22 @@ import {resolveRules, mergeErrors} from '../util/data';
 import moment from 'moment';
 
 // types
-import { IData, IDataItem, IFieldErrors } from '../util/data'
+import { IData, IDataItem, IFieldErrors } from '../util/data';
+import { IDatabaseDoc } from '../interfaces'
 
 export const DataListContext = React.createContext([]);
 
 export const useDataListContext = () => React.useContext(DataListContext);
 
-export interface IDataList<D> {
+export type OnSaveFunc<D extends IDatabaseDoc> = (
+    values: D,
+    callbackRes: (properties?: {resetFields: (() => void)}) => void,
+    callbackErr: (errors: IFieldErrors) => void
+) => void
+
+export interface IDataList<D extends IDatabaseDoc> {
     data: IData<D>,
-    onSave: (
-        values: {[fieldName: string]: any},
-        callbackRes: (properties?: {
-            resetFields: (() => void)
-        }) => void,
-        callbackErr: (errors: IFieldErrors) => void
-    ) => void,
+    onSave: OnSaveFunc<D>,
     label: string,
     buttonTags?: {
         undo: string,
@@ -38,7 +39,7 @@ const defaultProps = {
     },
 }
 
-export default function DataList<D>(props:IDataList<D>) {
+export default function DataList<D extends IDatabaseDoc>(props:IDataList<D>) {
     const [form] = Form.useForm();
 
     const {buttonTags: {undo: btnUndoTag = "Undo", save: btnSaveTag = "Save"} = {}} = props
@@ -89,7 +90,7 @@ export default function DataList<D>(props:IDataList<D>) {
         }
     },[initialValues])
 
-    function formatResults(dataModel: IData<D>, values: {[key: string]: string}){
+    function formatResults(dataModel: IData<D>, values: {[key: string]: string}):D{
         const results = Object.fromEntries(dataModel.map((item) => {
             let value: any
             switch (item.type){
@@ -116,7 +117,7 @@ export default function DataList<D>(props:IDataList<D>) {
             return [item.field, value]
         }))
 
-        return results
+        return results as D
     }
 
     const handleClick = () => {

@@ -5,4 +5,13 @@ export type {
     IGetAvailableHoursAPI,
     ITokenRefreshAPI,
     IUsersIDAPI,
-} from './api/api.interfaces'
+    IGetAppointments,
+} from './api.interfaces'
+
+export type {
+    IUserDoc,
+    IUserDataDoc,
+    IUserSettingsDoc,
+    IDatabaseDoc,
+    IAppointmentDoc
+} from './doc.interfaces'

@@ -1,3 +1,15 @@
+import { 
+    IAppointmentDoc,
+    IUserDoc
+} from './doc.interfaces'
+
+
+export interface IGetAppointments {
+    total: number,
+    data: IAppointmentDoc[]
+}
+
+
 export const working_days_keys = [0, 1, 2, 3, 4, 5, 6]
 
 export interface IGetSettingsAPI {
@@ -53,17 +65,17 @@ export interface IDecodedJWT {
 }
 
 export interface IUsersIDAPI {
-    doc: {
-        id: string,
-        data: {
-            phone: number,
-            fname: string,
-            lname: string,
-            email: string,
-            age: number
+    doc: IUserDoc
+}
+
+export interface IGetAppointmentsAPI {
+    slots: {
+        [date: string]: {
+            [hour: number]: {
+                [minuteInterval: number]: boolean
+            }
         },
-        settings: {
-            newsletter: boolean
-        }
-    }
+        
+    },
+    date_range: string
 }

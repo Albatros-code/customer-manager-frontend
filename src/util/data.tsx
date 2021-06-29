@@ -2,6 +2,9 @@ import React from 'react';
 import { ReactNode } from 'react';
 import {DataListDataSelector as NotTyped} from "../components/DataSelector"
 
+// types
+import { IAppointmentDoc, IDatabaseDoc } from '../interfaces'
+
 const DataListDataSelector = (props: any) => <NotTyped {...props} />
 
 // interface IDataItem {
@@ -14,7 +17,7 @@ const DataListDataSelector = (props: any) => <NotTyped {...props} />
 // interface IDataModel extends Array<IDataItem>{}
 
 export interface IDataModel<D> {
-    [key: string]: IDataModelItem<D>
+    [fieldName: string]: IDataModelItem<D>
 }
 
 export interface IDataModelItem<D> {
@@ -33,9 +36,9 @@ export interface IDataItem<D> extends IDataModelItem<D> {
     value?: any,
 }
 
-interface IValues {
-    [key: string]: string | number
-}
+// interface IValues {
+//     [key: string]: string | number
+// }
 
 interface IRecord {
     [key: string]: string | {
@@ -43,9 +46,9 @@ interface IRecord {
     },
 }
 
-interface IDataRecord {
-    [key: string]: any
-}
+// interface IDataRecord {
+//     [key: string]: any
+// }
 
 interface IAdditionalProps {
     [key: string]: {
@@ -59,13 +62,18 @@ export interface IFieldErrors {
     }
 }
 
-export function getData<D>(dataModel:IDataModel<D>, values:IValues, additionalProps:IAdditionalProps):IData<D>{
+export function getData<D extends IDatabaseDoc>(dataModel:IDataModel<D>, docData?:D, additionalProps?:IAdditionalProps):IData<D>{
     return (
-        Object.entries(dataModel).map(([key, val]):IDataItem<D> => {
+        Object.entries(dataModel).map(([key, val]) => {
+
+            function isValidKey(value: string | number | symbol): value is keyof typeof docData {
+                return docData ? value in docData : false;
+            }
+
             return {
-                value: (typeof values === 'object' && key in values) ? values[key] : "",
+                value: docData && isValidKey(key) && docData[key],
                 ...val,
-                ...additionalProps[key],
+                ...additionalProps ? additionalProps[key] : {},
             }
         })
     )
@@ -274,12 +282,12 @@ export const settingsModel = {
     },
 }
 
-export const appointmentModel = {
+export const appointmentModel:IDataModel<IAppointmentDoc> = {
     user: {
         field: 'user',
         label: 'User',
         type: 'custom',
-        component: (record: IDataRecord, handleChange: () => void, isEdited: boolean) => (
+        component: (record, handleChange, isEdited) => (
             <DataListDataSelector
                 record={record}
                 handleChange={handleChange}
@@ -302,7 +310,7 @@ export const appointmentModel = {
             {required: true, message: "Can't be blank!" },
             (errors: IErrors) => {return apiErrorValidator(errors)},
         ],
-        component: (record: IRecord, handleChange: () => void, isEdited: boolean) => (
+        component: (record, handleChange, isEdited) => (
             <DataListDataSelector
                 record={record}
                 handleChange={handleChange}

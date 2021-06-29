@@ -10,8 +10,9 @@ import {api} from '../util/util';
 // types
 import { IDataModel } from '../util/data'
 import { IDataList } from './DataList'
+import { IDatabaseDoc } from '../interfaces';
 
-interface IAddDoc<D> {
+interface IAddDoc<D extends IDatabaseDoc> {
     label: string,
     forceUpdate: any,
     dataModel: IDataModel<D>,
@@ -19,7 +20,7 @@ interface IAddDoc<D> {
     buttonStyle?: CSSProperties,
 }
 
-export default function AddDoc<D>(props: IAddDoc<D>){
+export default function AddDoc<D  extends IDatabaseDoc>(props: IAddDoc<D>){
 
     const {label, forceUpdate, buttonStyle, dataModel, apiUrl} = props
 
@@ -52,13 +53,13 @@ export default function AddDoc<D>(props: IAddDoc<D>){
     // },[props.docData])
 
     // const [docData, setdocData] = React.useState({})
-    const listData = React.useMemo(() => getData(dataModel, {}, {}), [dataModel])
+    const listData = React.useMemo(() => getData(dataModel), [dataModel])
 
     const OnSave:IDataList<D>['onSave'] = (values, callbackRes, callbackErr) => {
         
         const formatedData = {...values}
-        formatedData.duration = parseInt(formatedData.duration)
-        formatedData.price = parseInt(formatedData.price)
+        // formatedData.duration = parseInt(formatedData.duration)
+        // formatedData.price = parseInt(formatedData.price)
 
         api.post(`${apiUrl}`, {
             ...formatedData

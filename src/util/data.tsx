@@ -3,7 +3,7 @@ import { ReactNode } from 'react';
 import {DataListDataSelector as NotTyped} from "../components/DataSelector"
 
 // types
-import { IAppointmentDoc, IDatabaseDoc } from '../interfaces'
+import { IAppointmentDoc, IDatabaseDoc, ISettingDoc } from '../interfaces'
 
 const DataListDataSelector = (props: any) => <NotTyped {...props} />
 
@@ -231,11 +231,11 @@ export const user = {
     }
 }
 
-export const settingsModel = {
+export const settingsModel:IDataModel<ISettingDoc> = {
     start_hour: {
         field: 'start_hour',
         label: 'Start hour',
-        type: 'input',
+        type: 'input-number',
         rules: [
             {required: true, message: "Can't be blank!" },
             {pattern: new RegExp("^([0-9]|[01][0-9]|2[0-4])$"), message: "Not valid hour."},
@@ -245,7 +245,7 @@ export const settingsModel = {
     end_hour: {
         field: 'end_hour',
         label: 'End hour',
-        type: 'input',
+        type: 'input-number',
         rules: [
             {required: true, message: "Can't be blank!" },
             {pattern: new RegExp("^([0-9]|[01][0-9]|2[0-4])$"), message: "Not valid hour."},
@@ -255,13 +255,12 @@ export const settingsModel = {
     time_interval: {
         field: 'time_interval',
         label: 'Time interval',
-        type: 'input',
+        type: 'input-number',
         rules: [
             {required: true, message: "Can't be blank!" },
             // {pattern: new RegExp("^([5]|[1-5][0|5]|60)$"), message: "Not valid interval."},
             (errors: IErrors) => {return apiErrorValidator(errors)},
             {validator: async (rule:any, value:string) => {
-                console.log(60%parseInt(value))
                 if (value !== '' && (!/^(5|[1-5][0|5]|60)$/.test(value) || 60%parseInt(value) !== 0)){
                     return Promise.reject(new Error('Not valid interval.'))
                 } else {

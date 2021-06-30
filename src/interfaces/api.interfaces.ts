@@ -1,6 +1,7 @@
 import { 
     IAppointmentDoc,
-    IUserDoc
+    IUserDoc,
+    ISettingDoc,
 } from './doc.interfaces'
 
 
@@ -12,21 +13,7 @@ export interface IGetAppointments {
 
 export const working_days_keys = [0, 1, 2, 3, 4, 5, 6]
 
-export interface IGetSettingsAPI {
-    start_hour: number,
-    end_hour: number,
-    time_interval: number,
-    working_days: {
-        0: boolean,
-        1: boolean,
-        2: boolean,
-        3: boolean,
-        4: boolean,
-        5: boolean,
-        6: boolean,
-        // [key: number]: boolean
-    }
-}
+export interface IGetSettingsAPI extends ISettingDoc { }
 
 
 export interface IGetServicesAPI {

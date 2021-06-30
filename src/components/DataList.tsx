@@ -51,6 +51,8 @@ export default function DataList<D extends IDatabaseDoc>(props:IDataList<D>) {
         resolveRules<D, IDataItem<D>>(props.data, {errors: errors})
     ,[errors, props.data])
 
+// TODO: Extract to separate function for each type
+
     const initialValues = React.useMemo(() => Object.fromEntries(data.map(item => {
         let value = null
         switch (item.type){
@@ -58,6 +60,9 @@ export default function DataList<D extends IDatabaseDoc>(props:IDataList<D>) {
                 value = item.value
                 break
             case 'input':
+                value = item.value
+                break
+            case 'input-number':
                 value = item.value
                 break
             case 'date':
@@ -90,18 +95,19 @@ export default function DataList<D extends IDatabaseDoc>(props:IDataList<D>) {
         }
     },[initialValues])
 
-    function formatResults(dataModel: IData<D>, values: {[key: string]: string}):D{
+// TODO: Extract to separate function for each type
+
+    function formatResults(dataModel: IData<D>, values: {[key: string]: any}):D{
         const results = Object.fromEntries(dataModel.map((item) => {
             let value: any
             switch (item.type){
                 case 'input':
-                    value = values[item.field]
-                    break
                 case 'custom':
-                    value = values[item.field]
-                    break
                 case 'date':
                     value = values[item.field]
+                    break
+                case 'item-number':
+                    value = parseInt(values[item.field])
                     break
                 case 'checkbox-list':
                     value={}
@@ -217,11 +223,15 @@ function ListItem<D = any>(props: IListItem<D>){
         onChange: props.handleChange,
         name: item.field,
         rules: rules,
+        // normalize: (value: string) => item.type === "item-number" && value !== "" && !isNaN(Number(value)) ? Number(value) : value
     })
+
+// TODO: Extract to separate function for each type
 
     const valueField = React.useMemo(() => {
         switch (item.type){
-            case 'input': 
+            case 'input':
+            case 'input-number': 
                 return (
                     <Input
                         className={!edited ? 'data-list-table-input' : ''}

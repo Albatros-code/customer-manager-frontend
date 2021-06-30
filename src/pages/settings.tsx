@@ -6,23 +6,21 @@ import DataList from '../components/DataList';
 import {getData, settingsModel} from '../util/data';
 import {api} from '../util/util'
 
-const Settings = (props) => {
+// type
+import { ISettingDoc } from '../interfaces';
+import { OnSaveFunc } from '../components/DataList';
+
+const Settings = () => {
 
     const dispatch = useAppDispatch()
     const { settings } = useAppSelector(selectData)
 
     const settingsData = getData(settingsModel, settings, {})
 
-    const settingsOnSave = (values, callbackRes, callbackErr) => {
-        const formatedData = {
-            ...values,
-            start_hour: parseInt(values.start_hour),
-            end_hour: parseInt(values.end_hour),
-            time_interval: parseInt(values.time_interval)
-        }
+    const settingsOnSave: OnSaveFunc<ISettingDoc> = (values, callbackRes, callbackErr) => {
 
         api.put(`/settings`, {
-            settings: formatedData
+            settings: values
         }, {withCredentials: true})
         .then(() => {
             dispatch(fetchSettings()).finally(() => {

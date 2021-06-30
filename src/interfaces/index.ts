@@ -13,5 +13,6 @@ export type {
     IUserDataDoc,
     IUserSettingsDoc,
     IDatabaseDoc,
-    IAppointmentDoc
+    IAppointmentDoc,
+    ISettingDoc,
 } from './doc.interfaces'

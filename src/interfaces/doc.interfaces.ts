@@ -32,4 +32,19 @@ export interface IServiceDoc {
     price: number
 }
 
-export type IDatabaseDoc = IAppointmentDoc | IServiceDoc | IUserDoc | IUserDataDoc | IUserSettingsDoc
+export interface ISettingDoc {
+    start_hour: number,
+    end_hour: number,
+    time_interval: number,
+    working_days: {
+        0: boolean,
+        1: boolean,
+        2: boolean,
+        3: boolean,
+        4: boolean,
+        5: boolean,
+        6: boolean,
+    }
+}
+
+export type IDatabaseDoc = IAppointmentDoc | IServiceDoc | IUserDoc | IUserDataDoc | IUserSettingsDoc | ISettingDoc

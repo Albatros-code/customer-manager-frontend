@@ -106,7 +106,7 @@ export default function DataList<D extends IDatabaseDoc>(props:IDataList<D>) {
                 case 'date':
                     value = values[item.field]
                     break
-                case 'item-number':
+                case 'input-number':
                     value = parseInt(values[item.field])
                     break
                 case 'checkbox-list':
@@ -131,6 +131,7 @@ export default function DataList<D extends IDatabaseDoc>(props:IDataList<D>) {
         form.validateFields()
             .then(values => {
                 const formatedValues = formatResults(data, values)
+                console.log(formatedValues)
                 const callbackRes = (properties: {resetFields?: () => void} = {}) => {
                     const {resetFields} = properties
                     setEditedFields({})

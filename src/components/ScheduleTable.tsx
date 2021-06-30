@@ -95,7 +95,7 @@ export const ScheduleTable = (props: IScheduleTable) => {
 interface IScheduleItemDetails {
     visible: boolean,
     setVisible: React.Dispatch<React.SetStateAction<boolean>>,
-    details: (setVisible: (visible: boolean) => void) => JSX.Element
+    details: (setVisible: React.Dispatch<React.SetStateAction<boolean>>) => React.ReactNode
 }
 
 export const ScheduleItemDetails = (props: IScheduleItemDetails) => {

@@ -6,6 +6,7 @@ export type {
     ITokenRefreshAPI,
     IUsersIDAPI,
     IGetAppointments,
+    IGetUsersIDAppointmentsAPI,
 } from './api.interfaces'
 
 export type {

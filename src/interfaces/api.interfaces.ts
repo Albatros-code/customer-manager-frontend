@@ -55,6 +55,11 @@ export interface IUsersIDAPI {
     doc: IUserDoc
 }
 
+export interface IGetUsersIDAppointmentsAPI {
+    total: number,
+    data: IAppointmentDoc[]
+}
+
 export interface IGetAppointmentsAPI {
     slots: {
         [date: string]: {

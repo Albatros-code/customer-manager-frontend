@@ -1,9 +1,14 @@
 import DatabaseTable from "../components/DatabaseTable";
-import UserDetails from "../components/UserDetails";;
+import UserDetails from "../components/UserDetails";
 
-const AdminUsers = (props) => {
+// types
+import { IDatabaseTable } from "../components/DatabaseTable";
+import { IUserDoc } from "../interfaces";
+
+
+const AdminUsers = () => {
     
-    const columns = (searchProps) => [
+    const columns: IDatabaseTable<IUserDoc>['columns'] = (searchProps) => [
         {
             key: 'id',
             title: 'Id',
@@ -56,7 +61,7 @@ const AdminUsers = (props) => {
         },
     ]
 
-    const itemDetails = (record, setVisible) => {
+    const itemDetails: IDatabaseTable<IUserDoc>['itemDetails'] = (record, setVisible) => {
         if (!record) return null
         const title = 'Details of ' + record.data.fname + ' ' + record.data.lname
         return ([

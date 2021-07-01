@@ -71,3 +71,18 @@ export interface IGetAppointmentsAPI {
     },
     date_range: string
 }
+
+// TODO: check backend data
+export interface IGetApointmentsScheduleAPI {
+    date_range: string,
+    appointments: (IAppointmentDoc & {user_name: string, phone: string,})[]
+    // appointments: {
+    //     id: string,
+    //     service: string,
+    //     date: string,
+    //     duration: number,
+    //     user: string,
+    //     user_name: string,
+    //     phone: string,
+    // }[]
+}

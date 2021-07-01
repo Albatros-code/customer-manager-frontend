@@ -7,6 +7,7 @@ export type {
     IUsersIDAPI,
     IGetAppointments,
     IGetUsersIDAppointmentsAPI,
+    IGetApointmentsScheduleAPI,
 } from './api.interfaces'
 
 export type {

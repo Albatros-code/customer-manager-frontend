@@ -3,7 +3,10 @@ import {Modal} from 'antd';
 
 import {ItemDetails} from './DatabaseTable'
 import {generateTimeTableBase} from '../util/appointments'
+
+// types
 import { Dayjs } from 'dayjs';
+import { IGetApointmentsScheduleAPI } from '../interfaces';
 
 interface IScheduleTable {
     startHour: number,
@@ -120,7 +123,7 @@ interface IScheduleItem {
     date: Dayjs,
     duration: number,
     startHour: number,
-    details: (setVisible: (visible: boolean) => void) => JSX.Element
+    details: (record: IGetApointmentsScheduleAPI['appointments'][number], setVisible: React.Dispatch<React.SetStateAction<boolean>>) => React.ReactNode
     record: any,
     children: JSX.Element
 }

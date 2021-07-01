@@ -13,7 +13,7 @@ import moment from "moment";
 //types
 import { FilterDropdownProps, ColumnType } from 'antd/lib/table/interface'
 import { TableProps } from 'antd/lib/table/Table'
-import { IDatabaseDoc } from "../interfaces";
+import { IDatabaseAnyDoc, IDatabaseDoc } from "../interfaces";
 
 var customParseFormat = require('dayjs/plugin/customParseFormat')
 dayjs.extend(customParseFormat)
@@ -563,7 +563,7 @@ export default function DatabaseTable<R extends IDatabaseDoc>(props: IDatabaseTa
                     <ItemDetails 
                         visible={detailsVisible}
                         setVisible={setUrl}
-                        record={detailsVisible ? data.data[detailsVisible] : detailsVisible}
+                        record={detailsVisible ? data.data[detailsVisible] : undefined}
                         details={itemDetails}
                         resetUrl={resetUrl}
                     />
@@ -577,12 +577,12 @@ export default function DatabaseTable<R extends IDatabaseDoc>(props: IDatabaseTa
 interface ItemDetailsProps<R> {
     visible: number | undefined,
     setVisible: (visible: number | undefined) => void,
-    details: any,
+    details: (record: R, setVisible: any) => React.ReactNode,
     record: R | undefined,
     resetUrl?: () => void,
 }
 
-export function ItemDetails<R>(props: ItemDetailsProps<R>){
+export function ItemDetails<R extends IDatabaseAnyDoc>(props: ItemDetailsProps<R>){
     const {visible, setVisible, details, record, resetUrl} = props
     const computedDetails = record && details(record, setVisible)
     const computedDetailsArray = Array.isArray(computedDetails) ? computedDetails : [computedDetails]

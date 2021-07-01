@@ -16,14 +16,24 @@ import {DatabaseTableContext} from '../components/DatabaseTable';
 import { useAppSelector } from "../redux/store";
 import { selectData } from "../redux/slices/dataSlice";
 
+// types
+import { IGetApointmentsScheduleAPI } from '../interfaces';
+import { Dayjs } from 'dayjs';
 
-const AdminSchedule = (props) => {
+interface IAppointmentsData {
+    [dateRange: string]: IGetApointmentsScheduleAPI['appointments']
+}
+
+const AdminSchedule = () => {
 
     const {services} = useAppSelector(selectData)
-    const {settings: {start_hour: startHour, end_hour: endHour, time_interval: timeInterval}} = useAppSelector(selectData)
+    const { settings } = useAppSelector(selectData)
+    const startHour = settings?.start_hour
+    const endHour = settings?.end_hour
+    const timeInterval = settings?.time_interval
 
-    const [ selectedDate, setSelectedDate ] = React.useState(dayjs.tz().set({second: 0, millisecond: 0}))
-    const [ appointmentsData, setAppointmentsData ] = React.useState({})
+    const [ selectedDate, setSelectedDate ] = React.useState(dayjs.tz(dayjs()).set({second: 0, millisecond: 0}))
+    const [ appointmentsData, setAppointmentsData ] = React.useState<IAppointmentsData>({})
     
     const appointments = (() => {
         if (appointmentsData.hasOwnProperty(currentWeekString(selectedDate))){
@@ -36,9 +46,9 @@ const AdminSchedule = (props) => {
         }
     })()
 
-    function getAppointments(startDate, endDate){
+    function getAppointments(startDate: string, endDate: string){
         
-        api.get('/appointments-schedule', {
+        api.get<IGetApointmentsScheduleAPI>('/appointments-schedule', {
             params: {
                 start_date: startDate,
                 end_date: endDate,
@@ -49,26 +59,26 @@ const AdminSchedule = (props) => {
             .catch(err => {})
     }
     
-    const getData = React.useCallback((check) => {
+    const getData = React.useCallback(() => {
         const startDate = selectedDate.startOf('week')
         const endDate = selectedDate.endOf('week')
-        const condition = check ? !appointmentsData.hasOwnProperty(`${startDate.format('YYYY-MM-DD')}:${endDate.format('YYYY-MM-DD')}`) : true
+        const condition = true ? !appointmentsData.hasOwnProperty(`${startDate.format('YYYY-MM-DD')}:${endDate.format('YYYY-MM-DD')}`) : true
         if (condition){ 
             getAppointments(startDate.toISOString(), endDate.toISOString())
         }
     }, [appointmentsData, selectedDate])
 
     React.useEffect(() => {
-        getData(true)
+        getData()
     },[appointmentsData, getData, selectedDate])
 
     const [form] = Form.useForm()
     
-    const handleDayChange = (newWeekDay) => {
+    const handleDayChange = (newWeekDay: number) => {
         setSelectedDate(prev => prev.weekday(newWeekDay))
     }
     
-    const handleWeekChange = (dayObj) => {
+    const handleWeekChange = (dayObj: Dayjs) => {
         setSelectedDate(dayObj)
         form.setFieldsValue({"day": dayObj.weekday()})
     }
@@ -88,12 +98,12 @@ const AdminSchedule = (props) => {
         disabledButton={false}
     />
 
-    function getServiceName(doc){
+    function getServiceName(doc: IGetApointmentsScheduleAPI['appointments'][number]){
         const serviceDoc = services ? services.find((item) => item.id === doc.service) : null
         return serviceDoc ? serviceDoc.name : "deleted " + doc.service
     }
 
-    const appointmentCardContent = (appointment) => {
+    const appointmentCardContent = (appointment: IGetApointmentsScheduleAPI['appointments'][number]) => {
         return (
             <div className="schedule-table-appointment-card">
                 <p>{getServiceName(appointment)}</p>
@@ -103,7 +113,8 @@ const AdminSchedule = (props) => {
         )
     }
 
-    const itemDetails = (record, setVisible) => {
+    // const itemDetails = (record: IGetApointmentsScheduleAPI['appointments'][number], setVisible: React.Dispatch<React.SetStateAction<boolean>>) => {
+    const itemDetails = (record: IGetApointmentsScheduleAPI['appointments'][number], setVisible: React.Dispatch<React.SetStateAction<boolean>>):React.ReactNode => {
         if (!record) return null
         
         const title = getServiceName(record) + ' on ' + dayjs(record.date).tz().format('DD-MM-YYYY')
@@ -117,12 +128,13 @@ const AdminSchedule = (props) => {
         ])
     } 
     
-    const appointmentCards = appointments.map((item, index) => {
+    const appointmentCards = appointments.map((item) => {
         return (
             <ScheduleItem
+                startHour={startHour ? startHour : 12}
                 date={dayjs(item.date)}
                 duration={item.duration}
-                key={index}
+                key={item.id}
                 record={item}
                 details={itemDetails}
             >

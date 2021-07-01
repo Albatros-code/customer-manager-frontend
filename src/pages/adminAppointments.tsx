@@ -6,6 +6,11 @@ import {dayjsExtended as dayjs} from '../util/util'
 import { useAppSelector } from "../redux/store";
 import { selectData } from "../redux/slices/dataSlice";
 
+// types
+import { IAppointmentDoc } from "../interfaces";
+import { IDatabaseTable } from "../components/DatabaseTable";
+
+
 var customParseFormat = require('dayjs/plugin/customParseFormat')
 dayjs.extend(customParseFormat)
 
@@ -13,7 +18,7 @@ const AdminAppointments = () => {
 
     const {services} = useAppSelector(selectData)
     
-    const columns = (searchProps) => [
+    const columns: IDatabaseTable<IAppointmentDoc>['columns'] = (searchProps) => [
         {
             key: 'id',
             title: 'Id',
@@ -46,7 +51,7 @@ const AdminAppointments = () => {
         },
     ]
 
-    const itemDetails = (record, setVisible) => {
+    const itemDetails: IDatabaseTable<IAppointmentDoc>['itemDetails'] = (record, setVisible) => {
         if (!record) return null
         const serviceDoc = services ? services.find((item) => item.id === record.service) : null
         const serviceName = serviceDoc ? serviceDoc.name : "deleted " + record.service
@@ -65,7 +70,7 @@ const AdminAppointments = () => {
     return (
         <>
             <h1>Appointments</h1>
-            <DatabaseTable 
+            <DatabaseTable<IAppointmentDoc> 
                 columns={columns}
                 dataUrl={'/appointments'}
                 itemDetails={itemDetails}

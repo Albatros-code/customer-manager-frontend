@@ -13,6 +13,7 @@ import moment from "moment";
 //types
 import { FilterDropdownProps, ColumnType } from 'antd/lib/table/interface'
 import { TableProps } from 'antd/lib/table/Table'
+import { IDatabaseDoc } from "../interfaces";
 
 var customParseFormat = require('dayjs/plugin/customParseFormat')
 dayjs.extend(customParseFormat)
@@ -25,26 +26,19 @@ export const DatabaseTableContext = React.createContext<IDatabaseTableContext | 
 
 export const useDatabaseTableContext = () => React.useContext(DatabaseTableContext);
 
-export interface IDatabaseTable<R extends {id: string}> {
+export interface IDatabaseTable<R extends IDatabaseDoc> {
     dataUrl: string,
-    itemDetails?: React.ReactNode,
+    itemDetails?: (record: R, setVisible: React.Dispatch<React.SetStateAction<boolean>>) => React.ReactNode,
     useQueryParams: boolean,
-    handleRowClick(record: R, rowIndex: number | undefined): void,
+    handleRowClick?(record: R, rowIndex: number | undefined): void,
     paginationHidden?: boolean,
     filterQuery?: {[key: string]: string}
     orderQuery?: string,
     forceUpdate?(): void,
-    // columns: (searchProps?: (dataIndex: string[], type: string, label: string) => ColumnType<any>) => [{
-    //     key: string,
-    //     title: string,
-    //     dataIndex: string[],
-    //     sorter?: boolean,
-    //     ellipsis?: boolean,
-    //     width?: number,
-    // }]
-    // } & FilterDropdownProps]
-    columns: (searchProps?: (dataIndex: string[], type: string, label: string) => ColumnType<R>) => Array<ColumnType<R>> 
+    columns: (searchProps: ISearchProps<R>) => Array<ColumnType<R>> 
 }
+
+type ISearchProps<R> = (dataIndex: string[], type?: string, label?: string) => ColumnType<R>
 
 interface IQueryParams {
     pagination?: number,
@@ -59,7 +53,7 @@ const defaultProps = {
     paginationHidden: false,
 }
 
-export default function DatabaseTable<R extends {id: string}>(props: IDatabaseTable<R>): JSX.Element{
+export default function DatabaseTable<R extends IDatabaseDoc>(props: IDatabaseTable<R>): JSX.Element{
     const history = useHistory()
 
     const {dataUrl, itemDetails, useQueryParams, handleRowClick, paginationHidden} = props
@@ -366,7 +360,7 @@ export default function DatabaseTable<R extends {id: string}>(props: IDatabaseTa
         }
     }
 
-    const getColumnSearchProps = (dataIndex: string[], type: string, label: string): ColumnType<any> => {
+    const getColumnSearchProps: ISearchProps<R> = (dataIndex, type, label) => {
         let searchField: Input | null
         
         switch (type) {

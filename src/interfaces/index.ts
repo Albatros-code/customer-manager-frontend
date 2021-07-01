@@ -10,10 +10,11 @@ export type {
 } from './api.interfaces'
 
 export type {
+    IDatabaseDoc,
+    IDatabaseAnyDoc,
     IUserDoc,
     IUserDataDoc,
     IUserSettingsDoc,
-    IDatabaseDoc,
     IAppointmentDoc,
     ISettingDoc,
 } from './doc.interfaces'

@@ -10,19 +10,19 @@ import moment from 'moment';
 
 // types
 import { IData, IDataItem, IFieldErrors } from '../util/data';
-import { IDatabaseDoc } from '../interfaces'
+import { IDatabaseAnyDoc } from '../interfaces'
 
 export const DataListContext = React.createContext([]);
 
 export const useDataListContext = () => React.useContext(DataListContext);
 
-export type OnSaveFunc<D extends IDatabaseDoc> = (
+export type OnSaveFunc<D extends IDatabaseAnyDoc> = (
     values: D,
     callbackRes: (properties?: {resetFields: (() => void)}) => void,
     callbackErr: (errors: IFieldErrors) => void
 ) => void
 
-export interface IDataList<D extends IDatabaseDoc> {
+export interface IDataList<D extends IDatabaseAnyDoc> {
     data: IData<D>,
     onSave: OnSaveFunc<D>,
     label: string,
@@ -39,7 +39,7 @@ const defaultProps = {
     },
 }
 
-export default function DataList<D extends IDatabaseDoc>(props:IDataList<D>) {
+export default function DataList<D extends IDatabaseAnyDoc>(props:IDataList<D>) {
     const [form] = Form.useForm();
 
     const {buttonTags: {undo: btnUndoTag = "Undo", save: btnSaveTag = "Save"} = {}} = props

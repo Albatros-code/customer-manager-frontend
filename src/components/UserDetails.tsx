@@ -96,7 +96,7 @@ const UserData = (props: IUserData) => {
     }
         return (
         
-        <DataList 
+        <DataList<IUserDataDoc> 
             data={listData}
             label='User data'
             onSave={OnSave}

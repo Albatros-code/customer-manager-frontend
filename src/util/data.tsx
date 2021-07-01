@@ -3,7 +3,7 @@ import { ReactNode } from 'react';
 import {DataListDataSelector as NotTyped} from "../components/DataSelector"
 
 // types
-import { IAppointmentDoc, IDatabaseDoc, ISettingDoc } from '../interfaces'
+import { IAppointmentDoc, IDatabaseAnyDoc, ISettingDoc } from '../interfaces'
 
 const DataListDataSelector = (props: any) => <NotTyped {...props} />
 
@@ -62,7 +62,7 @@ export interface IFieldErrors {
     }
 }
 
-export function getData<D extends IDatabaseDoc>(dataModel:IDataModel<D>, docData?:D, additionalProps?:IAdditionalProps):IData<D>{
+export function getData<D extends IDatabaseAnyDoc>(dataModel:IDataModel<D>, docData?:D, additionalProps?:IAdditionalProps):IData<D>{
     return (
         Object.entries(dataModel).map(([key, val]) => {
 

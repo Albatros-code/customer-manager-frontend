@@ -47,4 +47,5 @@ export interface ISettingDoc {
     }
 }
 
-export type IDatabaseDoc = IAppointmentDoc | IServiceDoc | IUserDoc | IUserDataDoc | IUserSettingsDoc | ISettingDoc
+export type IDatabaseDoc = IAppointmentDoc | IServiceDoc | IUserDoc
+export type IDatabaseAnyDoc = IDatabaseDoc | IUserDataDoc | IUserSettingsDoc | ISettingDoc

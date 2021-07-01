@@ -5,6 +5,7 @@ import { api } from '../util/util';
 
 // types
 import { IDatabaseTable } from '../components/DatabaseTable'
+import { IDatabaseDoc } from '../interfaces';
 
 interface IDataSelector<R extends {id: string}> {
     showSelector: boolean,
@@ -15,7 +16,7 @@ interface IDataSelector<R extends {id: string}> {
     displayData: (doc: R) => string,
 }
 
-export default function DataSelector<R extends {id: string}>(props: IDataSelector<R>) {
+export default function DataSelector<R extends IDatabaseDoc>(props: IDataSelector<R>) {
     const {showSelector, setShowSelector, onRowClick, queryField, dataUrl, displayData} = props
 
     const searchField = React.useRef<Input>(null)
@@ -104,7 +105,7 @@ interface IDataListDataSelector<R extends {id: string}, D extends {id: string}> 
     onChange?: any,
 }
 
-export function DataListDataSelector<R extends {id: string, field: string}, D extends {id: string}>({record, handleChange, isEdited, dataUrl, displayData, queryField, value, onChange}:IDataListDataSelector<R, D>){
+export function DataListDataSelector<R extends {id: string, field: string}, D extends IDatabaseDoc>({record, handleChange, isEdited, dataUrl, displayData, queryField, value, onChange}:IDataListDataSelector<R, D>){
 
     const [showValue, setShowValue] = React.useState('')
     const [modalVisible, setModalVisible] = React.useState(false)
@@ -168,7 +169,7 @@ export function DataListDataSelector<R extends {id: string, field: string}, D ex
                     onClick={handleOpen}
                 />
             </Spin>
-            <DataSelector 
+            <DataSelector
                 showSelector={modalVisible}
                 setShowSelector={setModalVisible}
                 onRowClick={handleRowClick}

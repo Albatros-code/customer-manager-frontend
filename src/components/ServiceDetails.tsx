@@ -78,7 +78,6 @@ const ServiceData = (props: IServiceData) => {
             if (callbackRes) callbackRes()
         })
         .catch(err => {
-            console.log(err)
             if (callbackErr && err.response.data.errors) callbackErr(err.response.data.errors)
         })
     }

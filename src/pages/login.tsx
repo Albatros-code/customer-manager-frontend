@@ -56,7 +56,6 @@ const Login = () => {
         dispatch(loginUser(values.username, values.password, values.remember))
             .then(() => {
                 // redirect to proper page
-                console.log('push')
                 const push = location.state !== undefined ? location.state.from : '/appointments'
                 history.push(push)
             }, (err:{response: any}) => {

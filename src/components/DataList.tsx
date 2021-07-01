@@ -131,7 +131,6 @@ export default function DataList<D extends IDatabaseAnyDoc>(props:IDataList<D>) 
         form.validateFields()
             .then(values => {
                 const formatedValues = formatResults(data, values)
-                console.log(formatedValues)
                 const callbackRes = (properties: {resetFields?: () => void} = {}) => {
                     const {resetFields} = properties
                     setEditedFields({})

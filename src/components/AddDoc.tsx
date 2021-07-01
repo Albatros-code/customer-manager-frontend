@@ -72,7 +72,6 @@ export default function AddDoc<D  extends IDatabaseDoc>(props: IAddDoc<D>){
             // updateTableContent()
         })
         .catch(err => {
-            console.log(err.response)
             if (callbackErr && err.response.data.errors) callbackErr(err.response.data.errors)
         })
     }

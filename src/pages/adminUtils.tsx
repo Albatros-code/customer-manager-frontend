@@ -4,7 +4,7 @@ import {Button} from 'antd';
 import ModalConfirmation from '../components/ModalConfirmation';
 import {api} from '../util/util';
 
-const AdminUtils = (props) => {
+const AdminUtils = () => {
 
     const [resetDatabaseVisible, setResetDatabaseModalVisible] = React.useState(false);
 
@@ -22,7 +22,7 @@ const AdminUtils = (props) => {
                         )
                             .then(res => {
                                 setTimeout(() => {
-                                    return resolve(res)
+                                    return resolve()
                                 }, 3000);
                             }, err => {
                                 return reject(err)

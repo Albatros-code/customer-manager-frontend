@@ -6,12 +6,16 @@ import AddDoc from "../components/AddDoc";
 import {serviceModel} from '../util/data';
 import {useForceUpdate} from '../util/hooks'
 
+// types
+import { IDatabaseTable } from "../components/DatabaseTable";
+import { IServiceDoc } from "../interfaces/";
+
 const AdminServices = () => {
 
     const {forceUpdate, update} = useForceUpdate()
     
 
-    const columns = (searchProps) => [
+    const columns: IDatabaseTable<IServiceDoc>['columns'] = (searchProps) => [
         {
             key: 'id',
             title: 'Id',
@@ -45,7 +49,7 @@ const AdminServices = () => {
         },
     ]
 
-    const itemDetails = (record, setVisible) => {
+    const itemDetails: IDatabaseTable<IServiceDoc>['itemDetails'] = (record, setVisible) => {
         if (!record) return null
         const title = record.name
 

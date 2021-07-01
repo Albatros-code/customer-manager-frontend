@@ -34,7 +34,7 @@ export interface IDatabaseTable<R extends IDatabaseDoc> {
     paginationHidden?: boolean,
     filterQuery?: {[key: string]: string}
     orderQuery?: string,
-    forceUpdate?(): void,
+    forceUpdate?: number,
     columns: (searchProps: ISearchProps<R>) => Array<ColumnType<R>> 
 }
 

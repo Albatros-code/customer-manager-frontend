@@ -18,4 +18,5 @@ export type {
     IUserSettingsDoc,
     IAppointmentDoc,
     ISettingDoc,
+    IServiceDoc,
 } from './doc.interfaces'

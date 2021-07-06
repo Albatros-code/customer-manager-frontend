@@ -11,7 +11,7 @@ import {dayjsExtended as dayjs} from '../util/util'
 import moment from "moment";
 
 //types
-import { FilterDropdownProps, ColumnType } from 'antd/lib/table/interface'
+import { FilterDropdownProps, ColumnType, SortOrder } from 'antd/lib/table/interface'
 import { TableProps } from 'antd/lib/table/Table'
 import { IDatabaseAnyDoc, IDatabaseDoc } from "../interfaces";
 
@@ -53,6 +53,10 @@ const defaultProps = {
     paginationHidden: false,
 }
 
+function isSortOrder(value: string | null): value is SortOrder {
+    return value === 'descend' || value === 'ascend' ||  value === null;
+  }
+
 export default function DatabaseTable<R extends IDatabaseDoc>(props: IDatabaseTable<R>): JSX.Element{
     const history = useHistory()
 
@@ -81,8 +85,8 @@ export default function DatabaseTable<R extends IDatabaseDoc>(props: IDatabaseTa
     
     const [loading, setLoading] = React.useState(true)
     const [data, setData] = React.useState<{data: Array<R>, total: number}>({data: [], total: 0})
-    const [sortedInfo, setSortedInfo] = React.useState<{[key: string]: any}>({})
-    const [filteredInfo, setFilteredInfo] = React.useState<{[key: string]: any}>({})
+    const [sortedInfo, setSortedInfo] = React.useState<{order: SortOrder, field: string[]} | undefined>(undefined)
+    const [filteredInfo, setFilteredInfo] = React.useState<{[key: string]: string[]}>({})
     const [detailsVisible, setDetailsVisible] = React.useState<number | undefined>(undefined)
 
     const getData = React.useCallback(() => {
@@ -100,7 +104,7 @@ export default function DatabaseTable<R extends IDatabaseDoc>(props: IDatabaseTa
             .then(res => {
                 setData({data: res.data.data, total: res.data.total})
                 setLoading(false)
-                setSortedInfo(order ? orderToOrderInfo(order) : {})
+                setSortedInfo(order ? orderToOrderInfo(order) : undefined)
                 if(!props.filterQuery){
                     setFilteredInfo(filter ? filterToFilteredInfo(filter) : {})
                 } else {
@@ -164,10 +168,9 @@ export default function DatabaseTable<R extends IDatabaseDoc>(props: IDatabaseTa
         const orderVal = order.toString().replace('__', '-').split("_")[0]
         const fieldVal = order.toString().replace('__', '-').split("_")[1].split("-")
         const sorterObj = {
-            order: orderVal,
+            order: isSortOrder(orderVal) ? orderVal : null,
             field: fieldVal,
         }
-        
         return sorterObj
     }
 
@@ -418,7 +421,7 @@ export default function DatabaseTable<R extends IDatabaseDoc>(props: IDatabaseTa
                     )},
                     filterIcon: (filtered: boolean) => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
                     filteredValue: filteredInfo[dataIndex.join()],
-                    sortOrder: sortedInfo.hasOwnProperty('field') && sortedInfo.field.join() === dataIndex.join().replace(',', '__') && sortedInfo.order
+                    sortOrder: (sortedInfo?.hasOwnProperty('field') && sortedInfo.field.join() === dataIndex.join().replace(',', '__'))? sortedInfo.order : null
                     
                 })
             default:
@@ -470,7 +473,7 @@ export default function DatabaseTable<R extends IDatabaseDoc>(props: IDatabaseTa
                     },
                     // filterDropdownVisible: null,
                     filteredValue: filteredInfo[dataIndex.join()],
-                    sortOrder: sortedInfo.hasOwnProperty('field') && sortedInfo.field.join() === dataIndex.join().replace(',', '__') && sortedInfo.order
+                    sortOrder: (sortedInfo?.hasOwnProperty('field') && sortedInfo.field.join() === dataIndex.join().replace(',', '__'))? sortedInfo.order : null
                 })
 
             
@@ -478,11 +481,11 @@ export default function DatabaseTable<R extends IDatabaseDoc>(props: IDatabaseTa
     }
 
     const columns = props.columns(getColumnSearchProps).map(item => {
-        if (item.hasOwnProperty('sorter') && item.sorter && 'field' in sortedInfo){
+        if (item.hasOwnProperty('sorter') && item.sorter && sortedInfo && 'field' in sortedInfo){
             const dataIndexString = Array.isArray(item.dataIndex) ? item.dataIndex.join() : item.dataIndex
             return {
                 ...item,
-                sortOrder: sortedInfo.hasOwnProperty('field') && sortedInfo.field.join() === dataIndexString && sortedInfo.order
+                sortOrder: (sortedInfo.hasOwnProperty('field') && sortedInfo.field.join() === dataIndexString)? sortedInfo.order : null
             }
         } else {
             return item

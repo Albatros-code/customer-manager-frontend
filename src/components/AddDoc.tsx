@@ -14,7 +14,7 @@ import { IDatabaseDoc } from '../interfaces';
 
 interface IAddDoc<D extends IDatabaseDoc> {
     label: string,
-    forceUpdate: any,
+    forceUpdate: () => void,
     dataModel: IDataModel<D>,
     apiUrl: string,
     buttonStyle?: CSSProperties,
